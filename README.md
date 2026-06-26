@@ -38,10 +38,44 @@ wowwi/
 |---|---|
 | `TilePyramid_PL01_assets.zip.zip` | `21132D324A2071298C32A8611AD23674F019F8992A82463F0D2DD0CA400D3BE1` |
 
+## Quick start — TilePyramid_PL01
+
+All commands run from `projects/TilePyramid_PL01/`.
+
+**Install dependencies** (one-time):
+```
+npm install
+```
+
+**Start the development preview:**
+```
+npm run dev
+```
+Open the URL printed in the terminal (usually `http://localhost:5173`).
+
+**Run the test suite:**
+```
+npm run test          # unit tests (41 tests)
+npm run test:smoke    # browser smoke tests — requires Chromium (builds first)
+```
+
+To install the Playwright browser (first-time only):
+```
+npx playwright install chromium
+```
+
+**Create a production build:**
+```
+npm run build
+npm run preview       # serve the build at http://localhost:4173
+```
+
+---
+
 ## Build phases
 
-- **BUILD-00**: Repository bootstrap, asset audit, technical documentation ← current
-- **BUILD-01**: Runtime, build tooling, responsive playable shell
+- **BUILD-00**: Repository bootstrap, asset audit, technical documentation ← complete
+- **BUILD-01**: Runtime, build tooling, responsive playable shell ← complete
 - **BUILD-02**: Tile board, blocking system, tray and match logic
 - **BUILD-03**: Tutorial system, hand pointer, idle reminder
 - **BUILD-04**: Timer, win/lose states, end card

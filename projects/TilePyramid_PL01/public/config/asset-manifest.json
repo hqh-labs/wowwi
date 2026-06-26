@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "assets": [
+    {
+      "id": "Background_1",
+      "type": "image",
+      "path": "./assets/images/Background_1.png",
+      "source": "Copied (read-only) from project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_1.png. Original is 1024x1024 PNG; WebP conversion deferred to BUILD-02."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "projectId": "TilePyramid_PL01",
+  "designWidth": 1080,
+  "designHeight": 1920,
+  "backgroundId": "Background_1",
+  "backgroundFit": "cover",
+  "viewportAspect": "9:16",
+  "portraitPolicy": "fill",
+  "landscapePolicy": "letterbox",
+  "debugOverlay": true
+}

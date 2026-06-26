@@ -86,5 +86,5 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-00** — Repository bootstrap, asset audit, technical documentation.
-No gameplay implemented. No commits made.
+**BUILD-01** — Responsive playable shell (Phaser 3 + TypeScript + Vite).
+Shell complete. No gameplay implemented. Not yet committed.
