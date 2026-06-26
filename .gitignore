@@ -1,0 +1,70 @@
+# ─── Raw client inputs (immutable; tracked by SHA-256 checksum in docs) ───────
+project-input/raw-assets/
+project-input/extracted-assets/
+
+# ─── ZIP archives ─────────────────────────────────────────────────────────────
+*.zip
+*.zip.zip
+*.gz
+
+# ─── Node / npm ───────────────────────────────────────────────────────────────
+node_modules/
+.npm/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ─── Build outputs ────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+.output/
+
+# ─── Cache folders ────────────────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.vite/
+.next/
+.nuxt/
+.turbo/
+*.tsbuildinfo
+
+# ─── Temporary files ──────────────────────────────────────────────────────────
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Secrets / environment ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.secret
+secrets/
+
+# ─── OS metadata ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Editor ───────────────────────────────────────────────────────────────────
+.idea/
+*.suo
+*.user
+
+# ─── NOT ignored (deliberate runtime assets and source) ───────────────────────
+# docs/
+# projects/
+# packages/
+# scripts/
+# tests/
+# src/
+# *.json  (config, schemas, level data)
+# *.md    (documentation)
