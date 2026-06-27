@@ -86,7 +86,8 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-06** - CTA, end card, and store-open abstraction.
-BUILD-06 adds a gameplay CTA, basic win/fail end card, app metadata display,
-and network-agnostic store-open event recording. Unity/AppLovin exporters,
-final audio, final effects, and visual editor remain out of scope.
+**BUILD-07** - Asset optimization and production size control.
+BUILD-07 adds a rerunnable runtime image optimization pipeline, optimized WebP
+runtime assets, manifest updates, and production size measurement. Audio,
+effects, Unity/AppLovin exporters, network packaging, and visual editor remain
+out of scope.

@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-06 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-07 implementation notes.
 
 ---
 
@@ -71,6 +71,10 @@ projects/TilePyramid_PL01/
 ├── tests/
 │   └── smoke/
 │       └── shell.test.ts
+├── scripts/
+│   ├── asset-plan.mjs
+│   ├── optimize-assets.mjs
+│   └── measure-size.mjs
 └── dist/                         ← Build output (gitignored)
 ```
 
@@ -152,6 +156,25 @@ Fields (proposed):
 ### Asset manifest (`AssetManifest.ts`)
 
 Maps logical names (used in config) to physical file paths. Decouples config from filesystem layout. The visual editor updates this manifest when assets are swapped.
+
+BUILD-07 implementation note:
+- Runtime image entries now point at optimized WebP files under
+  `public/assets/images/optimized/`.
+- Manifest paths remain runtime-relative and never point to `project-input/`.
+- Original raw and extracted assets remain immutable; optimization scripts read
+  from those sources and write only to tracked runtime asset folders.
+
+### Asset optimization pipeline (`scripts/optimize-assets.mjs`, `scripts/measure-size.mjs`)
+
+BUILD-07 established interface:
+- `npm run optimize:assets` reads `scripts/asset-plan.mjs`, converts currently
+  used images to WebP via local Playwright/Chromium canvas encoding, and prints
+  per-asset before/after sizes.
+- `npm run measure:size` measures production `dist/` output after `npm run
+  build`, including total bytes, JavaScript raw/gzip bytes, runtime image bytes,
+  per-asset deltas, and largest output files.
+- Optimized outputs are stable filenames so the asset manifest can reference
+  them directly.
 
 ### Runtime renderer (`RuntimeRenderer.ts`)
 

@@ -57,9 +57,18 @@ test.describe('Build-06 CTA, end-card, and store-open smoke tests', () => {
 
     const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.remainingBoardCount).toBe(72);
+    expect(snapshot?.spriteCount).toBe(72);
     expect(snapshot?.trayCount).toBe(0);
     expect(snapshot?.timerDisplaySeconds).toBe(30);
     expect(snapshot?.timerStarted).toBe(false);
+  });
+
+  test('optimized background asset is applied', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    const backgroundImage = await page.evaluate(() => getComputedStyle(document.getElementById('bg-layer')!).backgroundImage);
+    expect(backgroundImage).toContain('background_1.webp');
   });
 
   test('initial tutorial is visible with highlights and hand indicator', async ({ page }) => {
