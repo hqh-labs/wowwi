@@ -35,6 +35,14 @@ export class PreloadScene extends Phaser.Scene {
       }
       this.load.image(config.tutorial.handAssetId, handAsset.path);
     }
+
+    for (const assetId of [config.app.iconAssetId, config.app.logoAssetId]) {
+      const asset = resolveAsset(manifest, assetId);
+      if (!asset || asset.type !== 'image') {
+        throw new Error(`Missing app metadata image asset in manifest: ${assetId}`);
+      }
+      this.load.image(assetId, asset.path);
+    }
   }
 
   create(): void {

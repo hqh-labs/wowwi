@@ -33,6 +33,10 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'tutorial',
   'idleHint',
   'debugTimerTutorialIdle',
+  'app',
+  'cta',
+  'endCard',
+  'debugCtaEndCardStore',
 ];
 
 export class ConfigValidationError extends Error {
@@ -134,6 +138,12 @@ export function validateConfig(data: unknown): GameConfig {
   validateIdleHintConfig(obj['idleHint']);
   if (typeof obj['debugTimerTutorialIdle'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugTimerTutorialIdle must be a boolean');
+  }
+  validateAppConfig(obj['app']);
+  validateCtaConfig(obj['cta']);
+  validateEndCardConfig(obj['endCard']);
+  if (typeof obj['debugCtaEndCardStore'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugCtaEndCardStore must be a boolean');
   }
 
   return data as GameConfig;
@@ -282,6 +292,96 @@ function validateIdleHintConfig(value: unknown): void {
 
 function isPositiveFiniteNumber(value: unknown): boolean {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+function validateAppConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.app must be an object');
+  }
+  const app = value as Record<string, unknown>;
+  for (const field of ['name', 'fallbackUrl', 'androidUrl', 'iosUrl', 'iconAssetId', 'logoAssetId']) {
+    if (typeof app[field] !== 'string' || (app[field] as string).trim() === '') {
+      throw new ConfigValidationError(`Config.app.${field} must be a non-empty string`);
+    }
+  }
+  if (!['record-only', 'navigate'].includes(app['storeOpenMode'] as string)) {
+    throw new ConfigValidationError('Config.app.storeOpenMode must be record-only or navigate');
+  }
+  if (typeof app['safeDevelopmentNavigation'] !== 'boolean') {
+    throw new ConfigValidationError('Config.app.safeDevelopmentNavigation must be a boolean');
+  }
+}
+
+function validateCtaConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.cta must be an object');
+  }
+  const cta = value as Record<string, unknown>;
+  if (typeof cta['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.cta.enabled must be a boolean');
+  }
+  if (typeof cta['text'] !== 'string' || cta['text'].trim() === '') {
+    throw new ConfigValidationError('Config.cta.text must be a non-empty string');
+  }
+  validatePoint(cta['position'], 'Config.cta.position');
+  validateSize(cta['size'], 'Config.cta.size');
+  if (!isPositiveFiniteNumber(cta['fontSize'])) {
+    throw new ConfigValidationError('Config.cta.fontSize must be a positive finite number');
+  }
+  for (const field of ['textColor', 'backgroundColor', 'borderColor']) {
+    if (typeof cta[field] !== 'string' || (cta[field] as string).trim() === '') {
+      throw new ConfigValidationError(`Config.cta.${field} must be a non-empty string`);
+    }
+  }
+  if (!isNonNegativeFiniteNumber(cta['cornerRadius'])) {
+    throw new ConfigValidationError('Config.cta.cornerRadius must be a non-negative finite number');
+  }
+  if (typeof cta['visibleDuringGameplay'] !== 'boolean') {
+    throw new ConfigValidationError('Config.cta.visibleDuringGameplay must be a boolean');
+  }
+}
+
+function validateEndCardConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.endCard must be an object');
+  }
+  const endCard = value as Record<string, unknown>;
+  for (const field of ['enabled', 'showOnWin', 'showOnFail', 'fullScreenClick']) {
+    if (typeof endCard[field] !== 'boolean') {
+      throw new ConfigValidationError(`Config.endCard.${field} must be a boolean`);
+    }
+  }
+  if (endCard['enabled']) {
+    for (const field of ['titleText', 'winMessage', 'failMessage', 'ctaText']) {
+      if (typeof endCard[field] !== 'string' || (endCard[field] as string).trim() === '') {
+        throw new ConfigValidationError(`Config.endCard.${field} must be a non-empty string when enabled`);
+      }
+    }
+  }
+}
+
+function validatePoint(value: unknown, label: string): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError(`${label} must be an object`);
+  }
+  const point = value as Record<string, unknown>;
+  for (const field of ['x', 'y']) {
+    if (typeof point[field] !== 'number' || !Number.isFinite(point[field])) {
+      throw new ConfigValidationError(`${label}.${field} must be a finite number`);
+    }
+  }
+}
+
+function validateSize(value: unknown, label: string): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError(`${label} must be an object`);
+  }
+  const size = value as Record<string, unknown>;
+  for (const field of ['width', 'height']) {
+    if (!isPositiveFiniteNumber(size[field])) {
+      throw new ConfigValidationError(`${label}.${field} must be a positive finite number`);
+    }
+  }
 }
 
 export function loadConfigFromGlobal(): GameConfig {

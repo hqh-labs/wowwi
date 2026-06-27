@@ -72,5 +72,38 @@
     "preferTrayPairCompletion": true,
     "deterministicFallback": true
   },
-  "debugTimerTutorialIdle": true
+  "debugTimerTutorialIdle": true,
+  "app": {
+    "name": "Pyramid Quest",
+    "fallbackUrl": "https://example.com/pyramid-quest",
+    "androidUrl": "https://example.com/pyramid-quest/android",
+    "iosUrl": "https://example.com/pyramid-quest/ios",
+    "storeOpenMode": "record-only",
+    "safeDevelopmentNavigation": true,
+    "iconAssetId": "App_Icon",
+    "logoAssetId": "App_Logo"
+  },
+  "cta": {
+    "enabled": true,
+    "text": "PLAY NOW",
+    "position": { "x": 540, "y": 1775 },
+    "size": { "width": 420, "height": 112 },
+    "fontSize": 42,
+    "textColor": "#ffffff",
+    "backgroundColor": "#ff3f6e",
+    "borderColor": "#fff4a8",
+    "cornerRadius": 28,
+    "visibleDuringGameplay": true
+  },
+  "endCard": {
+    "enabled": true,
+    "showOnWin": true,
+    "showOnFail": true,
+    "titleText": "Pyramid Quest",
+    "winMessage": "Level Complete!",
+    "failMessage": "Try Again!",
+    "fullScreenClick": true,
+    "ctaText": "PLAY NOW"
+  },
+  "debugCtaEndCardStore": true
 }

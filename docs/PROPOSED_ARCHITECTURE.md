@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-05 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-06 implementation notes.
 
 ---
 
@@ -50,6 +50,10 @@ projects/TilePyramid_PL01/
 │   │   ├── idle/
 │   │   │   ├── IdleHintSystem.ts
 │   │   │   └── HintCandidateSelector.ts
+│   │   ├── cta/
+│   │   │   └── CtaSystem.ts
+│   │   ├── store/
+│   │   │   └── StoreOpenService.ts
 │   │   └── endcard/
 │   │       └── EndCardSystem.ts
 │   ├── effects/
@@ -110,16 +114,37 @@ Fields (proposed):
   },
   "tileSeed": 21001,
   "audio": { "bgm": "BGM_GamePlay", "volume": 0.5 },
+  "app": {
+    "name": "Pyramid Quest",
+    "fallbackUrl": "https://example.com/pyramid-quest",
+    "androidUrl": "https://example.com/pyramid-quest/android",
+    "iosUrl": "https://example.com/pyramid-quest/ios",
+    "storeOpenMode": "record-only",
+    "safeDevelopmentNavigation": true,
+    "iconAssetId": "App_Icon",
+    "logoAssetId": "App_Logo"
+  },
   "cta": {
-    "visible": true,
+    "enabled": true,
     "text": "Play Now",
-    "font": "PaytoneOne-Regular",
+    "position": { "x": 540, "y": 1775 },
+    "size": { "width": 420, "height": 112 },
     "fontSize": 36,
     "textColor": "#ffffff",
-    "background": "cta_bg",
-    "borderGlow": true,
-    "position": { "anchorX": 0.5, "anchorY": 0.92 },
-    "clickAreaPadding": 20
+    "backgroundColor": "#ff3f6e",
+    "borderColor": "#fff4a8",
+    "cornerRadius": 28,
+    "visibleDuringGameplay": true
+  },
+  "endCard": {
+    "enabled": true,
+    "showOnWin": true,
+    "showOnFail": true,
+    "titleText": "Pyramid Quest",
+    "winMessage": "Level Complete!",
+    "failMessage": "Try Again!",
+    "fullScreenClick": true,
+    "ctaText": "Play Now"
   }
 }
 ```
@@ -319,21 +344,51 @@ Responsibilities:
 ### CTA / store-opening abstraction (`CTASystem.ts`)
 
 Responsibilities:
-- Render the CTA as a **configurable component** — not a static image. The supplied client asset (`CTA button/1768985619153.png`) has baked-in text and is a visual reference only; it is not the production runtime asset.
-- All CTA visual properties are driven by `game.config.json`: text content, font, font size, text colour, background image or colour, border/glow, position, and click area padding. Any of these can be changed without code modification.
-- Display the CTA button during gameplay.
-- Extend the click area to the full screen on the end card.
-- Delegate store-open action to the active `INetworkAdapter`.
+- Track whether the gameplay CTA is enabled, visible, and clicked.
+- Keep CTA state separate from board, tray, timer, and tutorial state.
+- Delegate store-open action to `StoreOpenService`.
+- Render the CTA as a configurable Phaser component, not a baked CTA image.
 
-**The store URL or SDK call is never inside CTASystem.** CTASystem only calls `adapter.openStore()`. This is the hard boundary between gameplay and ad-network code.
+BUILD-06 established interface:
+- `createCtaState(enabled, visibleDuringGameplay)` initializes CTA visibility.
+- `recordCtaClick(state)` increments CTA click diagnostics without mutating
+  gameplay state.
+- `setCtaVisible(state, visible)` allows `GameScene` to hide the CTA when the
+  end card appears.
+
+### Store-open service (`StoreOpenService.ts`)
+
+Responsibilities:
+- Record store-open events in development-safe `record-only` mode.
+- Choose the configured fallback URL.
+- Record call source (`gameplay-cta`, `end-card`, or `unknown`).
+- Navigate only when config uses `navigate` mode and safe development navigation
+  is disabled.
+
+BUILD-06 established interface:
+- `StoreOpenService.openStore(source)` records the event and optionally delegates
+  navigation.
+- `StoreOpenService.getSnapshot()` exposes read-only diagnostics.
+- `chooseStoreUrl(config)` centralizes URL selection.
+
+No Unity Ads or AppLovin SDK call exists in BUILD-06.
 
 ### End-card system (`EndCardSystem.ts`)
 
 Responsibilities:
-- Show the appropriate end screen (win or lose).
-- Make the entire screen clickable.
-- Notify `CTASystem` when the screen is clicked.
-- In landscape, the full landscape screen is the clickable area (not just the portrait area).
+- Track whether the basic end card is hidden or visible.
+- Show the configured win or fail reason after gameplay outcome.
+- Record end-card click count.
+- Delegate store-open action through the same `StoreOpenService`.
+
+BUILD-06 established interface:
+- `createEndCardState(enabled)` initializes hidden end-card state.
+- `updateEndCardForOutcome(state, gameState, rules)` shows the card on win/fail
+  according to config.
+- `recordEndCardClick(state)` increments end-card click diagnostics.
+
+Phaser rendering lives in `GameScene`: overlay surface, icon, logo, message,
+CTA button, and full-card click area inside the centered 9:16 canvas.
 
 ### Network adapter interface (`INetworkAdapter.ts`)
 

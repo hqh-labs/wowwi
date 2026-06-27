@@ -6,6 +6,13 @@ import {
   type BoardRuntimeState,
 } from '../gameplay/board/BoardRuntimeState';
 import { assignTileTypes, validateTriplets } from '../gameplay/board/TileAssigner';
+import { createCtaState, recordCtaClick, setCtaVisible, type CtaState } from '../gameplay/cta/CtaSystem';
+import {
+  createEndCardState,
+  recordEndCardClick,
+  updateEndCardForOutcome,
+  type EndCardState,
+} from '../gameplay/endcard/EndCardSystem';
 import {
   createIdleHintState,
   resetIdleHint,
@@ -34,6 +41,7 @@ import {
   tickTimer,
   type TimerState,
 } from '../gameplay/timer/TimerSystem';
+import { StoreOpenService, type StoreOpenState } from '../gameplay/store/StoreOpenService';
 import {
   createTutorialState,
   handleTutorialInteraction,
@@ -49,13 +57,15 @@ import {
 } from '../gameplay/tray/TraySystem';
 import { resolveAsset } from '../manifest/AssetManifest';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
-import type { AssetManifestData, Build05Snapshot, GameConfig, GameOutcomeState } from '../types';
+import type { AssetManifestData, Build06Snapshot, GameConfig, GameOutcomeState } from '../types';
 
 const TILE_SOURCE_SIZE = { width: 132, height: 144 };
 const BOARD_DEPTH = 1000;
 const TRAY_DEPTH = 6000;
 const TIMER_DEPTH = 7800;
 const TUTORIAL_DEPTH = 8000;
+const CTA_DEPTH = 8500;
+const END_CARD_DEPTH = 8700;
 const DEBUG_DEPTH = 9000;
 
 export class GameScene extends Phaser.Scene {
@@ -77,11 +87,17 @@ export class GameScene extends Phaser.Scene {
   private timerState!: TimerState;
   private tutorialState!: TutorialState;
   private idleHintState!: IdleHintState;
-  private snapshot!: Build05Snapshot;
+  private ctaState!: CtaState;
+  private endCardState!: EndCardState;
+  private storeOpenService!: StoreOpenService;
+  private storeOpenState!: StoreOpenState;
+  private snapshot!: Build06Snapshot;
   private timerText?: Phaser.GameObjects.Text;
+  private ctaObjects: Phaser.GameObjects.GameObject[] = [];
   private tutorialObjects: Phaser.GameObjects.GameObject[] = [];
   private tutorialHand?: Phaser.GameObjects.Image;
   private idleObjects: Phaser.GameObjects.GameObject[] = [];
+  private endCardObjects: Phaser.GameObjects.GameObject[] = [];
   private renderedIdleKey = '';
 
   constructor() {
@@ -103,6 +119,8 @@ export class GameScene extends Phaser.Scene {
     this.renderTimer(config);
     this.renderTutorial(config);
     this.renderIdleHint(config);
+    this.renderGameplayCta(config);
+    this.renderEndCard(config);
     this.publishSnapshot(config);
 
     if (this.debugEnabled) {
@@ -140,6 +158,16 @@ export class GameScene extends Phaser.Scene {
       previewTileIds: config.tutorial.previewTileIds,
     });
     this.idleHintState = createIdleHintState(config.idleHint.enabled, config.idleHint.delaySeconds);
+    this.ctaState = createCtaState(config.cta.enabled, config.cta.visibleDuringGameplay);
+    this.endCardState = createEndCardState(config.endCard.enabled);
+    this.storeOpenService = new StoreOpenService({
+      fallbackUrl: config.app.fallbackUrl,
+      androidUrl: config.app.androidUrl,
+      iosUrl: config.app.iosUrl,
+      mode: config.app.storeOpenMode,
+      safeDevelopmentNavigation: config.app.safeDevelopmentNavigation,
+    });
+    this.storeOpenState = this.storeOpenService.getSnapshot();
     this.gameState = 'playing';
   }
 
@@ -158,8 +186,10 @@ export class GameScene extends Phaser.Scene {
       this.selectionState = { inputLocked: true };
       this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
       this.idleHintState = resetIdleHint(this.idleHintState);
+      this.updateEndCardState(config);
       this.renderTutorial(config);
       this.renderIdleHint(config);
+      this.renderEndCard(config);
     }
 
     const targetTileId = selectIdleHintTarget({
@@ -377,8 +407,10 @@ export class GameScene extends Phaser.Scene {
       this.selectionState = { inputLocked: true };
       this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
       this.idleHintState = resetIdleHint(this.idleHintState);
+      this.updateEndCardState(config);
       this.renderTutorial(config);
       this.renderIdleHint(config);
+      this.renderEndCard(config);
     }
     this.publishSnapshot(config);
   }
@@ -505,6 +537,155 @@ export class GameScene extends Phaser.Scene {
       yoyo: true,
       repeat: 2,
     });
+  }
+
+  private renderGameplayCta(config: GameConfig): void {
+    for (const object of this.ctaObjects) object.destroy();
+    this.ctaObjects = [];
+
+    this.ctaState = setCtaVisible(this.ctaState, this.gameState === 'playing' && config.cta.visibleDuringGameplay);
+    if (!this.ctaState.visible) return;
+
+    const bg = this.add
+      .rectangle(
+        config.cta.position.x,
+        config.cta.position.y,
+        config.cta.size.width,
+        config.cta.size.height,
+        colorFromHex(config.cta.backgroundColor),
+        0.96
+      )
+      .setStrokeStyle(6, colorFromHex(config.cta.borderColor), 1)
+      .setDepth(CTA_DEPTH)
+      .setName('build06-gameplay-cta')
+      .setInteractive({ useHandCursor: true });
+    bg.on('pointerdown', (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+      event.stopPropagation();
+      this.handleGameplayCtaClick(config);
+    });
+    this.ctaObjects.push(bg);
+
+    const label = this.add
+      .text(config.cta.position.x, config.cta.position.y, config.cta.text, {
+        color: config.cta.textColor,
+        fontSize: `${config.cta.fontSize}px`,
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(CTA_DEPTH + 1)
+      .setName('build06-gameplay-cta-text');
+    this.ctaObjects.push(label);
+  }
+
+  private handleGameplayCtaClick(config: GameConfig): void {
+    this.ctaState = recordCtaClick(this.ctaState);
+    this.storeOpenState = this.storeOpenService.openStore('gameplay-cta');
+    this.publishSnapshot(config);
+    this.updateDebugText(config);
+  }
+
+  private updateEndCardState(config: GameConfig): void {
+    this.endCardState = updateEndCardForOutcome(this.endCardState, this.gameState, {
+      showOnWin: config.endCard.showOnWin,
+      showOnFail: config.endCard.showOnFail,
+    });
+    if (this.endCardState.visible) {
+      this.ctaState = setCtaVisible(this.ctaState, false);
+      for (const object of this.ctaObjects) object.destroy();
+      this.ctaObjects = [];
+    }
+  }
+
+  private renderEndCard(config: GameConfig): void {
+    for (const object of this.endCardObjects) object.destroy();
+    this.endCardObjects = [];
+
+    if (!this.endCardState.visible) return;
+
+    const surface = this.add
+      .rectangle(
+        config.designWidth / 2,
+        config.designHeight / 2,
+        config.designWidth,
+        config.designHeight,
+        0x081225,
+        0.9
+      )
+      .setDepth(END_CARD_DEPTH)
+      .setName('build06-end-card-surface');
+    if (config.endCard.fullScreenClick) {
+      surface.setInteractive({ useHandCursor: true });
+      surface.on(
+        'pointerdown',
+        (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+          event.stopPropagation();
+          this.handleEndCardClick(config);
+        }
+      );
+    }
+    this.endCardObjects.push(surface);
+
+    const icon = this.add
+      .image(config.designWidth / 2, 420, config.app.iconAssetId)
+      .setDisplaySize(240, 240)
+      .setDepth(END_CARD_DEPTH + 1)
+      .setName('build06-end-card-icon');
+    this.endCardObjects.push(icon);
+
+    const logo = this.add
+      .image(config.designWidth / 2, 705, config.app.logoAssetId)
+      .setDisplaySize(520, 267)
+      .setDepth(END_CARD_DEPTH + 1)
+      .setName('build06-end-card-logo');
+    this.endCardObjects.push(logo);
+
+    const message = this.endCardState.reason === 'win' ? config.endCard.winMessage : config.endCard.failMessage;
+    const messageText = this.add
+      .text(config.designWidth / 2, 990, message, {
+        color: '#ffffff',
+        fontSize: '70px',
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+        stroke: '#111827',
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5)
+      .setDepth(END_CARD_DEPTH + 2)
+      .setName('build06-end-card-message');
+    this.endCardObjects.push(messageText);
+
+    const ctaY = 1300;
+    const ctaBg = this.add
+      .rectangle(config.designWidth / 2, ctaY, 500, 128, colorFromHex(config.cta.backgroundColor), 0.98)
+      .setStrokeStyle(7, colorFromHex(config.cta.borderColor), 1)
+      .setDepth(END_CARD_DEPTH + 2)
+      .setName('build06-end-card-cta')
+      .setInteractive({ useHandCursor: true });
+    ctaBg.on('pointerdown', (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+      event.stopPropagation();
+      this.handleEndCardClick(config);
+    });
+    this.endCardObjects.push(ctaBg);
+
+    const ctaLabel = this.add
+      .text(config.designWidth / 2, ctaY, config.endCard.ctaText, {
+        color: config.cta.textColor,
+        fontSize: '48px',
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(END_CARD_DEPTH + 3)
+      .setName('build06-end-card-cta-text');
+    this.endCardObjects.push(ctaLabel);
+  }
+
+  private handleEndCardClick(config: GameConfig): void {
+    this.endCardState = recordEndCardClick(this.endCardState);
+    this.storeOpenState = this.storeOpenService.openStore('end-card');
+    this.publishSnapshot(config);
+    this.updateDebugText(config);
   }
 
   private renderTimer(config: GameConfig): void {
@@ -745,8 +926,14 @@ export class GameScene extends Phaser.Scene {
       `Tutorial dismissed: ${snapshot.tutorialDismissed}`,
       `Idle hint: ${snapshot.idleHintActive ? snapshot.idleHintTargetTileId ?? 'none' : 'off'}`,
       `Idle seconds: ${snapshot.secondsSinceLastValidInteraction.toFixed(2)}`,
+      `CTA visible: ${snapshot.ctaVisible}`,
+      `CTA clicks: ${snapshot.ctaClickCount}`,
+      `End card: ${snapshot.endCardVisible ? snapshot.endCardReason : 'off'}`,
+      `End card clicks: ${snapshot.endCardClickCount}`,
+      `Store opens: ${snapshot.storeOpenCallCount}`,
+      `Last store source: ${snapshot.lastStoreOpenSource ?? 'none'}`,
       `Formal solvability: ${snapshot.formalSolvability}`,
-      'BUILD-05 timer/tutorial/idle',
+      'BUILD-06 CTA/end-card/store-open',
     ].join('\n');
   }
 
@@ -774,19 +961,27 @@ export class GameScene extends Phaser.Scene {
       this.timerState,
       this.tutorialState,
       this.idleHintState,
-      Boolean(this.tutorialHand?.active)
+      Boolean(this.tutorialHand?.active),
+      this.ctaState,
+      this.endCardState,
+      this.storeOpenState
     );
     window.__TILEPYRAMID_BUILD02__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD03__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD04__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD05__ = Object.freeze(this.snapshot);
+    window.__TILEPYRAMID_BUILD06__ = Object.freeze(this.snapshot);
   }
 
   shutdown(): void {
     this.orientationController?.destroy();
+    for (const object of this.ctaObjects) object.destroy();
+    this.ctaObjects = [];
     this.clearTutorialObjects();
     for (const object of this.idleObjects) object.destroy();
     this.idleObjects = [];
+    for (const object of this.endCardObjects) object.destroy();
+    this.endCardObjects = [];
   }
 }
 
@@ -805,8 +1000,11 @@ function createSnapshot(
   timer: TimerState,
   tutorial: TutorialState,
   idleHint: IdleHintState,
-  tutorialHandVisible: boolean
-): Build05Snapshot {
+  tutorialHandVisible: boolean,
+  cta: CtaState,
+  endCard: EndCardState,
+  storeOpen: StoreOpenState
+): Build06Snapshot {
   const layoutById = new Map(boardLayout.tiles.map(tile => [tile.id, tile]));
 
   return {
@@ -872,6 +1070,19 @@ function createSnapshot(
     idleHintActive: idleHint.active && gameState === 'playing',
     idleHintTargetTileId: idleHint.targetTileId,
     secondsSinceLastValidInteraction: idleHint.secondsSinceLastValidInteraction,
+    ctaVisible: cta.visible,
+    ctaClickCount: cta.clickCount,
+    endCardVisible: endCard.visible,
+    endCardReason: endCard.reason,
+    endCardClickCount: endCard.clickCount,
+    storeOpenCallCount: storeOpen.callCount,
+    lastStoreOpenSource: storeOpen.lastSource,
+    lastStoreOpenUrl: storeOpen.lastUrl,
+    storeOpenMode: storeOpen.mode,
   };
+}
+
+function colorFromHex(value: string): number {
+  return Phaser.Display.Color.HexStringToColor(value).color;
 }
 

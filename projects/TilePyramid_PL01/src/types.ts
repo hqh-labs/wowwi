@@ -29,6 +29,45 @@ export interface GameConfig {
   tutorial: TutorialConfig;
   idleHint: IdleHintConfig;
   debugTimerTutorialIdle: boolean;
+  app: AppConfig;
+  cta: CtaConfig;
+  endCard: EndCardConfig;
+  debugCtaEndCardStore: boolean;
+}
+
+export interface AppConfig {
+  name: string;
+  fallbackUrl: string;
+  androidUrl: string;
+  iosUrl: string;
+  storeOpenMode: 'record-only' | 'navigate';
+  safeDevelopmentNavigation: boolean;
+  iconAssetId: string;
+  logoAssetId: string;
+}
+
+export interface CtaConfig {
+  enabled: boolean;
+  text: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  fontSize: number;
+  textColor: string;
+  backgroundColor: string;
+  borderColor: string;
+  cornerRadius: number;
+  visibleDuringGameplay: boolean;
+}
+
+export interface EndCardConfig {
+  enabled: boolean;
+  showOnWin: boolean;
+  showOnFail: boolean;
+  titleText: string;
+  winMessage: string;
+  failMessage: string;
+  fullScreenClick: boolean;
+  ctaText: string;
 }
 
 export interface TimerConfig {
@@ -97,6 +136,7 @@ declare global {
     __TILEPYRAMID_BUILD03__?: Readonly<Build03Snapshot>;
     __TILEPYRAMID_BUILD04__?: Readonly<Build04Snapshot>;
     __TILEPYRAMID_BUILD05__?: Readonly<Build05Snapshot>;
+    __TILEPYRAMID_BUILD06__?: Readonly<Build06Snapshot>;
   }
 }
 
@@ -165,4 +205,16 @@ export interface Build05Snapshot extends Build04Snapshot {
   idleHintActive: boolean;
   idleHintTargetTileId: string | null;
   secondsSinceLastValidInteraction: number;
+}
+
+export interface Build06Snapshot extends Build05Snapshot {
+  ctaVisible: boolean;
+  ctaClickCount: number;
+  endCardVisible: boolean;
+  endCardReason: 'win' | 'fail' | 'none';
+  endCardClickCount: number;
+  storeOpenCallCount: number;
+  lastStoreOpenSource: 'gameplay-cta' | 'end-card' | 'unknown' | null;
+  lastStoreOpenUrl: string | null;
+  storeOpenMode: 'record-only' | 'navigate';
 }

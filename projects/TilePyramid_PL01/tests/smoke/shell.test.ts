@@ -10,7 +10,7 @@ async function waitForRuntime(page: Page): Promise<void> {
     try {
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('canvas', { timeout: 15_000 });
-      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === 72, null, {
+      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD06__?.remainingBoardCount === 72, null, {
         timeout: 15_000,
       });
       return;
@@ -32,13 +32,13 @@ async function clickDesignPoint(page: Page, x: number, y: number): Promise<void>
 }
 
 async function clickTileById(page: Page, tileId: string): Promise<void> {
-  const tile = await page.evaluate(id => window.__TILEPYRAMID_BUILD05__?.tiles.find(candidate => candidate.id === id), tileId);
+  const tile = await page.evaluate(id => window.__TILEPYRAMID_BUILD06__?.tiles.find(candidate => candidate.id === id), tileId);
   expect(tile).toBeDefined();
   if (!tile) return;
   await clickDesignPoint(page, tile.screenX, tile.screenY);
 }
 
-test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
+test.describe('Build-06 CTA, end-card, and store-open smoke tests', () => {
   test.describe.configure({ timeout: 90_000 });
 
   test('app loads without uncaught JavaScript errors', async ({ page }) => {
@@ -55,7 +55,7 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.remainingBoardCount).toBe(72);
     expect(snapshot?.trayCount).toBe(0);
     expect(snapshot?.timerDisplaySeconds).toBe(30);
@@ -66,25 +66,47 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.tutorialActive).toBe(true);
     expect(snapshot?.tutorialText).toBe('Tap to match!');
     expect(snapshot?.tutorialHighlightedTileIds).toEqual(PREVIEW_IDS);
     expect(snapshot?.tutorialHandVisible).toBe(true);
   });
 
+  test('gameplay CTA is visible and records store-open without mutating gameplay', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    const before = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
+    expect(before?.ctaVisible).toBe(true);
+    expect(before?.storeOpenCallCount).toBe(0);
+
+    await clickDesignPoint(page, 540, 1775);
+    await page.waitForFunction(() => window.__TILEPYRAMID_BUILD06__?.storeOpenCallCount === 1, null, {
+      timeout: 4_000,
+    });
+
+    const after = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
+    expect(after?.ctaClickCount).toBe(1);
+    expect(after?.lastStoreOpenSource).toBe('gameplay-cta');
+    expect(after?.remainingBoardCount).toBe(before?.remainingBoardCount);
+    expect(after?.trayCount).toBe(before?.trayCount);
+    expect(after?.timerStarted).toBe(false);
+    expect(after?.tutorialActive).toBe(true);
+  });
+
   test('tapping a blocked tile does not start timer or dismiss tutorial', async ({ page }) => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const blockedTile = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__?.tiles.find(tile => !tile.selectable));
+    const blockedTile = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__?.tiles.find(tile => !tile.selectable));
     expect(blockedTile).toBeDefined();
     if (!blockedTile) return;
 
     await clickDesignPoint(page, blockedTile.screenX, blockedTile.screenY);
     await page.waitForTimeout(300);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.timerStarted).toBe(false);
     expect(snapshot?.timerDisplaySeconds).toBe(30);
     expect(snapshot?.tutorialActive).toBe(true);
@@ -98,19 +120,19 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     await clickTileById(page, PREVIEW_IDS[0]);
     await page.waitForFunction(
       () =>
-        window.__TILEPYRAMID_BUILD05__?.timerStarted === true &&
-        window.__TILEPYRAMID_BUILD05__?.tutorialDismissed === true,
+        window.__TILEPYRAMID_BUILD06__?.timerStarted === true &&
+        window.__TILEPYRAMID_BUILD06__?.tutorialDismissed === true,
       null,
       { timeout: 8_000 }
     );
 
     await page.waitForFunction(
-      () => (window.__TILEPYRAMID_BUILD05__?.timerRemaining ?? 30) < 29.5,
+      () => (window.__TILEPYRAMID_BUILD06__?.timerRemaining ?? 30) < 29.5,
       null,
       { timeout: 4_000 }
     );
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.tutorialActive).toBe(false);
     expect(snapshot?.timerStarted).toBe(true);
     expect(snapshot?.timerRemaining).toBeLessThan(30);
@@ -122,15 +144,15 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
 
     await clickTileById(page, PREVIEW_IDS[0]);
     await page.waitForFunction(
-      () => window.__TILEPYRAMID_BUILD05__?.inputLocked === false && window.__TILEPYRAMID_BUILD05__?.tutorialDismissed === true,
+      () => window.__TILEPYRAMID_BUILD06__?.inputLocked === false && window.__TILEPYRAMID_BUILD06__?.tutorialDismissed === true,
       null,
       { timeout: 8_000 }
     );
-    await page.waitForFunction(() => window.__TILEPYRAMID_BUILD05__?.idleHintActive === true, null, {
+    await page.waitForFunction(() => window.__TILEPYRAMID_BUILD06__?.idleHintActive === true, null, {
       timeout: 12_000,
     });
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.idleHintActive).toBe(true);
     expect(snapshot?.idleHintTargetTileId).toBeTruthy();
   });
@@ -144,8 +166,8 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
       const expectedBoardCount = 71 - i;
       await page.waitForFunction(
         ([boardCount]) =>
-          window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === boardCount &&
-          window.__TILEPYRAMID_BUILD05__?.inputLocked === false,
+          window.__TILEPYRAMID_BUILD06__?.remainingBoardCount === boardCount &&
+          window.__TILEPYRAMID_BUILD06__?.inputLocked === false,
         [expectedBoardCount],
         { timeout: 8_000 }
       );
@@ -153,15 +175,15 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
 
     await page.waitForFunction(
       () =>
-        window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === 69 &&
-        window.__TILEPYRAMID_BUILD05__?.trayCount === 0 &&
-        window.__TILEPYRAMID_BUILD05__?.matchResolving === false &&
-        window.__TILEPYRAMID_BUILD05__?.inputLocked === false,
+        window.__TILEPYRAMID_BUILD06__?.remainingBoardCount === 69 &&
+        window.__TILEPYRAMID_BUILD06__?.trayCount === 0 &&
+        window.__TILEPYRAMID_BUILD06__?.matchResolving === false &&
+        window.__TILEPYRAMID_BUILD06__?.inputLocked === false,
       null,
       { timeout: 8_000 }
     );
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.lastMatchedTileType).toBe(1);
     expect(snapshot?.gameState).toBe('playing');
   });
@@ -170,7 +192,7 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const solvability = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__?.formalSolvability);
+    const solvability = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__?.formalSolvability);
     expect(solvability).toBe('NOT YET PROVEN');
   });
 
@@ -189,7 +211,7 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     expect(Math.abs(box.x + box.width / 2 - 422)).toBeLessThan(5);
   });
 
-  test('side background areas do not trigger gameplay', async ({ page }) => {
+  test('side background areas do not trigger gameplay or store open', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await page.goto('/');
     await waitForRuntime(page);
@@ -201,9 +223,10 @@ test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
     await page.mouse.click(Math.max(2, box.x - 20), box.y + box.height / 2);
     await page.waitForTimeout(300);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD06__);
     expect(snapshot?.remainingBoardCount).toBe(72);
     expect(snapshot?.trayCount).toBe(0);
     expect(snapshot?.timerStarted).toBe(false);
+    expect(snapshot?.storeOpenCallCount).toBe(0);
   });
 });

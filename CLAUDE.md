@@ -86,6 +86,7 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-05** - Timer, initial tutorial, and idle reminder.
-BUILD-05 adds the 30-second timer, first-interaction tutorial overlay, and idle
-hint guidance. Audio, CTA, end card, effects, and exporters remain out of scope.
+**BUILD-06** - CTA, end card, and store-open abstraction.
+BUILD-06 adds a gameplay CTA, basic win/fail end card, app metadata display,
+and network-agnostic store-open event recording. Unity/AppLovin exporters,
+final audio, final effects, and visual editor remain out of scope.

@@ -20,6 +20,18 @@
       "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Pointer/1768988491461.png."
     },
     {
+      "id": "App_Icon",
+      "type": "image",
+      "path": "./assets/images/app_icon.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/App icon/Icon_PyramidQuest.png."
+    },
+    {
+      "id": "App_Logo",
+      "type": "image",
+      "path": "./assets/images/logo.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Logo/Logo (1).png."
+    },
+    {
       "id": "Tile_01",
       "type": "image",
       "path": "./assets/images/tiles/tile_01.png",

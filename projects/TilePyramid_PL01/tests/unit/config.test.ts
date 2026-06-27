@@ -68,6 +68,39 @@ const VALID: Record<string, unknown> = {
     deterministicFallback: true,
   },
   debugTimerTutorialIdle: true,
+  app: {
+    name: 'Pyramid Quest',
+    fallbackUrl: 'https://example.com/pyramid-quest',
+    androidUrl: 'https://example.com/pyramid-quest/android',
+    iosUrl: 'https://example.com/pyramid-quest/ios',
+    storeOpenMode: 'record-only',
+    safeDevelopmentNavigation: true,
+    iconAssetId: 'App_Icon',
+    logoAssetId: 'App_Logo',
+  },
+  cta: {
+    enabled: true,
+    text: 'PLAY NOW',
+    position: { x: 540, y: 1775 },
+    size: { width: 420, height: 112 },
+    fontSize: 42,
+    textColor: '#ffffff',
+    backgroundColor: '#ff3f6e',
+    borderColor: '#fff4a8',
+    cornerRadius: 28,
+    visibleDuringGameplay: true,
+  },
+  endCard: {
+    enabled: true,
+    showOnWin: true,
+    showOnFail: true,
+    titleText: 'Pyramid Quest',
+    winMessage: 'Level Complete!',
+    failMessage: 'Try Again!',
+    fullScreenClick: true,
+    ctaText: 'PLAY NOW',
+  },
+  debugCtaEndCardStore: true,
 };
 
 describe('validateConfig', () => {
@@ -174,5 +207,23 @@ describe('validateConfig', () => {
     expect(() =>
       validateConfig({ ...VALID, idleHint: { ...(VALID['idleHint'] as object), delaySeconds: -1 } })
     ).toThrow(/idleHint.delaySeconds/);
+  });
+
+  it('throws when CTA size is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, cta: { ...(VALID['cta'] as object), size: { width: 0, height: 112 } } })
+    ).toThrow(/cta.size.width/);
+  });
+
+  it('throws when CTA position is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, cta: { ...(VALID['cta'] as object), position: { x: 'center', y: 1775 } } })
+    ).toThrow(/cta.position.x/);
+  });
+
+  it('throws when enabled end card text is missing', () => {
+    expect(() =>
+      validateConfig({ ...VALID, endCard: { ...(VALID['endCard'] as object), winMessage: ' ' } })
+    ).toThrow(/endCard.winMessage/);
   });
 });
