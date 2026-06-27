@@ -86,8 +86,8 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-07** - Asset optimization and production size control.
-BUILD-07 adds a rerunnable runtime image optimization pipeline, optimized WebP
-runtime assets, manifest updates, and production size measurement. Audio,
-effects, Unity/AppLovin exporters, network packaging, and visual editor remain
-out of scope.
+**BUILD-08** - Basic audio and visual feedback effects.
+BUILD-08 adds config-driven SFX, mobile audio unlock after first valid gameplay
+tap, lightweight feedback tweens, audio/effect diagnostics, and runtime audio
+size measurement. Unity/AppLovin exporters, MRAID integration, network
+packaging, final particle polish, and visual editor remain out of scope.

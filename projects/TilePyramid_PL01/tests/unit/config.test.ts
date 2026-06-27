@@ -101,6 +101,35 @@ const VALID: Record<string, unknown> = {
     ctaText: 'PLAY NOW',
   },
   debugCtaEndCardStore: true,
+  audio: {
+    enabled: true,
+    mutedByDefault: false,
+    unlockOnFirstValidTap: true,
+    sfxVolume: 0.65,
+    sfx: {
+      tileSelect: 'Sfx_TileSelect',
+      blockedTap: 'Sfx_BlockedTap',
+      match: 'Sfx_Match',
+      win: 'Sfx_Win',
+      fail: 'Sfx_Fail',
+      ctaClick: 'Sfx_CtaClick',
+    },
+    bgm: {
+      enabled: false,
+      assetId: '',
+      volume: 0,
+    },
+  },
+  effects: {
+    enabled: true,
+    tileSelectPop: { enabled: true, scale: 1.08, durationMs: 90 },
+    blockedShake: { enabled: true, distance: 10, durationMs: 48, repeats: 2, tint: '#ff5d73' },
+    matchResolve: { enabled: true, durationMs: 220, flashColor: '#ffd447' },
+    trayFullWarning: { enabled: true, durationMs: 90, alpha: 0.55 },
+    timerWarningPulse: { enabled: true, scale: 1.06, durationMs: 240 },
+    outcomePulse: { enabled: true, scale: 1.015, durationMs: 420 },
+  },
+  debugAudioEffects: true,
 };
 
 describe('validateConfig', () => {
@@ -225,5 +254,29 @@ describe('validateConfig', () => {
     expect(() =>
       validateConfig({ ...VALID, endCard: { ...(VALID['endCard'] as object), winMessage: ' ' } })
     ).toThrow(/endCard.winMessage/);
+  });
+
+  it('throws when audio SFX volume is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, audio: { ...(VALID['audio'] as object), sfxVolume: 2 } })
+    ).toThrow(/audio.sfxVolume/);
+  });
+
+  it('allows disabled BGM without an asset id', () => {
+    expect(() => validateConfig({ ...VALID })).not.toThrow();
+  });
+
+  it('throws when enabled BGM has no asset id', () => {
+    const audio = VALID['audio'] as Record<string, unknown>;
+    expect(() =>
+      validateConfig({ ...VALID, audio: { ...audio, bgm: { enabled: true, assetId: '', volume: 0.4 } } })
+    ).toThrow(/audio.bgm.assetId/);
+  });
+
+  it('throws when blocked shake repeats is invalid', () => {
+    const effects = VALID['effects'] as Record<string, unknown>;
+    expect(() =>
+      validateConfig({ ...VALID, effects: { ...effects, blockedShake: { enabled: true, distance: 10, durationMs: 48, repeats: -1, tint: '#ff5d73' } } })
+    ).toThrow(/blockedShake.repeats/);
   });
 });

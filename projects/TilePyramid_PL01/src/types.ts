@@ -33,6 +33,69 @@ export interface GameConfig {
   cta: CtaConfig;
   endCard: EndCardConfig;
   debugCtaEndCardStore: boolean;
+  audio: AudioConfig;
+  effects: EffectsConfig;
+  debugAudioEffects: boolean;
+}
+
+export interface AudioConfig {
+  enabled: boolean;
+  mutedByDefault: boolean;
+  unlockOnFirstValidTap: boolean;
+  sfxVolume: number;
+  sfx: AudioSfxConfig;
+  bgm: AudioBgmConfig;
+}
+
+export interface AudioSfxConfig {
+  tileSelect: string;
+  blockedTap: string;
+  match: string;
+  win: string;
+  fail: string;
+  ctaClick: string;
+}
+
+export interface AudioBgmConfig {
+  enabled: boolean;
+  assetId: string;
+  volume: number;
+}
+
+export interface EffectsConfig {
+  enabled: boolean;
+  tileSelectPop: EffectScaleConfig;
+  blockedShake: BlockedShakeEffectConfig;
+  matchResolve: MatchResolveEffectConfig;
+  trayFullWarning: TrayFullEffectConfig;
+  timerWarningPulse: EffectScaleConfig;
+  outcomePulse: EffectScaleConfig;
+}
+
+export interface EffectScaleConfig {
+  enabled: boolean;
+  scale: number;
+  durationMs: number;
+}
+
+export interface BlockedShakeEffectConfig {
+  enabled: boolean;
+  distance: number;
+  durationMs: number;
+  repeats: number;
+  tint: string;
+}
+
+export interface MatchResolveEffectConfig {
+  enabled: boolean;
+  durationMs: number;
+  flashColor: string;
+}
+
+export interface TrayFullEffectConfig {
+  enabled: boolean;
+  durationMs: number;
+  alpha: number;
 }
 
 export interface AppConfig {
@@ -137,6 +200,7 @@ declare global {
     __TILEPYRAMID_BUILD04__?: Readonly<Build04Snapshot>;
     __TILEPYRAMID_BUILD05__?: Readonly<Build05Snapshot>;
     __TILEPYRAMID_BUILD06__?: Readonly<Build06Snapshot>;
+    __TILEPYRAMID_BUILD08__?: Readonly<Build08Snapshot>;
   }
 }
 
@@ -217,4 +281,17 @@ export interface Build06Snapshot extends Build05Snapshot {
   lastStoreOpenSource: 'gameplay-cta' | 'end-card' | 'unknown' | null;
   lastStoreOpenUrl: string | null;
   storeOpenMode: 'record-only' | 'navigate';
+}
+
+export interface Build08Snapshot extends Build06Snapshot {
+  audioEnabled: boolean;
+  audioUnlocked: boolean;
+  audioMuted: boolean;
+  bgmEnabled: boolean;
+  bgmPlaying: boolean;
+  lastSfxPlayed: string | null;
+  audioErrorCount: number;
+  effectsEnabled: boolean;
+  lastEffectTriggered: string | null;
+  timerWarningVisualActive: boolean;
 }

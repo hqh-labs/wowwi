@@ -55,7 +55,7 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (144 tests)
+npm run test          # unit tests (164 tests)
 npm run test:smoke    # browser smoke tests (12 tests) - requires Chromium, builds first
 ```
 
@@ -88,8 +88,9 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-05**: Timer, initial tutorial, and idle reminder
 - **BUILD-06**: CTA, end card, and store-open abstraction
 - **BUILD-07**: Asset optimization and production size control
-- **BUILD-08**: Unity Ads adapter and export
-- **BUILD-09**: Visual editor (config-driven, reads same JSON as playable)
+- **BUILD-08**: Basic audio and visual feedback effects
+- **BUILD-09**: Unity Ads adapter and export
+- **BUILD-10**: Visual editor (config-driven, reads same JSON as playable)
 
 ## Documentation index
 

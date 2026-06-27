@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-07 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-08 implementation notes.
 
 ---
 
@@ -54,12 +54,12 @@ projects/TilePyramid_PL01/
 │   │   │   └── CtaSystem.ts
 │   │   ├── store/
 │   │   │   └── StoreOpenService.ts
-│   │   └── endcard/
-│   │       └── EndCardSystem.ts
-│   ├── effects/
-│   │   └── EffectSystem.ts
-│   ├── audio/
-│   │   └── AudioSystem.ts
+│   │   ├── endcard/
+│   │   │   └── EndCardSystem.ts
+│   │   ├── audio/
+│   │   │   └── AudioSystem.ts
+│   │   └── effects/
+│   │   │   └── EffectSystem.ts
 │   ├── cta/
 │   │   └── CTASystem.ts          ← Store-open abstraction; no SDK call here
 │   ├── adapters/                 ← Network-specific code
@@ -172,7 +172,7 @@ BUILD-07 established interface:
   per-asset before/after sizes.
 - `npm run measure:size` measures production `dist/` output after `npm run
   build`, including total bytes, JavaScript raw/gzip bytes, runtime image bytes,
-  per-asset deltas, and largest output files.
+  runtime audio bytes, per-asset deltas, and largest output files.
 - Optimized outputs are stable filenames so the asset manifest can reference
   them directly.
 
@@ -350,19 +350,30 @@ BUILD-05 established interface:
 ### Effect system (`EffectSystem.ts`)
 
 Responsibilities:
-- Receive effect requests by name (e.g. `"matchBurst"`, `"tileShatter"`).
-- Play the corresponding Phaser particle effect or CSS animation.
-- Re-implement the Unity shatter effect as a canvas particle sequence.
-- No effect system code is imported by gameplay logic — effects are triggered via events.
+- Track lightweight effect requests by name for diagnostics and renderer use.
+- Expose timer-warning visual state independently from timer rules.
+- Keep pure state independent from Phaser; `GameScene` owns the actual tweens.
+
+BUILD-08 established interface:
+- `createEffectState(enabled)` initializes diagnostics.
+- `requestEffect(state, effectName)` records the last requested effect when enabled.
+- `setTimerWarningVisual(state, active)` tracks warning-state visuals without mutating timer logic.
+- Runtime visuals include tile-select scale pop, blocked shake/tint, match tray flash/fade,
+  tray-full pulse, timer warning pulse, CTA click diagnostics, and outcome pulse.
 
 ### Audio system (`AudioSystem.ts`)
 
 Responsibilities:
-- Load and cache audio assets on preload.
-- Handle mobile audio unlock automatically (via Phaser's built-in mechanism).
-- Expose `play(soundName)`, `playBGM(trackName)`, `stopBGM()`.
-- Respect a mute flag.
-- No audio system code is imported by gameplay — audio is triggered via events.
+- Track enabled, muted, unlocked, BGM, last SFX, and playback error diagnostics.
+- Defer SFX requests until audio is enabled, unmuted, and unlocked by a valid gameplay gesture.
+- Keep pure state independent from Phaser; `PreloadScene` loads audio and `GameScene` plays it.
+
+BUILD-08 established interface:
+- `createAudioState({ enabled, mutedByDefault, bgmEnabled })` creates locked mobile-safe state.
+- `unlockAudio(state, allowed)` unlocks after the first valid selectable gameplay tap.
+- `requestSfx(state, assetId)` records the requested SFX only when playback is allowed.
+- `setAudioMuted`, `startBgm`, `stopBgm`, and `recordAudioError` support future UI/export needs.
+- BGM is intentionally disabled in BUILD-08 to keep production size controlled.
 
 ### CTA / store-opening abstraction (`CTASystem.ts`)
 

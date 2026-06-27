@@ -105,5 +105,60 @@
     "fullScreenClick": true,
     "ctaText": "PLAY NOW"
   },
-  "debugCtaEndCardStore": true
+  "debugCtaEndCardStore": true,
+  "audio": {
+    "enabled": true,
+    "mutedByDefault": false,
+    "unlockOnFirstValidTap": true,
+    "sfxVolume": 0.65,
+    "sfx": {
+      "tileSelect": "Sfx_TileSelect",
+      "blockedTap": "Sfx_BlockedTap",
+      "match": "Sfx_Match",
+      "win": "Sfx_Win",
+      "fail": "Sfx_Fail",
+      "ctaClick": "Sfx_CtaClick"
+    },
+    "bgm": {
+      "enabled": false,
+      "assetId": "",
+      "volume": 0
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "tileSelectPop": {
+      "enabled": true,
+      "scale": 1.08,
+      "durationMs": 90
+    },
+    "blockedShake": {
+      "enabled": true,
+      "distance": 10,
+      "durationMs": 48,
+      "repeats": 2,
+      "tint": "#ff5d73"
+    },
+    "matchResolve": {
+      "enabled": true,
+      "durationMs": 220,
+      "flashColor": "#ffd447"
+    },
+    "trayFullWarning": {
+      "enabled": true,
+      "durationMs": 90,
+      "alpha": 0.55
+    },
+    "timerWarningPulse": {
+      "enabled": true,
+      "scale": 1.06,
+      "durationMs": 240
+    },
+    "outcomePulse": {
+      "enabled": true,
+      "scale": 1.015,
+      "durationMs": 420
+    }
+  },
+  "debugAudioEffects": true
 }

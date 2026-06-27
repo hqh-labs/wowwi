@@ -25,6 +25,7 @@ const fileRows = await Promise.all(
 const jsRows = fileRows.filter(row => row.file.endsWith('.js'));
 const cssRows = fileRows.filter(row => row.file.endsWith('.css'));
 const imageRows = fileRows.filter(row => /\.(png|jpe?g|webp|gif|avif)$/i.test(row.file));
+const audioRows = fileRows.filter(row => /\.(mp3|ogg|wav|m4a)$/i.test(row.file));
 
 let jsGzipBytes = 0;
 for (const row of jsRows) {
@@ -49,6 +50,7 @@ for (const item of ASSET_PLAN) {
 
 const totalDistBytes = sum(fileRows);
 const imageBytes = sum(imageRows);
+const audioBytes = sum(audioRows);
 const jsBytes = sum(jsRows);
 const cssBytes = sum(cssRows);
 const optimizedSourceBytes = assetRows.reduce((total, row) => total + row.sourceBytes, 0);
@@ -61,6 +63,7 @@ console.table([
   { metric: 'javascript gzip bytes', value: jsGzipBytes },
   { metric: 'css bytes', value: cssBytes },
   { metric: 'runtime image bytes', value: imageBytes },
+  { metric: 'runtime audio bytes', value: audioBytes },
   { metric: 'BUILD-06 dist baseline bytes', value: BUILD_06_TOTAL_BASELINE_BYTES },
   { metric: 'BUILD-06 runtime image baseline bytes', value: BUILD_06_IMAGE_BASELINE_BYTES },
   { metric: 'dist bytes saved vs BUILD-06', value: BUILD_06_TOTAL_BASELINE_BYTES - totalDistBytes },

@@ -37,6 +37,9 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'cta',
   'endCard',
   'debugCtaEndCardStore',
+  'audio',
+  'effects',
+  'debugAudioEffects',
 ];
 
 export class ConfigValidationError extends Error {
@@ -144,6 +147,11 @@ export function validateConfig(data: unknown): GameConfig {
   validateEndCardConfig(obj['endCard']);
   if (typeof obj['debugCtaEndCardStore'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugCtaEndCardStore must be a boolean');
+  }
+  validateAudioConfig(obj['audio']);
+  validateEffectsConfig(obj['effects']);
+  if (typeof obj['debugAudioEffects'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugAudioEffects must be a boolean');
   }
 
   return data as GameConfig;
@@ -357,6 +365,147 @@ function validateEndCardConfig(value: unknown): void {
         throw new ConfigValidationError(`Config.endCard.${field} must be a non-empty string when enabled`);
       }
     }
+  }
+}
+
+function validateAudioConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.audio must be an object');
+  }
+  const audio = value as Record<string, unknown>;
+  for (const field of ['enabled', 'mutedByDefault', 'unlockOnFirstValidTap']) {
+    if (typeof audio[field] !== 'boolean') {
+      throw new ConfigValidationError(`Config.audio.${field} must be a boolean`);
+    }
+  }
+  if (
+    typeof audio['sfxVolume'] !== 'number' ||
+    !Number.isFinite(audio['sfxVolume']) ||
+    audio['sfxVolume'] < 0 ||
+    audio['sfxVolume'] > 1
+  ) {
+    throw new ConfigValidationError('Config.audio.sfxVolume must be between 0 and 1');
+  }
+  if (typeof audio['sfx'] !== 'object' || audio['sfx'] === null) {
+    throw new ConfigValidationError('Config.audio.sfx must be an object');
+  }
+  const sfx = audio['sfx'] as Record<string, unknown>;
+  for (const field of ['tileSelect', 'blockedTap', 'match', 'win', 'fail', 'ctaClick']) {
+    if (typeof sfx[field] !== 'string' || (sfx[field] as string).trim() === '') {
+      throw new ConfigValidationError(`Config.audio.sfx.${field} must be a non-empty string`);
+    }
+  }
+  if (typeof audio['bgm'] !== 'object' || audio['bgm'] === null) {
+    throw new ConfigValidationError('Config.audio.bgm must be an object');
+  }
+  const bgm = audio['bgm'] as Record<string, unknown>;
+  if (typeof bgm['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.audio.bgm.enabled must be a boolean');
+  }
+  if (bgm['enabled'] && (typeof bgm['assetId'] !== 'string' || (bgm['assetId'] as string).trim() === '')) {
+    throw new ConfigValidationError('Config.audio.bgm.assetId must be a non-empty string when enabled');
+  }
+  if (typeof bgm['assetId'] !== 'string') {
+    throw new ConfigValidationError('Config.audio.bgm.assetId must be a string');
+  }
+  if (
+    typeof bgm['volume'] !== 'number' ||
+    !Number.isFinite(bgm['volume']) ||
+    bgm['volume'] < 0 ||
+    bgm['volume'] > 1
+  ) {
+    throw new ConfigValidationError('Config.audio.bgm.volume must be between 0 and 1');
+  }
+}
+
+function validateEffectsConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects must be an object');
+  }
+  const effects = value as Record<string, unknown>;
+  if (typeof effects['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.enabled must be a boolean');
+  }
+  validateScaleEffect(effects['tileSelectPop'], 'Config.effects.tileSelectPop');
+  validateBlockedShakeEffect(effects['blockedShake']);
+  validateMatchResolveEffect(effects['matchResolve']);
+  validateTrayFullEffect(effects['trayFullWarning']);
+  validateScaleEffect(effects['timerWarningPulse'], 'Config.effects.timerWarningPulse');
+  validateScaleEffect(effects['outcomePulse'], 'Config.effects.outcomePulse');
+}
+
+function validateScaleEffect(value: unknown, label: string): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError(`${label} must be an object`);
+  }
+  const effect = value as Record<string, unknown>;
+  if (typeof effect['enabled'] !== 'boolean') {
+    throw new ConfigValidationError(`${label}.enabled must be a boolean`);
+  }
+  if (!isPositiveFiniteNumber(effect['scale'])) {
+    throw new ConfigValidationError(`${label}.scale must be a positive finite number`);
+  }
+  if (!isNonNegativeFiniteNumber(effect['durationMs'])) {
+    throw new ConfigValidationError(`${label}.durationMs must be a non-negative finite number`);
+  }
+}
+
+function validateBlockedShakeEffect(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects.blockedShake must be an object');
+  }
+  const effect = value as Record<string, unknown>;
+  if (typeof effect['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.blockedShake.enabled must be a boolean');
+  }
+  if (!isNonNegativeFiniteNumber(effect['distance'])) {
+    throw new ConfigValidationError('Config.effects.blockedShake.distance must be a non-negative finite number');
+  }
+  if (!isNonNegativeFiniteNumber(effect['durationMs'])) {
+    throw new ConfigValidationError('Config.effects.blockedShake.durationMs must be a non-negative finite number');
+  }
+  if (!Number.isInteger(effect['repeats']) || (effect['repeats'] as number) < 0) {
+    throw new ConfigValidationError('Config.effects.blockedShake.repeats must be a non-negative integer');
+  }
+  if (typeof effect['tint'] !== 'string' || effect['tint'].trim() === '') {
+    throw new ConfigValidationError('Config.effects.blockedShake.tint must be a non-empty string');
+  }
+}
+
+function validateMatchResolveEffect(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects.matchResolve must be an object');
+  }
+  const effect = value as Record<string, unknown>;
+  if (typeof effect['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.matchResolve.enabled must be a boolean');
+  }
+  if (!isNonNegativeFiniteNumber(effect['durationMs'])) {
+    throw new ConfigValidationError('Config.effects.matchResolve.durationMs must be a non-negative finite number');
+  }
+  if (typeof effect['flashColor'] !== 'string' || effect['flashColor'].trim() === '') {
+    throw new ConfigValidationError('Config.effects.matchResolve.flashColor must be a non-empty string');
+  }
+}
+
+function validateTrayFullEffect(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects.trayFullWarning must be an object');
+  }
+  const effect = value as Record<string, unknown>;
+  if (typeof effect['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.trayFullWarning.enabled must be a boolean');
+  }
+  if (!isNonNegativeFiniteNumber(effect['durationMs'])) {
+    throw new ConfigValidationError('Config.effects.trayFullWarning.durationMs must be a non-negative finite number');
+  }
+  if (
+    typeof effect['alpha'] !== 'number' ||
+    !Number.isFinite(effect['alpha']) ||
+    effect['alpha'] < 0 ||
+    effect['alpha'] > 1
+  ) {
+    throw new ConfigValidationError('Config.effects.trayFullWarning.alpha must be between 0 and 1');
   }
 }
 

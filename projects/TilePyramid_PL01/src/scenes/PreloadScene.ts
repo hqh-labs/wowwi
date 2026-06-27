@@ -43,6 +43,23 @@ export class PreloadScene extends Phaser.Scene {
       }
       this.load.image(assetId, asset.path);
     }
+
+    if (config.audio.enabled) {
+      for (const assetId of Object.values(config.audio.sfx)) {
+        const asset = resolveAsset(manifest, assetId);
+        if (!asset || asset.type !== 'audio') {
+          throw new Error(`Missing SFX audio asset in manifest: ${assetId}`);
+        }
+        this.load.audio(assetId, asset.path);
+      }
+      if (config.audio.bgm.enabled) {
+        const bgmAsset = resolveAsset(manifest, config.audio.bgm.assetId);
+        if (!bgmAsset || bgmAsset.type !== 'audio') {
+          throw new Error(`Missing BGM audio asset in manifest: ${config.audio.bgm.assetId}`);
+        }
+        this.load.audio(config.audio.bgm.assetId, bgmAsset.path);
+      }
+    }
   }
 
   create(): void {

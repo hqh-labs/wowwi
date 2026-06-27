@@ -1,4 +1,11 @@
 import Phaser from 'phaser';
+import {
+  createAudioState,
+  recordAudioError,
+  requestSfx,
+  unlockAudio,
+  type AudioState,
+} from '../gameplay/audio/AudioSystem';
 import { calculateBoardLayout, type BoardLayoutResult } from '../gameplay/board/BoardLayout';
 import { createBoardTiles } from '../gameplay/board/BlockingSystem';
 import {
@@ -13,6 +20,13 @@ import {
   updateEndCardForOutcome,
   type EndCardState,
 } from '../gameplay/endcard/EndCardSystem';
+import {
+  createEffectState,
+  requestEffect,
+  setTimerWarningVisual,
+  type EffectName,
+  type EffectState,
+} from '../gameplay/effects/EffectSystem';
 import {
   createIdleHintState,
   resetIdleHint,
@@ -57,7 +71,7 @@ import {
 } from '../gameplay/tray/TraySystem';
 import { resolveAsset } from '../manifest/AssetManifest';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
-import type { AssetManifestData, Build06Snapshot, GameConfig, GameOutcomeState } from '../types';
+import type { AssetManifestData, Build08Snapshot, GameConfig, GameOutcomeState } from '../types';
 
 const TILE_SOURCE_SIZE = { width: 132, height: 144 };
 const BOARD_DEPTH = 1000;
@@ -91,7 +105,9 @@ export class GameScene extends Phaser.Scene {
   private endCardState!: EndCardState;
   private storeOpenService!: StoreOpenService;
   private storeOpenState!: StoreOpenState;
-  private snapshot!: Build06Snapshot;
+  private audioState!: AudioState;
+  private effectState!: EffectState;
+  private snapshot!: Build08Snapshot;
   private timerText?: Phaser.GameObjects.Text;
   private ctaObjects: Phaser.GameObjects.GameObject[] = [];
   private tutorialObjects: Phaser.GameObjects.GameObject[] = [];
@@ -160,6 +176,12 @@ export class GameScene extends Phaser.Scene {
     this.idleHintState = createIdleHintState(config.idleHint.enabled, config.idleHint.delaySeconds);
     this.ctaState = createCtaState(config.cta.enabled, config.cta.visibleDuringGameplay);
     this.endCardState = createEndCardState(config.endCard.enabled);
+    this.audioState = createAudioState({
+      enabled: config.audio.enabled,
+      mutedByDefault: config.audio.mutedByDefault,
+      bgmEnabled: config.audio.bgm.enabled,
+    });
+    this.effectState = createEffectState(config.effects.enabled);
     this.storeOpenService = new StoreOpenService({
       fallbackUrl: config.app.fallbackUrl,
       androidUrl: config.app.androidUrl,
@@ -179,17 +201,26 @@ export class GameScene extends Phaser.Scene {
       nextTimer.remainingSeconds !== this.timerState.remainingSeconds ||
       nextTimer.expired !== this.timerState.expired ||
       nextTimer.warningActive !== this.timerState.warningActive;
+    const warningBecameActive = !this.timerState.warningActive && nextTimer.warningActive;
     this.timerState = nextTimer;
+    this.effectState = setTimerWarningVisual(this.effectState, this.timerState.warningActive);
+    if (warningBecameActive && config.effects.timerWarningPulse.enabled) {
+      this.triggerEffect('timer-warning-pulse');
+    }
 
     if (this.timerState.expired && this.gameState === 'playing') {
       this.gameState = 'failed';
       this.selectionState = { inputLocked: true };
+      this.playSfx(config, config.audio.sfx.fail);
+      this.triggerEffect('outcome-pulse');
+      this.pulseOutcomeVisual(config);
       this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
       this.idleHintState = resetIdleHint(this.idleHintState);
       this.updateEndCardState(config);
       this.renderTutorial(config);
       this.renderIdleHint(config);
       this.renderEndCard(config);
+      this.pulseOutcomeVisual(config);
     }
 
     const targetTileId = selectIdleHintTarget({
@@ -280,14 +311,24 @@ export class GameScene extends Phaser.Scene {
         'blocked',
         config.tutorial.dismissOnFirstValidTap
       );
-      if (attempt.reason === 'blocked') this.showBlockedFeedback(config, tileId);
-      if (attempt.reason === 'tray-full') this.showTrayFullFeedback();
+      this.playSfx(config, config.audio.sfx.blockedTap);
+      if (attempt.reason === 'blocked') {
+        this.triggerEffect('blocked-shake');
+        this.showBlockedFeedback(config, tileId);
+      }
+      if (attempt.reason === 'tray-full') {
+        this.triggerEffect('tray-full-warning');
+        this.showTrayFullFeedback(config);
+      }
       this.renderTutorial(config);
       this.publishSnapshot(config);
       this.updateDebugText(config);
       return;
     }
 
+    this.unlockAudioForGameplay(config);
+    this.playSfx(config, config.audio.sfx.tileSelect);
+    this.triggerEffect('tile-select-pop');
     this.timerState = registerTimerInteraction(
       this.timerState,
       'valid-selectable',
@@ -321,6 +362,9 @@ export class GameScene extends Phaser.Scene {
 
     sprite.disableInteractive();
     sprite.setDepth(TRAY_DEPTH + 100);
+    if (config.effects.enabled && config.effects.tileSelectPop.enabled) {
+      sprite.setScale(config.boardLayout.tileScale * config.effects.tileSelectPop.scale);
+    }
 
     this.tweens.add({
       targets: sprite,
@@ -360,7 +404,10 @@ export class GameScene extends Phaser.Scene {
     this.resolvingGroup = group;
     this.lastMatchedTileType = group.tileTypeId;
     this.selectionState = { inputLocked: config.inputLockDuringMatchResolution };
+    this.playSfx(config, config.audio.sfx.match);
+    this.triggerEffect('match-resolve');
     this.renderTray(config);
+    this.showMatchResolveFlash(config);
     this.publishSnapshot(config);
     this.updateDebugText(config);
 
@@ -397,12 +444,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateOutcome(config: GameConfig): void {
+    const previousState = this.gameState;
     const evaluatedState = evaluateOutcome({
       board: this.boardState,
       tray: this.trayState,
       matchResolving: this.resolvingGroup !== undefined,
     });
     this.gameState = this.timerState.expired ? 'failed' : evaluatedState;
+    if (previousState === 'playing' && this.gameState === 'won') {
+      this.playSfx(config, config.audio.sfx.win);
+      this.triggerEffect('outcome-pulse');
+    } else if (previousState === 'playing' && this.gameState === 'failed') {
+      this.playSfx(config, config.audio.sfx.fail);
+      this.triggerEffect('outcome-pulse');
+    }
     if (this.gameState !== 'playing') {
       this.selectionState = { inputLocked: true };
       this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
@@ -411,6 +466,7 @@ export class GameScene extends Phaser.Scene {
       this.renderTutorial(config);
       this.renderIdleHint(config);
       this.renderEndCard(config);
+      this.pulseOutcomeVisual(config);
     }
     this.publishSnapshot(config);
   }
@@ -500,12 +556,19 @@ export class GameScene extends Phaser.Scene {
 
   private showBlockedFeedback(config: GameConfig, tileId: string): void {
     const sprite = this.boardSprites.get(tileId);
-    if (!sprite || config.blockedTileFeedback === 'none') return;
+    if (
+      !sprite ||
+      config.blockedTileFeedback === 'none' ||
+      !config.effects.enabled ||
+      !config.effects.blockedShake.enabled
+    ) {
+      return;
+    }
 
     if (config.blockedTileFeedback === 'tint') {
       const originalTint = sprite.tintTopLeft;
-      sprite.setTint(0xff5d73);
-      this.time.delayedCall(150, () => {
+      sprite.setTint(colorFromHex(config.effects.blockedShake.tint));
+      this.time.delayedCall(config.effects.blockedShake.durationMs * (config.effects.blockedShake.repeats + 1), () => {
         if (sprite.active) {
           sprite.setTint(originalTint);
           this.updateBoardVisualStates(config);
@@ -517,23 +580,27 @@ export class GameScene extends Phaser.Scene {
     const originalX = sprite.x;
     this.tweens.add({
       targets: sprite,
-      x: { from: originalX - 10, to: originalX + 10 },
-      duration: 48,
+      x: {
+        from: originalX - config.effects.blockedShake.distance,
+        to: originalX + config.effects.blockedShake.distance,
+      },
+      duration: config.effects.blockedShake.durationMs,
       yoyo: true,
-      repeat: 2,
+      repeat: config.effects.blockedShake.repeats,
       onComplete: () => {
         if (sprite.active) sprite.setX(originalX);
       },
     });
   }
 
-  private showTrayFullFeedback(): void {
+  private showTrayFullFeedback(config: GameConfig): void {
+    if (!config.effects.enabled || !config.effects.trayFullWarning.enabled) return;
     const background = this.trayObjects.find(object => object.name === 'build04-tray-background');
     if (!background) return;
     this.tweens.add({
       targets: background,
-      alpha: { from: 1, to: 0.55 },
-      duration: 90,
+      alpha: { from: 1, to: config.effects.trayFullWarning.alpha },
+      duration: config.effects.trayFullWarning.durationMs,
       yoyo: true,
       repeat: 2,
     });
@@ -579,6 +646,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleGameplayCtaClick(config: GameConfig): void {
+    this.playSfx(config, config.audio.sfx.ctaClick);
+    this.triggerEffect('cta-click');
     this.ctaState = recordCtaClick(this.ctaState);
     this.storeOpenState = this.storeOpenService.openStore('gameplay-cta');
     this.publishSnapshot(config);
@@ -682,6 +751,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleEndCardClick(config: GameConfig): void {
+    this.playSfx(config, config.audio.sfx.ctaClick);
+    this.triggerEffect('cta-click');
     this.endCardState = recordEndCardClick(this.endCardState);
     this.storeOpenState = this.storeOpenService.openStore('end-card');
     this.publishSnapshot(config);
@@ -866,6 +937,67 @@ export class GameScene extends Phaser.Scene {
     this.tutorialHand = undefined;
   }
 
+  private unlockAudioForGameplay(config: GameConfig): void {
+    this.audioState = unlockAudio(this.audioState, config.audio.unlockOnFirstValidTap);
+  }
+
+  private playSfx(config: GameConfig, assetId: string): void {
+    const beforeCount = this.audioState.requestedSfx.length;
+    this.audioState = requestSfx(this.audioState, assetId);
+    if (this.audioState.requestedSfx.length === beforeCount) return;
+
+    try {
+      this.sound.play(assetId, { volume: config.audio.sfxVolume });
+    } catch {
+      this.audioState = recordAudioError(this.audioState);
+    }
+  }
+
+  private triggerEffect(effectName: EffectName): void {
+    this.effectState = requestEffect(this.effectState, effectName);
+  }
+
+  private showMatchResolveFlash(config: GameConfig): void {
+    if (!config.effects.enabled || !config.effects.matchResolve.enabled) return;
+
+    const layout = calculateTrayLayout(this.trayState, config.trayLayout);
+    const flash = this.add
+      .rectangle(
+        layout.bounds.left + layout.bounds.width / 2,
+        layout.bounds.top + layout.bounds.height / 2,
+        layout.bounds.width + 56,
+        layout.bounds.height + 48,
+        colorFromHex(config.effects.matchResolve.flashColor),
+        0.2
+      )
+      .setDepth(TRAY_DEPTH + 18)
+      .setName('build08-match-flash');
+
+    this.tweens.add({
+      targets: flash,
+      alpha: 0,
+      scale: 1.08,
+      duration: config.effects.matchResolve.durationMs,
+      ease: 'Cubic.easeOut',
+      onComplete: () => flash.destroy(),
+    });
+  }
+
+  private pulseOutcomeVisual(config: GameConfig): void {
+    if (!config.effects.enabled || !config.effects.outcomePulse.enabled) return;
+
+    const targets = this.endCardObjects.filter(object => object.active);
+    if (targets.length === 0) return;
+
+    this.tweens.add({
+      targets,
+      scale: config.effects.outcomePulse.scale,
+      duration: config.effects.outcomePulse.durationMs,
+      yoyo: true,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
   private createDebugOverlay(config: GameConfig): void {
     const W = config.designWidth;
     const H = config.designHeight;
@@ -932,8 +1064,12 @@ export class GameScene extends Phaser.Scene {
       `End card clicks: ${snapshot.endCardClickCount}`,
       `Store opens: ${snapshot.storeOpenCallCount}`,
       `Last store source: ${snapshot.lastStoreOpenSource ?? 'none'}`,
+      `Audio: ${snapshot.audioEnabled ? (snapshot.audioMuted ? 'muted' : 'on') : 'off'} unlocked=${snapshot.audioUnlocked}`,
+      `Last SFX: ${snapshot.lastSfxPlayed ?? 'none'}`,
+      `Effects: ${snapshot.effectsEnabled ? 'on' : 'off'} last=${snapshot.lastEffectTriggered ?? 'none'}`,
+      `Timer warning visual: ${snapshot.timerWarningVisualActive}`,
       `Formal solvability: ${snapshot.formalSolvability}`,
-      'BUILD-06 CTA/end-card/store-open',
+      'BUILD-08 audio/effects',
     ].join('\n');
   }
 
@@ -964,13 +1100,16 @@ export class GameScene extends Phaser.Scene {
       Boolean(this.tutorialHand?.active),
       this.ctaState,
       this.endCardState,
-      this.storeOpenState
+      this.storeOpenState,
+      this.audioState,
+      this.effectState
     );
     window.__TILEPYRAMID_BUILD02__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD03__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD04__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD05__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD06__ = Object.freeze(this.snapshot);
+    window.__TILEPYRAMID_BUILD08__ = Object.freeze(this.snapshot);
   }
 
   shutdown(): void {
@@ -1003,8 +1142,10 @@ function createSnapshot(
   tutorialHandVisible: boolean,
   cta: CtaState,
   endCard: EndCardState,
-  storeOpen: StoreOpenState
-): Build06Snapshot {
+  storeOpen: StoreOpenState,
+  audio: AudioState,
+  effects: EffectState
+): Build08Snapshot {
   const layoutById = new Map(boardLayout.tiles.map(tile => [tile.id, tile]));
 
   return {
@@ -1079,6 +1220,16 @@ function createSnapshot(
     lastStoreOpenSource: storeOpen.lastSource,
     lastStoreOpenUrl: storeOpen.lastUrl,
     storeOpenMode: storeOpen.mode,
+    audioEnabled: audio.enabled,
+    audioUnlocked: audio.unlocked,
+    audioMuted: audio.muted,
+    bgmEnabled: audio.bgmEnabled,
+    bgmPlaying: audio.bgmPlaying,
+    lastSfxPlayed: audio.lastSfxPlayed,
+    audioErrorCount: audio.errorCount,
+    effectsEnabled: effects.enabled,
+    lastEffectTriggered: effects.lastEffectTriggered,
+    timerWarningVisualActive: effects.timerWarningVisualActive,
   };
 }
 
