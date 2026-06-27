@@ -40,6 +40,11 @@ const VALID: Record<string, unknown> = {
   inputLockEnabled: true,
   blockedTileFeedback: 'shake',
   debugMatchReadyMarker: true,
+  matchResolutionDelayMs: 180,
+  matchResolutionDurationMs: 220,
+  matchResolvingVisual: 'scale-fade',
+  inputLockDuringMatchResolution: true,
+  debugOutcomeLabel: true,
 };
 
 describe('validateConfig', () => {
@@ -116,5 +121,17 @@ describe('validateConfig', () => {
     expect(() =>
       validateConfig({ ...VALID, trayLayout: { ...(VALID['trayLayout'] as object), slotWidth: -1 } })
     ).toThrow(/slotWidth/);
+  });
+
+  it('throws when match resolution duration is invalid', () => {
+    expect(() => validateConfig({ ...VALID, matchResolutionDurationMs: -1 })).toThrow(
+      /matchResolutionDurationMs/
+    );
+  });
+
+  it('throws when match resolving visual is invalid', () => {
+    expect(() => validateConfig({ ...VALID, matchResolvingVisual: 'sparkle' })).toThrow(
+      /matchResolvingVisual/
+    );
   });
 });

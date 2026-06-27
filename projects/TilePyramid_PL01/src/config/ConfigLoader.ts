@@ -24,6 +24,11 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'inputLockEnabled',
   'blockedTileFeedback',
   'debugMatchReadyMarker',
+  'matchResolutionDelayMs',
+  'matchResolutionDurationMs',
+  'matchResolvingVisual',
+  'inputLockDuringMatchResolution',
+  'debugOutcomeLabel',
 ];
 
 export class ConfigValidationError extends Error {
@@ -105,8 +110,27 @@ export function validateConfig(data: unknown): GameConfig {
   if (typeof obj['debugMatchReadyMarker'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugMatchReadyMarker must be a boolean');
   }
+  if (!isNonNegativeFiniteNumber(obj['matchResolutionDelayMs'])) {
+    throw new ConfigValidationError('Config.matchResolutionDelayMs must be a non-negative finite number');
+  }
+  if (!isNonNegativeFiniteNumber(obj['matchResolutionDurationMs'])) {
+    throw new ConfigValidationError('Config.matchResolutionDurationMs must be a non-negative finite number');
+  }
+  if (!['scale-fade', 'none'].includes(obj['matchResolvingVisual'] as string)) {
+    throw new ConfigValidationError('Config.matchResolvingVisual must be scale-fade or none');
+  }
+  if (typeof obj['inputLockDuringMatchResolution'] !== 'boolean') {
+    throw new ConfigValidationError('Config.inputLockDuringMatchResolution must be a boolean');
+  }
+  if (typeof obj['debugOutcomeLabel'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugOutcomeLabel must be a boolean');
+  }
 
   return data as GameConfig;
+}
+
+function isNonNegativeFiniteNumber(value: unknown): boolean {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
 function validateBoardLayout(value: unknown): void {

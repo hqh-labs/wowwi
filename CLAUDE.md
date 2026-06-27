@@ -86,7 +86,7 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-03** - Tray, tile selection, and fly-to-tray interaction.
-BUILD-03 allows selectable tiles to move into the tray and leave the board.
-Match-three removal, timer, tutorial, audio, CTA, end card, effects, and
-exporters remain out of scope.
+**BUILD-04** - Match-three resolution, tray compaction, and basic win/fail rules.
+BUILD-04 resolves groups of three in the tray and adds basic playing/won/failed
+state. Timer, tutorial, audio, CTA, end card, effects, and exporters remain out
+of scope.

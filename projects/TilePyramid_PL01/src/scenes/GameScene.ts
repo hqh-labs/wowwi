@@ -6,6 +6,7 @@ import {
   type BoardRuntimeState,
 } from '../gameplay/board/BoardRuntimeState';
 import { assignTileTypes, validateTriplets } from '../gameplay/board/TileAssigner';
+import { evaluateOutcome } from '../gameplay/outcome/OutcomeEvaluator';
 import {
   attemptTileSelection,
   completeTileSelection,
@@ -14,6 +15,11 @@ import {
 } from '../gameplay/selection/SelectionController';
 import { parseLevelData } from '../gameplay/level/LevelParser';
 import type { BoardTile } from '../gameplay/level/LevelTypes';
+import {
+  findNextMatchGroup,
+  removeMatchGroup,
+  type MatchGroup,
+} from '../gameplay/tray/MatchResolver';
 import { calculateTrayLayout, type TrayLayoutResult } from '../gameplay/tray/TrayLayout';
 import {
   createTrayState,
@@ -23,7 +29,7 @@ import {
 } from '../gameplay/tray/TraySystem';
 import { resolveAsset } from '../manifest/AssetManifest';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
-import type { AssetManifestData, Build03Snapshot, GameConfig } from '../types';
+import type { AssetManifestData, Build04Snapshot, GameConfig, GameOutcomeState } from '../types';
 
 const TILE_SOURCE_SIZE = { width: 132, height: 144 };
 const BOARD_DEPTH = 1000;
@@ -41,8 +47,12 @@ export class GameScene extends Phaser.Scene {
   private layerCount = 0;
   private boardSprites = new Map<string, Phaser.GameObjects.Image>();
   private previewMarkers = new Map<string, Phaser.GameObjects.Rectangle>();
+  private trayTileSprites = new Map<string, Phaser.GameObjects.Image>();
   private trayObjects: Phaser.GameObjects.GameObject[] = [];
-  private snapshot!: Build03Snapshot;
+  private resolvingGroup?: MatchGroup;
+  private lastMatchedTileType: number | null = null;
+  private gameState: GameOutcomeState = 'playing';
+  private snapshot!: Build04Snapshot;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -90,6 +100,7 @@ export class GameScene extends Phaser.Scene {
     this.boardState = createBoardRuntimeState(initialBoard.tiles);
     this.trayState = createTrayState(config.trayCapacity);
     this.selectionState = createSelectionState();
+    this.gameState = 'playing';
   }
 
   private renderBoard(config: GameConfig): void {
@@ -103,7 +114,7 @@ export class GameScene extends Phaser.Scene {
 
       const sprite = this.add
         .image(tileLayout.screenX, tileLayout.screenY, tile.assetId)
-        .setName('build03-board-tile-sprite')
+        .setName('build04-board-tile-sprite')
         .setDepth(BOARD_DEPTH + tileLayout.depth)
         .setScale(config.boardLayout.tileScale)
         .setInteractive({ useHandCursor: true });
@@ -130,6 +141,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleTileTap(config: GameConfig, tileId: string): void {
+    if (this.gameState !== 'playing') {
+      this.publishSnapshot(config);
+      this.updateDebugText(config);
+      return;
+    }
+
     const attempt = attemptTileSelection(
       this.boardState,
       this.trayState,
@@ -189,8 +206,67 @@ export class GameScene extends Phaser.Scene {
 
     this.updateBoardVisualStates(config);
     this.renderTray(config);
+
+    const matchGroup = findNextMatchGroup(this.trayState);
+    if (matchGroup) {
+      this.startMatchResolution(config, matchGroup);
+      return;
+    }
+
+    this.updateOutcome(config);
+    this.updateDebugText(config);
+  }
+
+  private startMatchResolution(config: GameConfig, group: MatchGroup): void {
+    this.resolvingGroup = group;
+    this.lastMatchedTileType = group.tileTypeId;
+    this.selectionState = { inputLocked: config.inputLockDuringMatchResolution };
+    this.renderTray(config);
     this.publishSnapshot(config);
     this.updateDebugText(config);
+
+    this.time.delayedCall(config.matchResolutionDelayMs, () => {
+      const targets = group.sourceTileIds
+        .map(sourceTileId => this.trayTileSprites.get(sourceTileId))
+        .filter((sprite): sprite is Phaser.GameObjects.Image => Boolean(sprite?.active));
+
+      const complete = () => this.finishMatchResolution(config, group);
+
+      if (config.matchResolvingVisual === 'none' || targets.length === 0 || config.matchResolutionDurationMs === 0) {
+        complete();
+        return;
+      }
+
+      this.tweens.add({
+        targets,
+        scale: config.trayLayout.tileScale * 0.25,
+        alpha: 0,
+        duration: config.matchResolutionDurationMs,
+        ease: 'Cubic.easeIn',
+        onComplete: complete,
+      });
+    });
+  }
+
+  private finishMatchResolution(config: GameConfig, group: MatchGroup): void {
+    this.trayState = removeMatchGroup(this.trayState, group);
+    this.resolvingGroup = undefined;
+    this.selectionState = { inputLocked: false };
+    this.renderTray(config);
+    this.updateOutcome(config);
+    this.updateDebugText(config);
+  }
+
+  private updateOutcome(config: GameConfig): void {
+    this.gameState = evaluateOutcome({
+      board: this.boardState,
+      tray: this.trayState,
+      matchResolving: this.resolvingGroup !== undefined,
+    });
+    if (this.gameState !== 'playing') {
+      this.selectionState = { inputLocked: true };
+    }
+    this.publishSnapshot(config);
   }
 
   private updateBoardVisualStates(config: GameConfig): void {
@@ -220,9 +296,11 @@ export class GameScene extends Phaser.Scene {
   private renderTray(config: GameConfig): void {
     for (const object of this.trayObjects) object.destroy();
     this.trayObjects = [];
+    this.trayTileSprites.clear();
 
     const layout = calculateTrayLayout(this.trayState, config.trayLayout);
     const matchReadyTypes = new Set(getMatchReadyTileTypes(this.trayState));
+    const resolvingIds = new Set(this.resolvingGroup?.sourceTileIds ?? []);
 
     const background = this.add
       .rectangle(
@@ -235,7 +313,7 @@ export class GameScene extends Phaser.Scene {
       )
       .setStrokeStyle(4, 0x7fd7ff, isTrayFull(this.trayState) ? 0.95 : 0.45)
       .setDepth(TRAY_DEPTH - 10)
-      .setName('build03-tray-background');
+      .setName('build04-tray-background');
     this.trayObjects.push(background);
 
     for (const slot of layout.slots) {
@@ -243,7 +321,7 @@ export class GameScene extends Phaser.Scene {
         .rectangle(slot.screenX, slot.screenY, slot.width, slot.height, 0x0d1224, 0.78)
         .setStrokeStyle(4, 0xe7f7ff, 0.58)
         .setDepth(TRAY_DEPTH)
-        .setName('build03-tray-slot');
+        .setName('build04-tray-slot');
       slotObject.setData('slotIndex', slot.slotIndex);
       this.trayObjects.push(slotObject);
     }
@@ -253,17 +331,22 @@ export class GameScene extends Phaser.Scene {
         .image(tile.screenX, tile.screenY, tile.assetId)
         .setScale(config.trayLayout.tileScale)
         .setDepth(TRAY_DEPTH + 20 + tile.slotIndex)
-        .setName('build03-tray-tile');
+        .setName('build04-tray-tile');
       sprite.setData('sourceTileId', tile.sourceTileId);
       sprite.setData('tileTypeId', tile.tileTypeId);
+      this.trayTileSprites.set(tile.sourceTileId, sprite);
       this.trayObjects.push(sprite);
+
+      if (resolvingIds.has(tile.sourceTileId)) {
+        sprite.setTint(0xffd447).setAlpha(0.85);
+      }
 
       if (this.debugEnabled && config.debugMatchReadyMarker && matchReadyTypes.has(tile.tileTypeId)) {
         const marker = this.add
           .rectangle(tile.screenX, tile.screenY, tile.width + 8, tile.height + 8)
-          .setStrokeStyle(5, 0xffd447, 0.95)
+          .setStrokeStyle(5, resolvingIds.has(tile.sourceTileId) ? 0xff7a45 : 0xffd447, 0.95)
           .setDepth(TRAY_DEPTH + 19 + tile.slotIndex)
-          .setName('build03-match-ready-marker');
+          .setName('build04-match-ready-marker');
         this.trayObjects.push(marker);
       }
     }
@@ -299,7 +382,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showTrayFullFeedback(): void {
-    const background = this.trayObjects.find(object => object.name === 'build03-tray-background');
+    const background = this.trayObjects.find(object => object.name === 'build04-tray-background');
     if (!background) return;
     this.tweens.add({
       targets: background,
@@ -332,7 +415,7 @@ export class GameScene extends Phaser.Scene {
     this.debugText = this.add
       .text(32, 32, this.getDebugLines(config), {
         color: '#00ff88',
-        fontSize: '27px',
+        fontSize: '26px',
         fontFamily: 'monospace',
         align: 'left',
         backgroundColor: '#00000099',
@@ -361,9 +444,11 @@ export class GameScene extends Phaser.Scene {
       `Blocked: ${snapshot.blockedCount}`,
       `Input locked: ${snapshot.inputLocked}`,
       `Tray full: ${snapshot.trayFull}`,
-      `Triplets: ${snapshot.tripletValidation}`,
+      `Match resolving: ${snapshot.matchResolving}`,
+      `Last matched: ${snapshot.lastMatchedTileType ?? 'none'}`,
+      `Game state: ${snapshot.gameState}`,
       `Formal solvability: ${snapshot.formalSolvability}`,
-      'BUILD-03 tray',
+      'BUILD-04 match',
     ].join('\n');
   }
 
@@ -384,10 +469,14 @@ export class GameScene extends Phaser.Scene {
       boardLayout,
       trayLayout,
       this.tripletsValid,
-      this.layerCount
+      this.layerCount,
+      this.resolvingGroup,
+      this.lastMatchedTileType,
+      this.gameState
     );
     window.__TILEPYRAMID_BUILD02__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD03__ = Object.freeze(this.snapshot);
+    window.__TILEPYRAMID_BUILD04__ = Object.freeze(this.snapshot);
   }
 
   shutdown(): void {
@@ -403,8 +492,11 @@ function createSnapshot(
   boardLayout: BoardLayoutResult,
   trayLayout: TrayLayoutResult,
   tripletsValid: boolean,
-  layerCount: number
-): Build03Snapshot {
+  layerCount: number,
+  resolvingGroup: MatchGroup | undefined,
+  lastMatchedTileType: number | null,
+  gameState: GameOutcomeState
+): Build04Snapshot {
   const layoutById = new Map(boardLayout.tiles.map(tile => [tile.id, tile]));
 
   return {
@@ -453,5 +545,10 @@ function createSnapshot(
       screenX: tile.screenX,
       screenY: tile.screenY,
     })),
+    matchResolving: resolvingGroup !== undefined,
+    lastMatchedTileType,
+    gameState,
+    resolvingTileIds: [...(resolvingGroup?.sourceTileIds ?? [])],
   };
 }
+

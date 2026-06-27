@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-03 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-04 implementation notes.
 
 ---
 
@@ -200,6 +200,13 @@ BUILD-03 established interface:
 - `getMatchReadyTileTypes(state)` identifies three-or-more same-type tray groups
   for debug marking only. It does not remove matches in BUILD-03.
 
+BUILD-04 established interface:
+- `findNextMatchGroup(tray)` detects the next same-type group of three. If more
+  than three of a type exist, only the first group of three is resolved.
+- `removeMatchGroup(tray, group)` removes the matched tiles and leaves remaining
+  tray tiles compacted in stable order.
+- Match resolution locks input while the non-final scale/fade animation runs.
+
 ### Selection controller (`SelectionController.ts`)
 
 BUILD-03 established interface:
@@ -210,6 +217,16 @@ BUILD-03 established interface:
   unlocks input.
 - `GameScene` coordinates Phaser rendering and animation; selection and tray
   insertion rules remain pure and testable without Phaser.
+
+### Outcome evaluator (`OutcomeEvaluator.ts`)
+
+BUILD-04 established interface:
+- `evaluateOutcome({ board, tray, matchResolving })` returns `playing`, `won`,
+  or `failed`.
+- Win is conservative: board empty and no match resolution pending. Leftover tray
+  tiles are allowed if the board is empty.
+- Fail occurs only when the tray is full, no match resolution is pending, and no
+  pending group of three exists.
 
 ### Tutorial system (`TutorialSystem.ts`)
 

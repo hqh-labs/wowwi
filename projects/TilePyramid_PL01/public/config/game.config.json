@@ -40,5 +40,10 @@
   "tileFlyDurationMs": 360,
   "inputLockEnabled": true,
   "blockedTileFeedback": "shake",
-  "debugMatchReadyMarker": true
+  "debugMatchReadyMarker": true,
+  "matchResolutionDelayMs": 180,
+  "matchResolutionDurationMs": 220,
+  "matchResolvingVisual": "scale-fade",
+  "inputLockDuringMatchResolution": true,
+  "debugOutcomeLabel": true
 }

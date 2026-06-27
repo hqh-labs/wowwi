@@ -20,6 +20,11 @@ export interface GameConfig {
   inputLockEnabled: boolean;
   blockedTileFeedback: 'shake' | 'tint' | 'none';
   debugMatchReadyMarker: boolean;
+  matchResolutionDelayMs: number;
+  matchResolutionDurationMs: number;
+  matchResolvingVisual: 'scale-fade' | 'none';
+  inputLockDuringMatchResolution: boolean;
+  debugOutcomeLabel: boolean;
 }
 
 export interface BoardLayoutConfig {
@@ -61,6 +66,7 @@ declare global {
     __ASSET_MANIFEST__: AssetManifestData;
     __TILEPYRAMID_BUILD02__?: Readonly<Build02Snapshot>;
     __TILEPYRAMID_BUILD03__?: Readonly<Build03Snapshot>;
+    __TILEPYRAMID_BUILD04__?: Readonly<Build04Snapshot>;
   }
 }
 
@@ -104,4 +110,13 @@ export interface Build03Snapshot extends Build02Snapshot {
     screenX: number;
     screenY: number;
   }>;
+}
+
+export type GameOutcomeState = 'playing' | 'won' | 'failed';
+
+export interface Build04Snapshot extends Build03Snapshot {
+  matchResolving: boolean;
+  lastMatchedTileType: number | null;
+  gameState: GameOutcomeState;
+  resolvingTileIds: string[];
 }
