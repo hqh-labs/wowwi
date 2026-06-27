@@ -14,6 +14,12 @@
       "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Level Design/Level_21.json."
     },
     {
+      "id": "Pointer_Hand",
+      "type": "image",
+      "path": "./assets/images/pointer_hand.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Pointer/1768988491461.png."
+    },
+    {
       "id": "Tile_01",
       "type": "image",
       "path": "./assets/images/tiles/tile_01.png",

@@ -25,6 +25,35 @@ export interface GameConfig {
   matchResolvingVisual: 'scale-fade' | 'none';
   inputLockDuringMatchResolution: boolean;
   debugOutcomeLabel: boolean;
+  timer: TimerConfig;
+  tutorial: TutorialConfig;
+  idleHint: IdleHintConfig;
+  debugTimerTutorialIdle: boolean;
+}
+
+export interface TimerConfig {
+  durationSeconds: number;
+  warningSeconds: number;
+  startOnFirstValidTap: boolean;
+  debugVisible: boolean;
+}
+
+export interface TutorialConfig {
+  enabled: boolean;
+  text: string;
+  dismissOnFirstValidTap: boolean;
+  previewTileIds: string[];
+  dimOpacity: number;
+  handEnabled: boolean;
+  handAssetId: string;
+  handPathMode: 'loop-preview-tiles' | 'first-preview-tile';
+}
+
+export interface IdleHintConfig {
+  enabled: boolean;
+  delaySeconds: number;
+  preferTrayPairCompletion: boolean;
+  deterministicFallback: boolean;
 }
 
 export interface BoardLayoutConfig {
@@ -67,6 +96,7 @@ declare global {
     __TILEPYRAMID_BUILD02__?: Readonly<Build02Snapshot>;
     __TILEPYRAMID_BUILD03__?: Readonly<Build03Snapshot>;
     __TILEPYRAMID_BUILD04__?: Readonly<Build04Snapshot>;
+    __TILEPYRAMID_BUILD05__?: Readonly<Build05Snapshot>;
   }
 }
 
@@ -119,4 +149,20 @@ export interface Build04Snapshot extends Build03Snapshot {
   lastMatchedTileType: number | null;
   gameState: GameOutcomeState;
   resolvingTileIds: string[];
+}
+
+export interface Build05Snapshot extends Build04Snapshot {
+  timerStarted: boolean;
+  timerRemaining: number;
+  timerDisplaySeconds: number;
+  timerWarningActive: boolean;
+  timerExpired: boolean;
+  tutorialActive: boolean;
+  tutorialDismissed: boolean;
+  tutorialText: string;
+  tutorialHighlightedTileIds: string[];
+  tutorialHandVisible: boolean;
+  idleHintActive: boolean;
+  idleHintTargetTileId: string | null;
+  secondsSinceLastValidInteraction: number;
 }

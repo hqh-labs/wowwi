@@ -29,6 +29,10 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'matchResolvingVisual',
   'inputLockDuringMatchResolution',
   'debugOutcomeLabel',
+  'timer',
+  'tutorial',
+  'idleHint',
+  'debugTimerTutorialIdle',
 ];
 
 export class ConfigValidationError extends Error {
@@ -125,6 +129,12 @@ export function validateConfig(data: unknown): GameConfig {
   if (typeof obj['debugOutcomeLabel'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugOutcomeLabel must be a boolean');
   }
+  validateTimerConfig(obj['timer']);
+  validateTutorialConfig(obj['tutorial']);
+  validateIdleHintConfig(obj['idleHint']);
+  if (typeof obj['debugTimerTutorialIdle'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugTimerTutorialIdle must be a boolean');
+  }
 
   return data as GameConfig;
 }
@@ -183,6 +193,95 @@ function validateTrayLayout(value: unknown): void {
       throw new ConfigValidationError(`Config.trayLayout.${positiveField} must be positive`);
     }
   }
+}
+
+function validateTimerConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.timer must be an object');
+  }
+
+  const timer = value as Record<string, unknown>;
+  if (!isPositiveFiniteNumber(timer['durationSeconds'])) {
+    throw new ConfigValidationError('Config.timer.durationSeconds must be a positive finite number');
+  }
+  if (!isNonNegativeFiniteNumber(timer['warningSeconds'])) {
+    throw new ConfigValidationError('Config.timer.warningSeconds must be a non-negative finite number');
+  }
+  if ((timer['warningSeconds'] as number) > (timer['durationSeconds'] as number)) {
+    throw new ConfigValidationError('Config.timer.warningSeconds must be <= durationSeconds');
+  }
+  if (typeof timer['startOnFirstValidTap'] !== 'boolean') {
+    throw new ConfigValidationError('Config.timer.startOnFirstValidTap must be a boolean');
+  }
+  if (typeof timer['debugVisible'] !== 'boolean') {
+    throw new ConfigValidationError('Config.timer.debugVisible must be a boolean');
+  }
+}
+
+function validateTutorialConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.tutorial must be an object');
+  }
+
+  const tutorial = value as Record<string, unknown>;
+  if (typeof tutorial['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.tutorial.enabled must be a boolean');
+  }
+  if (typeof tutorial['text'] !== 'string' || tutorial['text'].trim() === '') {
+    throw new ConfigValidationError('Config.tutorial.text must be a non-empty string');
+  }
+  if (typeof tutorial['dismissOnFirstValidTap'] !== 'boolean') {
+    throw new ConfigValidationError('Config.tutorial.dismissOnFirstValidTap must be a boolean');
+  }
+  if (!Array.isArray(tutorial['previewTileIds']) || tutorial['previewTileIds'].length !== 3) {
+    throw new ConfigValidationError('Config.tutorial.previewTileIds must contain exactly three ids');
+  }
+  for (const id of tutorial['previewTileIds']) {
+    if (typeof id !== 'string' || id.trim() === '') {
+      throw new ConfigValidationError('Config.tutorial.previewTileIds must contain non-empty strings');
+    }
+  }
+  if (
+    typeof tutorial['dimOpacity'] !== 'number' ||
+    !Number.isFinite(tutorial['dimOpacity']) ||
+    tutorial['dimOpacity'] < 0 ||
+    tutorial['dimOpacity'] > 1
+  ) {
+    throw new ConfigValidationError('Config.tutorial.dimOpacity must be between 0 and 1');
+  }
+  if (typeof tutorial['handEnabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.tutorial.handEnabled must be a boolean');
+  }
+  if (typeof tutorial['handAssetId'] !== 'string' || tutorial['handAssetId'].trim() === '') {
+    throw new ConfigValidationError('Config.tutorial.handAssetId must be a non-empty string');
+  }
+  if (!['loop-preview-tiles', 'first-preview-tile'].includes(tutorial['handPathMode'] as string)) {
+    throw new ConfigValidationError('Config.tutorial.handPathMode must be loop-preview-tiles or first-preview-tile');
+  }
+}
+
+function validateIdleHintConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.idleHint must be an object');
+  }
+
+  const idleHint = value as Record<string, unknown>;
+  if (typeof idleHint['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.idleHint.enabled must be a boolean');
+  }
+  if (!isPositiveFiniteNumber(idleHint['delaySeconds'])) {
+    throw new ConfigValidationError('Config.idleHint.delaySeconds must be a positive finite number');
+  }
+  if (typeof idleHint['preferTrayPairCompletion'] !== 'boolean') {
+    throw new ConfigValidationError('Config.idleHint.preferTrayPairCompletion must be a boolean');
+  }
+  if (typeof idleHint['deterministicFallback'] !== 'boolean') {
+    throw new ConfigValidationError('Config.idleHint.deterministicFallback must be a boolean');
+  }
+}
+
+function isPositiveFiniteNumber(value: unknown): boolean {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
 export function loadConfigFromGlobal(): GameConfig {

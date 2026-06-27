@@ -10,7 +10,7 @@ async function waitForRuntime(page: Page): Promise<void> {
     try {
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('canvas', { timeout: 15_000 });
-      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD04__?.remainingBoardCount === 72, null, {
+      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === 72, null, {
         timeout: 15_000,
       });
       return;
@@ -32,13 +32,13 @@ async function clickDesignPoint(page: Page, x: number, y: number): Promise<void>
 }
 
 async function clickTileById(page: Page, tileId: string): Promise<void> {
-  const tile = await page.evaluate(id => window.__TILEPYRAMID_BUILD04__?.tiles.find(candidate => candidate.id === id), tileId);
+  const tile = await page.evaluate(id => window.__TILEPYRAMID_BUILD05__?.tiles.find(candidate => candidate.id === id), tileId);
   expect(tile).toBeDefined();
   if (!tile) return;
   await clickDesignPoint(page, tile.screenX, tile.screenY);
 }
 
-test.describe('Build-04 match smoke tests', () => {
+test.describe('Build-05 timer, tutorial, and idle smoke tests', () => {
   test.describe.configure({ timeout: 90_000 });
 
   test('app loads without uncaught JavaScript errors', async ({ page }) => {
@@ -55,12 +55,87 @@ test.describe('Build-04 match smoke tests', () => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD04__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
     expect(snapshot?.remainingBoardCount).toBe(72);
     expect(snapshot?.trayCount).toBe(0);
+    expect(snapshot?.timerDisplaySeconds).toBe(30);
+    expect(snapshot?.timerStarted).toBe(false);
   });
 
-  test('tapping three tutorial-preview matching tiles resolves the tray match', async ({ page }) => {
+  test('initial tutorial is visible with highlights and hand indicator', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    expect(snapshot?.tutorialActive).toBe(true);
+    expect(snapshot?.tutorialText).toBe('Tap to match!');
+    expect(snapshot?.tutorialHighlightedTileIds).toEqual(PREVIEW_IDS);
+    expect(snapshot?.tutorialHandVisible).toBe(true);
+  });
+
+  test('tapping a blocked tile does not start timer or dismiss tutorial', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    const blockedTile = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__?.tiles.find(tile => !tile.selectable));
+    expect(blockedTile).toBeDefined();
+    if (!blockedTile) return;
+
+    await clickDesignPoint(page, blockedTile.screenX, blockedTile.screenY);
+    await page.waitForTimeout(300);
+
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    expect(snapshot?.timerStarted).toBe(false);
+    expect(snapshot?.timerDisplaySeconds).toBe(30);
+    expect(snapshot?.tutorialActive).toBe(true);
+    expect(snapshot?.tutorialDismissed).toBe(false);
+  });
+
+  test('valid tutorial tap starts timer, dismisses tutorial, and timer counts down', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    await clickTileById(page, PREVIEW_IDS[0]);
+    await page.waitForFunction(
+      () =>
+        window.__TILEPYRAMID_BUILD05__?.timerStarted === true &&
+        window.__TILEPYRAMID_BUILD05__?.tutorialDismissed === true,
+      null,
+      { timeout: 8_000 }
+    );
+
+    await page.waitForFunction(
+      () => (window.__TILEPYRAMID_BUILD05__?.timerRemaining ?? 30) < 29.5,
+      null,
+      { timeout: 4_000 }
+    );
+
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    expect(snapshot?.tutorialActive).toBe(false);
+    expect(snapshot?.timerStarted).toBe(true);
+    expect(snapshot?.timerRemaining).toBeLessThan(30);
+  });
+
+  test('idle hint appears after enough idle time', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    await clickTileById(page, PREVIEW_IDS[0]);
+    await page.waitForFunction(
+      () => window.__TILEPYRAMID_BUILD05__?.inputLocked === false && window.__TILEPYRAMID_BUILD05__?.tutorialDismissed === true,
+      null,
+      { timeout: 8_000 }
+    );
+    await page.waitForFunction(() => window.__TILEPYRAMID_BUILD05__?.idleHintActive === true, null, {
+      timeout: 12_000,
+    });
+
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
+    expect(snapshot?.idleHintActive).toBe(true);
+    expect(snapshot?.idleHintTargetTileId).toBeTruthy();
+  });
+
+  test('tapping three tutorial-preview matching tiles still resolves the tray match', async ({ page }) => {
     await page.goto('/');
     await waitForRuntime(page);
 
@@ -69,8 +144,8 @@ test.describe('Build-04 match smoke tests', () => {
       const expectedBoardCount = 71 - i;
       await page.waitForFunction(
         ([boardCount]) =>
-          window.__TILEPYRAMID_BUILD04__?.remainingBoardCount === boardCount &&
-          window.__TILEPYRAMID_BUILD04__?.inputLocked === false,
+          window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === boardCount &&
+          window.__TILEPYRAMID_BUILD05__?.inputLocked === false,
         [expectedBoardCount],
         { timeout: 8_000 }
       );
@@ -78,15 +153,15 @@ test.describe('Build-04 match smoke tests', () => {
 
     await page.waitForFunction(
       () =>
-        window.__TILEPYRAMID_BUILD04__?.remainingBoardCount === 69 &&
-        window.__TILEPYRAMID_BUILD04__?.trayCount === 0 &&
-        window.__TILEPYRAMID_BUILD04__?.matchResolving === false &&
-        window.__TILEPYRAMID_BUILD04__?.inputLocked === false,
+        window.__TILEPYRAMID_BUILD05__?.remainingBoardCount === 69 &&
+        window.__TILEPYRAMID_BUILD05__?.trayCount === 0 &&
+        window.__TILEPYRAMID_BUILD05__?.matchResolving === false &&
+        window.__TILEPYRAMID_BUILD05__?.inputLocked === false,
       null,
       { timeout: 8_000 }
     );
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD04__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
     expect(snapshot?.lastMatchedTileType).toBe(1);
     expect(snapshot?.gameState).toBe('playing');
   });
@@ -95,7 +170,7 @@ test.describe('Build-04 match smoke tests', () => {
     await page.goto('/');
     await waitForRuntime(page);
 
-    const solvability = await page.evaluate(() => window.__TILEPYRAMID_BUILD04__?.formalSolvability);
+    const solvability = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__?.formalSolvability);
     expect(solvability).toBe('NOT YET PROVEN');
   });
 
@@ -126,8 +201,9 @@ test.describe('Build-04 match smoke tests', () => {
     await page.mouse.click(Math.max(2, box.x - 20), box.y + box.height / 2);
     await page.waitForTimeout(300);
 
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD04__);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD05__);
     expect(snapshot?.remainingBoardCount).toBe(72);
     expect(snapshot?.trayCount).toBe(0);
+    expect(snapshot?.timerStarted).toBe(false);
   });
 });

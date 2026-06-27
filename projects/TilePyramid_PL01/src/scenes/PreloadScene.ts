@@ -27,6 +27,14 @@ export class PreloadScene extends Phaser.Scene {
       }
       this.load.image(assetId, asset.path);
     }
+
+    if (config.tutorial.enabled && config.tutorial.handEnabled) {
+      const handAsset = resolveAsset(manifest, config.tutorial.handAssetId);
+      if (!handAsset || handAsset.type !== 'image') {
+        throw new Error(`Missing tutorial hand image asset in manifest: ${config.tutorial.handAssetId}`);
+      }
+      this.load.image(config.tutorial.handAssetId, handAsset.path);
+    }
   }
 
   create(): void {

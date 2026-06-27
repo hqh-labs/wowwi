@@ -45,5 +45,32 @@
   "matchResolutionDurationMs": 220,
   "matchResolvingVisual": "scale-fade",
   "inputLockDuringMatchResolution": true,
-  "debugOutcomeLabel": true
+  "debugOutcomeLabel": true,
+  "timer": {
+    "durationSeconds": 30,
+    "warningSeconds": 5,
+    "startOnFirstValidTap": true,
+    "debugVisible": true
+  },
+  "tutorial": {
+    "enabled": true,
+    "text": "Tap to match!",
+    "dismissOnFirstValidTap": true,
+    "previewTileIds": [
+      "L2:-1.5:2.5",
+      "L2:-0.5:2.5",
+      "L2:0.5:2.5"
+    ],
+    "dimOpacity": 0.5,
+    "handEnabled": true,
+    "handAssetId": "Pointer_Hand",
+    "handPathMode": "loop-preview-tiles"
+  },
+  "idleHint": {
+    "enabled": true,
+    "delaySeconds": 5,
+    "preferTrayPairCompletion": true,
+    "deterministicFallback": true
+  },
+  "debugTimerTutorialIdle": true
 }

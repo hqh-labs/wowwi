@@ -86,7 +86,6 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-04** - Match-three resolution, tray compaction, and basic win/fail rules.
-BUILD-04 resolves groups of three in the tray and adds basic playing/won/failed
-state. Timer, tutorial, audio, CTA, end card, effects, and exporters remain out
-of scope.
+**BUILD-05** - Timer, initial tutorial, and idle reminder.
+BUILD-05 adds the 30-second timer, first-interaction tutorial overlay, and idle
+hint guidance. Audio, CTA, end card, effects, and exporters remain out of scope.

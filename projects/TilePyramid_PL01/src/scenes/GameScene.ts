@@ -6,6 +6,13 @@ import {
   type BoardRuntimeState,
 } from '../gameplay/board/BoardRuntimeState';
 import { assignTileTypes, validateTriplets } from '../gameplay/board/TileAssigner';
+import {
+  createIdleHintState,
+  resetIdleHint,
+  tickIdleHint,
+  type IdleHintState,
+} from '../gameplay/idle/IdleHintSystem';
+import { selectIdleHintTarget } from '../gameplay/idle/HintCandidateSelector';
 import { evaluateOutcome } from '../gameplay/outcome/OutcomeEvaluator';
 import {
   attemptTileSelection,
@@ -20,6 +27,19 @@ import {
   removeMatchGroup,
   type MatchGroup,
 } from '../gameplay/tray/MatchResolver';
+import {
+  createTimerState,
+  getTimerDisplaySeconds,
+  registerTimerInteraction,
+  tickTimer,
+  type TimerState,
+} from '../gameplay/timer/TimerSystem';
+import {
+  createTutorialState,
+  handleTutorialInteraction,
+  hideTutorialAfterOutcome,
+  type TutorialState,
+} from '../gameplay/tutorial/TutorialSystem';
 import { calculateTrayLayout, type TrayLayoutResult } from '../gameplay/tray/TrayLayout';
 import {
   createTrayState,
@@ -29,11 +49,13 @@ import {
 } from '../gameplay/tray/TraySystem';
 import { resolveAsset } from '../manifest/AssetManifest';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
-import type { AssetManifestData, Build04Snapshot, GameConfig, GameOutcomeState } from '../types';
+import type { AssetManifestData, Build05Snapshot, GameConfig, GameOutcomeState } from '../types';
 
 const TILE_SOURCE_SIZE = { width: 132, height: 144 };
 const BOARD_DEPTH = 1000;
 const TRAY_DEPTH = 6000;
+const TIMER_DEPTH = 7800;
+const TUTORIAL_DEPTH = 8000;
 const DEBUG_DEPTH = 9000;
 
 export class GameScene extends Phaser.Scene {
@@ -52,7 +74,15 @@ export class GameScene extends Phaser.Scene {
   private resolvingGroup?: MatchGroup;
   private lastMatchedTileType: number | null = null;
   private gameState: GameOutcomeState = 'playing';
-  private snapshot!: Build04Snapshot;
+  private timerState!: TimerState;
+  private tutorialState!: TutorialState;
+  private idleHintState!: IdleHintState;
+  private snapshot!: Build05Snapshot;
+  private timerText?: Phaser.GameObjects.Text;
+  private tutorialObjects: Phaser.GameObjects.GameObject[] = [];
+  private tutorialHand?: Phaser.GameObjects.Image;
+  private idleObjects: Phaser.GameObjects.GameObject[] = [];
+  private renderedIdleKey = '';
 
   constructor() {
     super({ key: 'GameScene' });
@@ -70,6 +100,9 @@ export class GameScene extends Phaser.Scene {
     this.initializeRuntime(config);
     this.renderBoard(config);
     this.renderTray(config);
+    this.renderTimer(config);
+    this.renderTutorial(config);
+    this.renderIdleHint(config);
     this.publishSnapshot(config);
 
     if (this.debugEnabled) {
@@ -100,7 +133,58 @@ export class GameScene extends Phaser.Scene {
     this.boardState = createBoardRuntimeState(initialBoard.tiles);
     this.trayState = createTrayState(config.trayCapacity);
     this.selectionState = createSelectionState();
+    this.timerState = createTimerState(config.timer.durationSeconds, config.timer.warningSeconds);
+    this.tutorialState = createTutorialState({
+      enabled: config.tutorial.enabled,
+      text: config.tutorial.text,
+      previewTileIds: config.tutorial.previewTileIds,
+    });
+    this.idleHintState = createIdleHintState(config.idleHint.enabled, config.idleHint.delaySeconds);
     this.gameState = 'playing';
+  }
+
+  update(_time: number, delta: number): void {
+    const config = this.registry.get('gameConfig') as GameConfig;
+
+    const nextTimer = tickTimer(this.timerState, delta / 1000, this.gameState);
+    const timerChanged =
+      nextTimer.remainingSeconds !== this.timerState.remainingSeconds ||
+      nextTimer.expired !== this.timerState.expired ||
+      nextTimer.warningActive !== this.timerState.warningActive;
+    this.timerState = nextTimer;
+
+    if (this.timerState.expired && this.gameState === 'playing') {
+      this.gameState = 'failed';
+      this.selectionState = { inputLocked: true };
+      this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
+      this.idleHintState = resetIdleHint(this.idleHintState);
+      this.renderTutorial(config);
+      this.renderIdleHint(config);
+    }
+
+    const targetTileId = selectIdleHintTarget({
+      boardTiles: this.boardState.tiles,
+      trayTiles: this.trayState.tiles,
+      preferTrayPairCompletion: config.idleHint.preferTrayPairCompletion,
+      deterministicFallback: config.idleHint.deterministicFallback,
+    });
+    const nextIdle = tickIdleHint(this.idleHintState, delta / 1000, {
+      tutorialDismissed: this.tutorialState.dismissed || !this.tutorialState.enabled,
+      inputLocked: this.selectionState.inputLocked,
+      matchResolving: this.resolvingGroup !== undefined,
+      gameState: this.gameState,
+      targetTileId,
+    });
+    const idleKey = `${nextIdle.active}:${nextIdle.targetTileId ?? 'none'}`;
+    const idleChanged = idleKey !== this.renderedIdleKey;
+    this.idleHintState = nextIdle;
+
+    if (timerChanged || idleChanged) {
+      this.renderTimer(config);
+      if (idleChanged) this.renderIdleHint(config);
+      this.publishSnapshot(config);
+      this.updateDebugText(config);
+    }
   }
 
   private renderBoard(config: GameConfig): void {
@@ -160,11 +244,36 @@ export class GameScene extends Phaser.Scene {
     this.updateDebugText(config);
 
     if (!attempt.accepted) {
+      this.timerState = registerTimerInteraction(this.timerState, 'blocked', config.timer.startOnFirstValidTap);
+      this.tutorialState = handleTutorialInteraction(
+        this.tutorialState,
+        'blocked',
+        config.tutorial.dismissOnFirstValidTap
+      );
       if (attempt.reason === 'blocked') this.showBlockedFeedback(config, tileId);
       if (attempt.reason === 'tray-full') this.showTrayFullFeedback();
+      this.renderTutorial(config);
+      this.publishSnapshot(config);
+      this.updateDebugText(config);
       return;
     }
 
+    this.timerState = registerTimerInteraction(
+      this.timerState,
+      'valid-selectable',
+      config.timer.startOnFirstValidTap
+    );
+    this.tutorialState = handleTutorialInteraction(
+      this.tutorialState,
+      'valid-selectable',
+      config.tutorial.dismissOnFirstValidTap
+    );
+    this.idleHintState = resetIdleHint(this.idleHintState);
+    this.renderTimer(config);
+    this.renderTutorial(config);
+    this.renderIdleHint(config);
+    this.publishSnapshot(config);
+    this.updateDebugText(config);
     this.flyTileToTray(config, attempt.tile);
   }
 
@@ -258,13 +367,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateOutcome(config: GameConfig): void {
-    this.gameState = evaluateOutcome({
+    const evaluatedState = evaluateOutcome({
       board: this.boardState,
       tray: this.trayState,
       matchResolving: this.resolvingGroup !== undefined,
     });
+    this.gameState = this.timerState.expired ? 'failed' : evaluatedState;
     if (this.gameState !== 'playing') {
       this.selectionState = { inputLocked: true };
+      this.tutorialState = hideTutorialAfterOutcome(this.tutorialState);
+      this.idleHintState = resetIdleHint(this.idleHintState);
+      this.renderTutorial(config);
+      this.renderIdleHint(config);
     }
     this.publishSnapshot(config);
   }
@@ -393,6 +507,184 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private renderTimer(config: GameConfig): void {
+    if (!this.timerText) {
+      this.timerText = this.add
+        .text(config.designWidth / 2, 96, '', {
+          color: '#ffffff',
+          fontSize: '54px',
+          fontFamily: 'Arial, sans-serif',
+          fontStyle: 'bold',
+          stroke: '#1a2442',
+          strokeThickness: 8,
+        })
+        .setOrigin(0.5)
+        .setDepth(TIMER_DEPTH)
+        .setName('build05-timer-text');
+    }
+
+    const displaySeconds = getTimerDisplaySeconds(this.timerState);
+    this.timerText
+      .setText(`Time ${displaySeconds}`)
+      .setColor(this.timerState.warningActive ? '#ff5d73' : '#ffffff')
+      .setScale(this.timerState.warningActive ? 1.06 : 1);
+    this.timerText.setVisible(config.timer.debugVisible || this.gameState === 'playing');
+  }
+
+  private renderTutorial(config: GameConfig): void {
+    this.clearTutorialObjects();
+
+    if (!this.tutorialState.active || this.gameState !== 'playing') return;
+
+    const targets = this.getTileTargets(config, this.tutorialState.previewTileIds);
+
+    const overlay = this.add
+      .rectangle(
+        config.designWidth / 2,
+        config.designHeight / 2,
+        config.designWidth,
+        config.designHeight,
+        0x020617,
+        config.tutorial.dimOpacity
+      )
+      .setDepth(TUTORIAL_DEPTH)
+      .setName('build05-tutorial-dim');
+    this.tutorialObjects.push(overlay);
+
+    for (const target of targets) {
+      const ring = this.add
+        .rectangle(target.screenX, target.screenY, target.width + 24, target.height + 24)
+        .setStrokeStyle(7, 0xffd447, 0.98)
+        .setDepth(TUTORIAL_DEPTH + 5)
+        .setName('build05-tutorial-highlight');
+      ring.setData('tileId', target.id);
+      this.tutorialObjects.push(ring);
+      this.tweens.add({
+        targets: ring,
+        alpha: { from: 0.72, to: 1 },
+        scale: { from: 0.96, to: 1.04 },
+        duration: 640,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+
+    const label = this.add
+      .text(config.designWidth / 2, 290, this.tutorialState.text, {
+        color: '#ffffff',
+        fontSize: '72px',
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+        stroke: '#14192d',
+        strokeThickness: 10,
+      })
+      .setOrigin(0.5)
+      .setDepth(TUTORIAL_DEPTH + 8)
+      .setName('build05-tutorial-text');
+    this.tutorialObjects.push(label);
+
+    if (config.tutorial.handEnabled && targets.length > 0) {
+      const firstTarget = targets[0];
+      const hand = this.add
+        .image(firstTarget.screenX + 74, firstTarget.screenY + 86, config.tutorial.handAssetId)
+        .setScale(0.62)
+        .setDepth(TUTORIAL_DEPTH + 10)
+        .setName('build05-tutorial-hand');
+      this.tutorialHand = hand;
+      this.tutorialObjects.push(hand);
+      this.tweens.add({
+        targets: hand,
+        x: firstTarget.screenX + 42,
+        y: firstTarget.screenY + 48,
+        scale: 0.54,
+        alpha: { from: 0.82, to: 1 },
+        duration: 560,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+  }
+
+  private renderIdleHint(config: GameConfig): void {
+    for (const object of this.idleObjects) object.destroy();
+    this.idleObjects = [];
+    this.renderedIdleKey = `${this.idleHintState.active}:${this.idleHintState.targetTileId ?? 'none'}`;
+
+    if (!this.idleHintState.active || !this.idleHintState.targetTileId || this.gameState !== 'playing') return;
+
+    const [target] = this.getTileTargets(config, [this.idleHintState.targetTileId]);
+    if (!target) return;
+
+    const ring = this.add
+      .ellipse(target.screenX, target.screenY, target.width + 34, target.height + 34)
+      .setStrokeStyle(7, 0x7fd7ff, 0.96)
+      .setDepth(TUTORIAL_DEPTH + 20)
+      .setName('build05-idle-highlight');
+    ring.setData('tileId', target.id);
+    this.idleObjects.push(ring);
+
+    this.tweens.add({
+      targets: ring,
+      alpha: { from: 0.45, to: 1 },
+      scale: { from: 0.94, to: 1.06 },
+      duration: 520,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    if (config.tutorial.handEnabled) {
+      const hand = this.add
+        .image(target.screenX + 72, target.screenY + 82, config.tutorial.handAssetId)
+        .setScale(0.5)
+        .setDepth(TUTORIAL_DEPTH + 21)
+        .setName('build05-idle-hand');
+      this.idleObjects.push(hand);
+      this.tweens.add({
+        targets: hand,
+        x: target.screenX + 38,
+        y: target.screenY + 44,
+        duration: 560,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+  }
+
+  private getTileTargets(config: GameConfig, tileIds: string[]): Array<{
+    id: string;
+    screenX: number;
+    screenY: number;
+    width: number;
+    height: number;
+  }> {
+    const layout = calculateBoardLayout(this.boardState.tiles, config.boardLayout, TILE_SOURCE_SIZE);
+    const layoutById = new Map(layout.tiles.map(tile => [tile.id, tile]));
+
+    return tileIds
+      .map(id => {
+        const tile = layoutById.get(id);
+        if (!tile) return undefined;
+        return {
+          id,
+          screenX: tile.screenX,
+          screenY: tile.screenY,
+          width: tile.displayWidth,
+          height: tile.displayHeight,
+        };
+      })
+      .filter((target): target is { id: string; screenX: number; screenY: number; width: number; height: number } =>
+        Boolean(target)
+      );
+  }
+
+  private clearTutorialObjects(): void {
+    for (const object of this.tutorialObjects) object.destroy();
+    this.tutorialObjects = [];
+    this.tutorialHand = undefined;
+  }
+
   private createDebugOverlay(config: GameConfig): void {
     const W = config.designWidth;
     const H = config.designHeight;
@@ -447,8 +739,14 @@ export class GameScene extends Phaser.Scene {
       `Match resolving: ${snapshot.matchResolving}`,
       `Last matched: ${snapshot.lastMatchedTileType ?? 'none'}`,
       `Game state: ${snapshot.gameState}`,
+      `Timer: ${snapshot.timerStarted ? 'started' : 'waiting'} ${snapshot.timerRemaining.toFixed(2)}s`,
+      `Timer warning: ${snapshot.timerWarningActive}`,
+      `Tutorial active: ${snapshot.tutorialActive}`,
+      `Tutorial dismissed: ${snapshot.tutorialDismissed}`,
+      `Idle hint: ${snapshot.idleHintActive ? snapshot.idleHintTargetTileId ?? 'none' : 'off'}`,
+      `Idle seconds: ${snapshot.secondsSinceLastValidInteraction.toFixed(2)}`,
       `Formal solvability: ${snapshot.formalSolvability}`,
-      'BUILD-04 match',
+      'BUILD-05 timer/tutorial/idle',
     ].join('\n');
   }
 
@@ -472,15 +770,23 @@ export class GameScene extends Phaser.Scene {
       this.layerCount,
       this.resolvingGroup,
       this.lastMatchedTileType,
-      this.gameState
+      this.gameState,
+      this.timerState,
+      this.tutorialState,
+      this.idleHintState,
+      Boolean(this.tutorialHand?.active)
     );
     window.__TILEPYRAMID_BUILD02__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD03__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD04__ = Object.freeze(this.snapshot);
+    window.__TILEPYRAMID_BUILD05__ = Object.freeze(this.snapshot);
   }
 
   shutdown(): void {
     this.orientationController?.destroy();
+    this.clearTutorialObjects();
+    for (const object of this.idleObjects) object.destroy();
+    this.idleObjects = [];
   }
 }
 
@@ -495,8 +801,12 @@ function createSnapshot(
   layerCount: number,
   resolvingGroup: MatchGroup | undefined,
   lastMatchedTileType: number | null,
-  gameState: GameOutcomeState
-): Build04Snapshot {
+  gameState: GameOutcomeState,
+  timer: TimerState,
+  tutorial: TutorialState,
+  idleHint: IdleHintState,
+  tutorialHandVisible: boolean
+): Build05Snapshot {
   const layoutById = new Map(boardLayout.tiles.map(tile => [tile.id, tile]));
 
   return {
@@ -549,6 +859,19 @@ function createSnapshot(
     lastMatchedTileType,
     gameState,
     resolvingTileIds: [...(resolvingGroup?.sourceTileIds ?? [])],
+    timerStarted: timer.started,
+    timerRemaining: Math.max(0, timer.remainingSeconds),
+    timerDisplaySeconds: getTimerDisplaySeconds(timer),
+    timerWarningActive: timer.warningActive,
+    timerExpired: timer.expired,
+    tutorialActive: tutorial.active && gameState === 'playing',
+    tutorialDismissed: tutorial.dismissed,
+    tutorialText: tutorial.text,
+    tutorialHighlightedTileIds: [...tutorial.previewTileIds],
+    tutorialHandVisible,
+    idleHintActive: idleHint.active && gameState === 'playing',
+    idleHintTargetTileId: idleHint.targetTileId,
+    secondsSinceLastValidInteraction: idleHint.secondsSinceLastValidInteraction,
   };
 }
 

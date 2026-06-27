@@ -45,6 +45,29 @@ const VALID: Record<string, unknown> = {
   matchResolvingVisual: 'scale-fade',
   inputLockDuringMatchResolution: true,
   debugOutcomeLabel: true,
+  timer: {
+    durationSeconds: 30,
+    warningSeconds: 5,
+    startOnFirstValidTap: true,
+    debugVisible: true,
+  },
+  tutorial: {
+    enabled: true,
+    text: 'Tap to match!',
+    dismissOnFirstValidTap: true,
+    previewTileIds: ['L2:-1.5:2.5', 'L2:-0.5:2.5', 'L2:0.5:2.5'],
+    dimOpacity: 0.5,
+    handEnabled: true,
+    handAssetId: 'Pointer_Hand',
+    handPathMode: 'loop-preview-tiles',
+  },
+  idleHint: {
+    enabled: true,
+    delaySeconds: 5,
+    preferTrayPairCompletion: true,
+    deterministicFallback: true,
+  },
+  debugTimerTutorialIdle: true,
 };
 
 describe('validateConfig', () => {
@@ -133,5 +156,23 @@ describe('validateConfig', () => {
     expect(() => validateConfig({ ...VALID, matchResolvingVisual: 'sparkle' })).toThrow(
       /matchResolvingVisual/
     );
+  });
+
+  it('throws when timer duration is invalid', () => {
+    expect(() => validateConfig({ ...VALID, timer: { ...(VALID['timer'] as object), durationSeconds: 0 } })).toThrow(
+      /timer.durationSeconds/
+    );
+  });
+
+  it('throws when tutorial preview ids are invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, tutorial: { ...(VALID['tutorial'] as object), previewTileIds: ['a'] } })
+    ).toThrow(/tutorial.previewTileIds/);
+  });
+
+  it('throws when idle hint delay is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, idleHint: { ...(VALID['idleHint'] as object), delaySeconds: -1 } })
+    ).toThrow(/idleHint.delaySeconds/);
   });
 });

@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-04 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-05 implementation notes.
 
 ---
 
@@ -47,6 +47,9 @@ projects/TilePyramid_PL01/
 │   │   │   └── TutorialSystem.ts
 │   │   ├── timer/
 │   │   │   └── TimerSystem.ts
+│   │   ├── idle/
+│   │   │   ├── IdleHintSystem.ts
+│   │   │   └── HintCandidateSelector.ts
 │   │   └── endcard/
 │   │       └── EndCardSystem.ts
 │   ├── effects/
@@ -81,12 +84,30 @@ Fields (proposed):
   "project": "TilePyramid_PL01",
   "level": "Level_21",
   "trayCapacity": 5,
-  "timerSeconds": 30,
+  "timer": {
+    "durationSeconds": 30,
+    "warningSeconds": 5,
+    "startOnFirstValidTap": true,
+    "debugVisible": true
+  },
   "viewport": { "width": 540, "height": 960 },
   "background": "Background_1",
-  "tutorialEnabled": true,
-  "tutorialIdleReminderSeconds": 5,
-  "tutorialText": "Tap to match!",
+  "tutorial": {
+    "enabled": true,
+    "text": "Tap to match!",
+    "dismissOnFirstValidTap": true,
+    "previewTileIds": ["L2:-1.5:2.5", "L2:-0.5:2.5", "L2:0.5:2.5"],
+    "dimOpacity": 0.5,
+    "handEnabled": true,
+    "handAssetId": "Pointer_Hand",
+    "handPathMode": "loop-preview-tiles"
+  },
+  "idleHint": {
+    "enabled": true,
+    "delaySeconds": 5,
+    "preferTrayPairCompletion": true,
+    "deterministicFallback": true
+  },
   "tileSeed": 21001,
   "audio": { "bgm": "BGM_GamePlay", "volume": 0.5 },
   "cta": {
@@ -231,22 +252,52 @@ BUILD-04 established interface:
 ### Tutorial system (`TutorialSystem.ts`)
 
 Responsibilities:
-- Dim non-highlighted screen areas via overlay.
-- Receive a set of three target tile positions to highlight.
-- Animate hand pointer towards the first target tile.
-- Display `"Tap to match!"` text.
-- After `tutorialIdleReminderSeconds` of inactivity, re-pulse the animation.
-- Disable itself when the state machine transitions to `PLAYING`.
+- Track whether the initial tutorial is enabled, active, or dismissed.
+- Preserve the configured preview tile IDs and tutorial text.
+- Dismiss only after a valid selectable tile interaction when configured.
+- Ignore blocked tile interactions.
 
-Does not handle tile selection or match logic — delegates to `TileBoard`.
+BUILD-05 established interface:
+- `createTutorialState({ enabled, text, previewTileIds })` creates the initial
+  active/inactive tutorial state.
+- `handleTutorialInteraction(state, interaction, dismissOnFirstValidTap)`
+  dismisses only on `valid-selectable`.
+- Phaser rendering lives in `GameScene`: dim overlay, highlight rings, text, and
+  hand pointer. The pure tutorial module does not handle selection or rendering.
 
 ### Timer system (`TimerSystem.ts`)
 
 Responsibilities:
-- Start countdown when notified by state machine (first real tap).
-- Count down from `timerSeconds` to zero.
-- Emit `timerExpired` event.
-- Expose current remaining time for renderer (progress bar or numeric display).
+- Keep countdown state independent from Phaser.
+- Start only after the first valid selectable tile interaction.
+- Tick only while gameplay state is `playing`.
+- Clamp remaining time at zero and expose warning/expired flags.
+
+BUILD-05 established interface:
+- `createTimerState(durationSeconds, warningSeconds)` initializes an unstarted
+  timer with full remaining duration.
+- `registerTimerInteraction(state, interaction, startOnFirstValidTap)` starts
+  only on `valid-selectable`.
+- `tickTimer(state, deltaSeconds, gameState)` advances only while started and
+  playing, never below zero.
+- `getTimerDisplaySeconds(state)` exposes a whole-second countdown for UI.
+
+### Idle hint system (`IdleHintSystem.ts`, `HintCandidateSelector.ts`)
+
+Responsibilities:
+- Count time since the last valid selectable interaction after tutorial dismissal.
+- Hide while input is locked, a match is resolving, or the game has won/failed.
+- Show after the configured delay with a deterministic target tile.
+- Prefer a currently selectable board tile that completes an existing tray pair.
+
+BUILD-05 established interface:
+- `createIdleHintState(enabled, delaySeconds)` initializes idle tracking.
+- `resetIdleHint(state)` clears the active hint and timer after a valid tap.
+- `tickIdleHint(state, deltaSeconds, context)` handles the timing and visibility
+  rules without Phaser.
+- `selectIdleHintTarget({ boardTiles, trayTiles, preferTrayPairCompletion,
+  deterministicFallback })` chooses a currently selectable tile without
+  `Math.random()`.
 
 ### Effect system (`EffectSystem.ts`)
 

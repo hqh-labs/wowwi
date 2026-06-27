@@ -55,8 +55,8 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (96 tests)
-npm run test:smoke    # browser smoke tests (6 tests) - requires Chromium, builds first
+npm run test          # unit tests (119 tests)
+npm run test:smoke    # browser smoke tests (10 tests) - requires Chromium, builds first
 ```
 
 To install the Playwright browser (first-time only):
@@ -79,7 +79,7 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-02**: Static Level_21 board, blocking system, deterministic tile assignment
 - **BUILD-03**: Tray UI, tile selection, fly-to-tray interaction
 - **BUILD-04**: Match-three resolution, tray compaction, basic win/fail rules
-- **BUILD-05**: Effects and audio
+- **BUILD-05**: Timer, initial tutorial, and idle reminder
 - **BUILD-06**: CTA and store-open abstraction
 - **BUILD-07**: Unity Ads adapter and export
 - **BUILD-08**: AppLovin adapter and export
