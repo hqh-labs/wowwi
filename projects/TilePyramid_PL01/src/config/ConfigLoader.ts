@@ -12,6 +12,12 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'portraitPolicy',
   'landscapePolicy',
   'debugOverlay',
+  'levelId',
+  'assignmentSeed',
+  'tileTypeCount',
+  'tutorialPreviewPositionIds',
+  'boardLayout',
+  'debugBlockedState',
 ];
 
 export class ConfigValidationError extends Error {
@@ -52,8 +58,63 @@ export function validateConfig(data: unknown): GameConfig {
   if (typeof obj['debugOverlay'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugOverlay must be a boolean');
   }
+  if (typeof obj['levelId'] !== 'string' || obj['levelId'].trim() === '') {
+    throw new ConfigValidationError('Config.levelId must be a non-empty string');
+  }
+  if (!Number.isInteger(obj['assignmentSeed'])) {
+    throw new ConfigValidationError('Config.assignmentSeed must be an integer');
+  }
+  if (!Number.isInteger(obj['tileTypeCount']) || (obj['tileTypeCount'] as number) <= 0) {
+    throw new ConfigValidationError('Config.tileTypeCount must be a positive integer');
+  }
+  if (!Array.isArray(obj['tutorialPreviewPositionIds']) || obj['tutorialPreviewPositionIds'].length !== 3) {
+    throw new ConfigValidationError('Config.tutorialPreviewPositionIds must contain exactly three ids');
+  }
+  for (const id of obj['tutorialPreviewPositionIds']) {
+    if (typeof id !== 'string' || id.trim() === '') {
+      throw new ConfigValidationError('Config.tutorialPreviewPositionIds must contain non-empty strings');
+    }
+  }
+  validateBoardLayout(obj['boardLayout']);
+  if (typeof obj['debugBlockedState'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugBlockedState must be a boolean');
+  }
 
   return data as GameConfig;
+}
+
+function validateBoardLayout(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.boardLayout must be an object');
+  }
+
+  const layout = value as Record<string, unknown>;
+  const required = [
+    'centerX',
+    'centerY',
+    'spacingX',
+    'spacingY',
+    'layerOffsetX',
+    'layerOffsetY',
+    'tileScale',
+  ];
+
+  for (const field of required) {
+    if (typeof layout[field] !== 'number' || !Number.isFinite(layout[field])) {
+      throw new ConfigValidationError(`Config.boardLayout.${field} must be a finite number`);
+    }
+  }
+  if ((layout['tileScale'] as number) <= 0) {
+    throw new ConfigValidationError('Config.boardLayout.tileScale must be positive');
+  }
+  for (const optionalField of ['maxWidth', 'maxHeight']) {
+    if (
+      layout[optionalField] !== undefined &&
+      (typeof layout[optionalField] !== 'number' || !Number.isFinite(layout[optionalField]))
+    ) {
+      throw new ConfigValidationError(`Config.boardLayout.${optionalField} must be a finite number`);
+    }
+  }
 }
 
 export function loadConfigFromGlobal(): GameConfig {

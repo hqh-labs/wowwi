@@ -48,6 +48,11 @@ describe('validateManifest', () => {
     expect(() => validateManifest(good)).not.toThrow();
   });
 
+  it('accepts json type', () => {
+    const good = { version: '1', assets: [{ ...VALID_ASSET, type: 'json' }] };
+    expect(() => validateManifest(good)).not.toThrow();
+  });
+
   it('throws when asset path is empty', () => {
     const bad = { version: '1', assets: [{ ...VALID_ASSET, path: '  ' }] };
     expect(() => validateManifest(bad)).toThrow(/path/);

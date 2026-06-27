@@ -1,4 +1,7 @@
 import Phaser from 'phaser';
+import type { AssetManifestData, GameConfig } from '../types';
+import { tileAssetId } from '../gameplay/board/TileAssigner';
+import { resolveAsset } from '../manifest/AssetManifest';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -6,11 +9,28 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // BUILD-01: No Phaser-managed assets to preload.
-    // The background image is applied to the DOM layer by OrientationController.
+    const config = this.registry.get('gameConfig') as GameConfig;
+    const manifest = this.registry.get('assetManifest') as AssetManifestData;
+    const levelAsset = resolveAsset(manifest, config.levelId);
+
+    if (!levelAsset || levelAsset.type !== 'json') {
+      throw new Error(`Missing JSON level asset in manifest: ${config.levelId}`);
+    }
+
+    this.load.json(config.levelId, levelAsset.path);
+
+    for (let tileTypeId = 1; tileTypeId <= config.tileTypeCount; tileTypeId++) {
+      const assetId = tileAssetId(tileTypeId);
+      const asset = resolveAsset(manifest, assetId);
+      if (!asset || asset.type !== 'image') {
+        throw new Error(`Missing tile image asset in manifest: ${assetId}`);
+      }
+      this.load.image(assetId, asset.path);
+    }
   }
 
   create(): void {
     this.scene.start('GameScene');
   }
 }
+

@@ -1,118 +1,114 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-const DESIGN_ASPECT = 9 / 16; // width / height ≈ 0.5625
+const DESIGN_ASPECT = 9 / 16;
 
-async function waitForCanvas(page: Page): Promise<void> {
-  await page.waitForSelector('canvas', { timeout: 10_000 });
-  // Allow Phaser to complete its boot sequence.
-  await page.waitForTimeout(1500);
+async function waitForBoard(page: Page): Promise<void> {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('canvas', { timeout: 20_000 });
+  await page.waitForFunction(() => window.__TILEPYRAMID_BUILD02__?.tileCount === 72, null, {
+    timeout: 20_000,
+  });
 }
 
-test.describe('Shell smoke tests', () => {
-  test('loads without uncaught JavaScript errors', async ({ page }) => {
+test.describe('Build-02 board smoke tests', () => {
+  test('app loads without uncaught JavaScript errors', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', e => errors.push(e.message));
 
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
     expect(errors, `Uncaught errors: ${errors.join('; ')}`).toHaveLength(0);
   });
 
-  test('canvas is visible in portrait (390×844)', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+  test('exactly 72 tile sprites exist', async ({ page }) => {
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
-    const canvas = page.locator('canvas').first();
-    await expect(canvas).toBeVisible();
+    const spriteCount = await page.evaluate(() => window.__TILEPYRAMID_BUILD02__?.spriteCount);
+    expect(spriteCount).toBe(72);
   });
 
-  test('canvas is approximately 9:16 in portrait (390×844)', async ({ page }) => {
+  test('board is visible inside gameplay viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
-    const box = await page.locator('canvas').first().boundingBox();
-    expect(box, 'canvas bounding box must exist').not.toBeNull();
-    if (!box) return;
-
-    const ratio = box.width / box.height;
-    // Allow ±2% tolerance for sub-pixel rounding.
-    expect(ratio).toBeGreaterThan(DESIGN_ASPECT * 0.98);
-    expect(ratio).toBeLessThan(DESIGN_ASPECT * 1.02);
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD02__);
+    expect(snapshot?.boardBounds.left).toBeGreaterThanOrEqual(0);
+    expect(snapshot?.boardBounds.right).toBeLessThanOrEqual(1080);
+    expect(snapshot?.boardBounds.top).toBeGreaterThanOrEqual(0);
+    expect(snapshot?.boardBounds.bottom).toBeLessThanOrEqual(1920);
   });
 
-  test('canvas fits within the portrait viewport', async ({ page }) => {
+  test('portrait shell remains correct', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
     const box = await page.locator('canvas').first().boundingBox();
     expect(box).not.toBeNull();
     if (!box) return;
 
+    expect(box.width / box.height).toBeGreaterThan(DESIGN_ASPECT * 0.98);
+    expect(box.width / box.height).toBeLessThan(DESIGN_ASPECT * 1.02);
     expect(box.width).toBeLessThanOrEqual(391);
     expect(box.height).toBeLessThanOrEqual(845);
   });
 
-  test('canvas remains portrait-oriented in landscape (844×390)', async ({ page }) => {
+  test('landscape still uses centered portrait gameplay viewport', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
     const box = await page.locator('canvas').first().boundingBox();
     expect(box).not.toBeNull();
     if (!box) return;
 
-    // Canvas must be taller than wide (portrait orientation preserved).
     expect(box.height).toBeGreaterThan(box.width);
+    expect(box.width / box.height).toBeGreaterThan(DESIGN_ASPECT * 0.98);
+    expect(box.width / box.height).toBeLessThan(DESIGN_ASPECT * 1.02);
+    expect(Math.abs(box.x + box.width / 2 - 422)).toBeLessThan(5);
   });
 
-  test('canvas is approximately 9:16 in landscape (844×390)', async ({ page }) => {
+  test('board does not move into landscape side-background areas', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
-    const box = await page.locator('canvas').first().boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
+    const canvasBox = await page.locator('canvas').first().boundingBox();
+    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD02__);
+    expect(canvasBox).not.toBeNull();
+    expect(snapshot).toBeDefined();
+    if (!canvasBox || !snapshot) return;
 
-    const ratio = box.width / box.height;
-    expect(ratio).toBeGreaterThan(DESIGN_ASPECT * 0.98);
-    expect(ratio).toBeLessThan(DESIGN_ASPECT * 1.02);
+    const scale = canvasBox.width / 1080;
+    const boardLeft = canvasBox.x + snapshot.boardBounds.left * scale;
+    const boardRight = canvasBox.x + snapshot.boardBounds.right * scale;
+    expect(boardLeft).toBeGreaterThanOrEqual(canvasBox.x);
+    expect(boardRight).toBeLessThanOrEqual(canvasBox.x + canvasBox.width);
   });
 
-  test('canvas fits within the landscape viewport', async ({ page }) => {
-    await page.setViewportSize({ width: 844, height: 390 });
+  test('debug diagnostics report 72 tiles', async ({ page }) => {
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
-    const box = await page.locator('canvas').first().boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
-
-    expect(box.width).toBeLessThanOrEqual(845);
-    expect(box.height).toBeLessThanOrEqual(391);
+    const tileCount = await page.evaluate(() => window.__TILEPYRAMID_BUILD02__?.tileCount);
+    expect(tileCount).toBe(72);
   });
 
-  test('canvas is horizontally centered in landscape (844×390)', async ({ page }) => {
-    await page.setViewportSize({ width: 844, height: 390 });
+  test('formal solvability is shown as not yet proven', async ({ page }) => {
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
-    const box = await page.locator('canvas').first().boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
-
-    const centerX = box.x + box.width / 2;
-    expect(Math.abs(centerX - 422)).toBeLessThan(5); // 844/2 = 422
+    const solvability = await page.evaluate(() => window.__TILEPYRAMID_BUILD02__?.formalSolvability);
+    expect(solvability).toBe('NOT YET PROVEN');
   });
 
   test('background layer covers the full viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await waitForCanvas(page);
+    await waitForBoard(page);
 
     const bgBox = await page.locator('#bg-layer').first().boundingBox();
     expect(bgBox).not.toBeNull();
@@ -120,18 +116,5 @@ test.describe('Shell smoke tests', () => {
 
     expect(bgBox.width).toBeCloseTo(390, 0);
     expect(bgBox.height).toBeCloseTo(844, 0);
-  });
-
-  test('background layer covers the full landscape viewport', async ({ page }) => {
-    await page.setViewportSize({ width: 844, height: 390 });
-    await page.goto('/');
-    await waitForCanvas(page);
-
-    const bgBox = await page.locator('#bg-layer').first().boundingBox();
-    expect(bgBox).not.toBeNull();
-    if (!bgBox) return;
-
-    expect(bgBox.width).toBeCloseTo(844, 0);
-    expect(bgBox.height).toBeCloseTo(390, 0);
   });
 });

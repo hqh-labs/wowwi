@@ -1,7 +1,7 @@
-# PROPOSED_ARCHITECTURE.md
+﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed — not implemented. Subject to revision at BUILD-01.
+Status: Proposed architecture with BUILD-01 and BUILD-02 implementation notes.
 
 ---
 
@@ -151,9 +151,38 @@ Responsibilities:
 - Notify listeners when a tile is tapped.
 - Emit board-cleared event when empty.
 
+BUILD-02 implementation note: the board is currently static. Pure modules under
+`src/gameplay/` parse level data, derive blocking, assign tile types, validate
+triplets, and calculate layout. Phaser renders these results but does not remove,
+move, match, or mutate tiles.
+
 ### Blocking system (`BlockingSystem.ts`)
 
 Derives blocking relationships from layer coordinates using the overlap rule in `LEVEL_DATA_ANALYSIS.md`. Returns a boolean `isBlocked(tile)` for any tile. Re-evaluates after each tile removal.
+
+BUILD-02 established interface:
+- `deriveBlockingRelationships(positions)` returns blocker IDs for each stable
+  position ID.
+- `createBoardTiles(positions, assignments)` returns tile instances with stable
+  IDs, layer, coordinate, blocker IDs, and selectable status.
+- Initial selectable state is static in BUILD-02 because tile removal is not
+  implemented.
+
+### Deterministic assignment (`TileAssigner.ts`)
+
+BUILD-02 established interface:
+- `assignTileTypes(positions, { seed, tileTypeCount, tutorialPreviewPositionIds })`
+  uses a local seeded PRNG, never `Math.random()`.
+- Level_21 uses 24 tile types and 72 assignments.
+- `validateTriplets(assignments, tileTypeCount)` verifies exactly three copies
+  of every configured tile type.
+
+### Board layout (`BoardLayout.ts`)
+
+BUILD-02 established interface:
+- `calculateBoardLayout(tiles, boardLayoutConfig, tileSourceSize)` maps level
+  coordinates into the fixed 1080 x 1920 portrait gameplay space.
+- Layout constants live in `public/config/game.config.json`, not scene code.
 
 ### Tray and matching system (`TraySystem.ts`)
 

@@ -10,7 +10,6 @@ project-input/extracted-assets/
 # ─── Node / npm ───────────────────────────────────────────────────────────────
 node_modules/
 .npm/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

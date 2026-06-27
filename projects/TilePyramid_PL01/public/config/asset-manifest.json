@@ -6,6 +6,156 @@
       "type": "image",
       "path": "./assets/images/Background_1.png",
       "source": "Copied (read-only) from project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_1.png. Original is 1024x1024 PNG; WebP conversion deferred to BUILD-02."
+    },
+    {
+      "id": "Level_21",
+      "type": "json",
+      "path": "./assets/levels/Level_21.json",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Level Design/Level_21.json."
+    },
+    {
+      "id": "Tile_01",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_01.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/1.png."
+    },
+    {
+      "id": "Tile_02",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_02.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/2.png."
+    },
+    {
+      "id": "Tile_03",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_03.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/3.png."
+    },
+    {
+      "id": "Tile_04",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_04.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/4.png."
+    },
+    {
+      "id": "Tile_05",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_05.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/5.png."
+    },
+    {
+      "id": "Tile_06",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_06.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/6.png."
+    },
+    {
+      "id": "Tile_07",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_07.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/7.png."
+    },
+    {
+      "id": "Tile_08",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_08.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/8.png."
+    },
+    {
+      "id": "Tile_09",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_09.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/9.png."
+    },
+    {
+      "id": "Tile_10",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_10.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/10.png."
+    },
+    {
+      "id": "Tile_11",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_11.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/11.png."
+    },
+    {
+      "id": "Tile_12",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_12.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/12.png."
+    },
+    {
+      "id": "Tile_13",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_13.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/13.png."
+    },
+    {
+      "id": "Tile_14",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_14.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/14.png."
+    },
+    {
+      "id": "Tile_15",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_15.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/15.png."
+    },
+    {
+      "id": "Tile_16",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_16.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/16.png."
+    },
+    {
+      "id": "Tile_17",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_17.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/17.png."
+    },
+    {
+      "id": "Tile_18",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_18.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/18.png."
+    },
+    {
+      "id": "Tile_19",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_19.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/19.png."
+    },
+    {
+      "id": "Tile_20",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_20.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/20.png."
+    },
+    {
+      "id": "Tile_21",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_21.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/21.png."
+    },
+    {
+      "id": "Tile_22",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_22.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/22.png."
+    },
+    {
+      "id": "Tile_23",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_23.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/23.png."
+    },
+    {
+      "id": "Tile_24",
+      "type": "image",
+      "path": "./assets/images/tiles/tile_24.png",
+      "source": "Copied unchanged from project-input/extracted-assets/TilePyramid_TrueGameplay/Tile Set/24.png."
     }
   ]
 }

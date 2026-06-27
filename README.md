@@ -1,4 +1,4 @@
-# wowwi
+﻿# wowwi
 
 Playable ad development repository.
 
@@ -55,8 +55,8 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (41 tests)
-npm run test:smoke    # browser smoke tests — requires Chromium (builds first)
+npm run test          # unit tests (61 tests)
+npm run test:smoke    # browser smoke tests (9 tests) - requires Chromium, builds first
 ```
 
 To install the Playwright browser (first-time only):
@@ -76,7 +76,7 @@ npm run preview       # serve the build at http://localhost:4173
 
 - **BUILD-00**: Repository bootstrap, asset audit, technical documentation ← complete
 - **BUILD-01**: Runtime, build tooling, responsive playable shell ← complete
-- **BUILD-02**: Tile board, blocking system, tray and match logic
+- **BUILD-02**: Static Level_21 board, blocking system, deterministic tile assignment
 - **BUILD-03**: Tutorial system, hand pointer, idle reminder
 - **BUILD-04**: Timer, win/lose states, end card
 - **BUILD-05**: Effects and audio

@@ -28,8 +28,8 @@ export function validateManifest(data: unknown): AssetManifestData {
     if (typeof asset['id'] !== 'string' || asset['id'].trim() === '') {
       throw new ManifestValidationError(`Manifest.assets[${i}].id must be a non-empty string`);
     }
-    if (!['image', 'audio', 'font'].includes(asset['type'] as string)) {
-      throw new ManifestValidationError(`Manifest.assets[${i}].type must be image, audio, or font`);
+    if (!['image', 'audio', 'font', 'json'].includes(asset['type'] as string)) {
+      throw new ManifestValidationError(`Manifest.assets[${i}].type must be image, audio, font, or json`);
     }
     if (typeof asset['path'] !== 'string' || asset['path'].trim() === '') {
       throw new ManifestValidationError(`Manifest.assets[${i}].path must be a non-empty string`);

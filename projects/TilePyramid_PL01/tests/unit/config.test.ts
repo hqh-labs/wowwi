@@ -11,6 +11,22 @@ const VALID: Record<string, unknown> = {
   portraitPolicy: 'fill',
   landscapePolicy: 'letterbox',
   debugOverlay: true,
+  levelId: 'Level_21',
+  assignmentSeed: 21000,
+  tileTypeCount: 24,
+  tutorialPreviewPositionIds: ['L2:-1.5:2.5', 'L2:-0.5:2.5', 'L2:0.5:2.5'],
+  boardLayout: {
+    centerX: 540,
+    centerY: 720,
+    spacingX: 110,
+    spacingY: 118,
+    layerOffsetX: 22,
+    layerOffsetY: -22,
+    tileScale: 1,
+    maxWidth: 980,
+    maxHeight: 1120,
+  },
+  debugBlockedState: true,
 };
 
 describe('validateConfig', () => {
@@ -65,5 +81,17 @@ describe('validateConfig', () => {
 
   it('throws when backgroundId is empty string', () => {
     expect(() => validateConfig({ ...VALID, backgroundId: '  ' })).toThrow(/backgroundId/);
+  });
+
+  it('throws when tutorial preview ids do not contain exactly three ids', () => {
+    expect(() => validateConfig({ ...VALID, tutorialPreviewPositionIds: ['a'] })).toThrow(
+      /tutorialPreviewPositionIds/
+    );
+  });
+
+  it('throws when board layout tileScale is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, boardLayout: { ...(VALID['boardLayout'] as object), tileScale: 0 } })
+    ).toThrow(/tileScale/);
   });
 });

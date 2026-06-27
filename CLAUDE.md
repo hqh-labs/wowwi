@@ -1,4 +1,4 @@
-# CLAUDE.md — Permanent Rules for AI Collaboration
+﻿# CLAUDE.md — Permanent Rules for AI Collaboration
 
 This file governs all AI-assisted work in this repository.
 These rules apply to every build phase, every session, every agent.
@@ -86,5 +86,6 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-01** — Responsive playable shell (Phaser 3 + TypeScript + Vite).
-Shell complete. No gameplay implemented. Not yet committed.
+**BUILD-02** - Level board, blocking system, and deterministic tile assignment.
+BUILD-01 shell complete. BUILD-02 renders a static board only; no tray, matching,
+timer, tutorial hand, audio, CTA, end card, effects, or exporters.

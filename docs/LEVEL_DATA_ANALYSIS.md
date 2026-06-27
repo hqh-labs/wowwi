@@ -226,6 +226,28 @@ For performance, use a depth-first search with early pruning:
 
 For BUILD-00, this algorithm is documented only. Implementation deferred to BUILD-02.
 
+BUILD-02 implementation note: no formal solver is implemented yet. The runtime
+diagnostics intentionally report `Formal solvability: NOT YET PROVEN`. BUILD-02
+does implement deterministic triplet assignment and verifies only that each tile
+type appears exactly three times.
+
+---
+
+## BUILD-02 implemented facts
+
+- `Level_21` is parsed from a runtime copy of the extracted JSON.
+- The parser validates required root fields, layer indices, finite coordinates,
+  duplicate coordinates within a layer, contiguous layer ordering, and total
+  stone count divisibility by 3.
+- The initial BUILD-02 board contains 72 tile instances across 3 layers.
+- Blocking is derived from adjacent-layer coordinates using `dx < 1` and
+  `dy < 1`; sprite overlap is not used.
+- Initial selectable count is 16, matching the top layer.
+- Deterministic assignment uses seed `21000`, tile types `1` through `24`, and
+  exactly three copies of each type.
+- Tutorial-preview positions are reserved as `L2:-1.5:2.5`,
+  `L2:-0.5:2.5`, and `L2:0.5:2.5`; all receive tile type `1`.
+
 ---
 
 ## Proposed tutorial-safe opening arrangement
