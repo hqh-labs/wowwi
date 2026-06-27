@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 and BUILD-02 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-03 implementation notes.
 
 ---
 
@@ -192,6 +192,24 @@ Responsibilities:
 - After each addition, check for three identical tiles; if found, remove them and emit `matchCleared`.
 - Emit `trayFull` when tray reaches capacity with no possible match.
 - Expose tray state for renderer and config validation.
+
+BUILD-03 established interface:
+- `createTrayState(capacity)` validates configurable tray capacity.
+- `addTileToTray(state, tile)` inserts beside existing same-type tiles when
+  possible, otherwise appends in stable order.
+- `getMatchReadyTileTypes(state)` identifies three-or-more same-type tray groups
+  for debug marking only. It does not remove matches in BUILD-03.
+
+### Selection controller (`SelectionController.ts`)
+
+BUILD-03 established interface:
+- `attemptTileSelection(board, tray, selection, tileId, inputLockEnabled)` rejects
+  blocked tiles, removed tiles, full tray, and locked input before animation.
+- `completeTileSelection(board, tray, selectedTile)` removes the tile from board
+  state, adds it to tray state, recomputes blocking/selectable board state, and
+  unlocks input.
+- `GameScene` coordinates Phaser rendering and animation; selection and tray
+  insertion rules remain pure and testable without Phaser.
 
 ### Tutorial system (`TutorialSystem.ts`)
 

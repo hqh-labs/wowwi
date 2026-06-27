@@ -18,6 +18,12 @@ const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'tutorialPreviewPositionIds',
   'boardLayout',
   'debugBlockedState',
+  'trayCapacity',
+  'trayLayout',
+  'tileFlyDurationMs',
+  'inputLockEnabled',
+  'blockedTileFeedback',
+  'debugMatchReadyMarker',
 ];
 
 export class ConfigValidationError extends Error {
@@ -79,6 +85,26 @@ export function validateConfig(data: unknown): GameConfig {
   if (typeof obj['debugBlockedState'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugBlockedState must be a boolean');
   }
+  if (!Number.isInteger(obj['trayCapacity']) || (obj['trayCapacity'] as number) < 1) {
+    throw new ConfigValidationError('Config.trayCapacity must be an integer >= 1');
+  }
+  validateTrayLayout(obj['trayLayout']);
+  if (
+    typeof obj['tileFlyDurationMs'] !== 'number' ||
+    !Number.isFinite(obj['tileFlyDurationMs']) ||
+    obj['tileFlyDurationMs'] < 0
+  ) {
+    throw new ConfigValidationError('Config.tileFlyDurationMs must be a non-negative finite number');
+  }
+  if (typeof obj['inputLockEnabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.inputLockEnabled must be a boolean');
+  }
+  if (!['shake', 'tint', 'none'].includes(obj['blockedTileFeedback'] as string)) {
+    throw new ConfigValidationError('Config.blockedTileFeedback must be shake, tint, or none');
+  }
+  if (typeof obj['debugMatchReadyMarker'] !== 'boolean') {
+    throw new ConfigValidationError('Config.debugMatchReadyMarker must be a boolean');
+  }
 
   return data as GameConfig;
 }
@@ -113,6 +139,24 @@ function validateBoardLayout(value: unknown): void {
       (typeof layout[optionalField] !== 'number' || !Number.isFinite(layout[optionalField]))
     ) {
       throw new ConfigValidationError(`Config.boardLayout.${optionalField} must be a finite number`);
+    }
+  }
+}
+
+function validateTrayLayout(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.trayLayout must be an object');
+  }
+
+  const layout = value as Record<string, unknown>;
+  for (const field of ['centerX', 'centerY', 'slotSpacing', 'slotWidth', 'slotHeight', 'tileScale']) {
+    if (typeof layout[field] !== 'number' || !Number.isFinite(layout[field])) {
+      throw new ConfigValidationError(`Config.trayLayout.${field} must be a finite number`);
+    }
+  }
+  for (const positiveField of ['slotSpacing', 'slotWidth', 'slotHeight', 'tileScale']) {
+    if ((layout[positiveField] as number) <= 0) {
+      throw new ConfigValidationError(`Config.trayLayout.${positiveField} must be positive`);
     }
   }
 }

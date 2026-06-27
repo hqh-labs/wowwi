@@ -27,5 +27,18 @@
     "maxWidth": 980,
     "maxHeight": 1120
   },
-  "debugBlockedState": true
+  "debugBlockedState": true,
+  "trayCapacity": 5,
+  "trayLayout": {
+    "centerX": 540,
+    "centerY": 1580,
+    "slotSpacing": 148,
+    "slotWidth": 132,
+    "slotHeight": 144,
+    "tileScale": 0.82
+  },
+  "tileFlyDurationMs": 360,
+  "inputLockEnabled": true,
+  "blockedTileFeedback": "shake",
+  "debugMatchReadyMarker": true
 }

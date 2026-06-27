@@ -14,6 +14,12 @@ export interface GameConfig {
   tutorialPreviewPositionIds: string[];
   boardLayout: BoardLayoutConfig;
   debugBlockedState: boolean;
+  trayCapacity: number;
+  trayLayout: TrayLayoutConfig;
+  tileFlyDurationMs: number;
+  inputLockEnabled: boolean;
+  blockedTileFeedback: 'shake' | 'tint' | 'none';
+  debugMatchReadyMarker: boolean;
 }
 
 export interface BoardLayoutConfig {
@@ -26,6 +32,15 @@ export interface BoardLayoutConfig {
   tileScale: number;
   maxWidth?: number;
   maxHeight?: number;
+}
+
+export interface TrayLayoutConfig {
+  centerX: number;
+  centerY: number;
+  slotSpacing: number;
+  slotWidth: number;
+  slotHeight: number;
+  tileScale: number;
 }
 
 export interface AssetEntry {
@@ -45,6 +60,7 @@ declare global {
     __GAME_CONFIG__: GameConfig;
     __ASSET_MANIFEST__: AssetManifestData;
     __TILEPYRAMID_BUILD02__?: Readonly<Build02Snapshot>;
+    __TILEPYRAMID_BUILD03__?: Readonly<Build03Snapshot>;
   }
 }
 
@@ -70,5 +86,22 @@ export interface Build02Snapshot {
     tileTypeId: number;
     selectable: boolean;
     blockerIds: string[];
+  }>;
+}
+
+export interface Build03Snapshot extends Build02Snapshot {
+  remainingBoardCount: number;
+  trayCount: number;
+  trayCapacity: number;
+  traySlotCount: number;
+  trayFull: boolean;
+  inputLocked: boolean;
+  matchReadyTileTypes: number[];
+  trayTiles: Array<{
+    sourceTileId: string;
+    tileTypeId: number;
+    slotIndex: number;
+    screenX: number;
+    screenY: number;
   }>;
 }

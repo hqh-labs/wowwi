@@ -27,6 +27,19 @@ const VALID: Record<string, unknown> = {
     maxHeight: 1120,
   },
   debugBlockedState: true,
+  trayCapacity: 5,
+  trayLayout: {
+    centerX: 540,
+    centerY: 1580,
+    slotSpacing: 148,
+    slotWidth: 132,
+    slotHeight: 144,
+    tileScale: 0.82,
+  },
+  tileFlyDurationMs: 360,
+  inputLockEnabled: true,
+  blockedTileFeedback: 'shake',
+  debugMatchReadyMarker: true,
 };
 
 describe('validateConfig', () => {
@@ -93,5 +106,15 @@ describe('validateConfig', () => {
     expect(() =>
       validateConfig({ ...VALID, boardLayout: { ...(VALID['boardLayout'] as object), tileScale: 0 } })
     ).toThrow(/tileScale/);
+  });
+
+  it('throws when trayCapacity is invalid', () => {
+    expect(() => validateConfig({ ...VALID, trayCapacity: 0 })).toThrow(/trayCapacity/);
+  });
+
+  it('throws when tray layout slot size is invalid', () => {
+    expect(() =>
+      validateConfig({ ...VALID, trayLayout: { ...(VALID['trayLayout'] as object), slotWidth: -1 } })
+    ).toThrow(/slotWidth/);
   });
 });

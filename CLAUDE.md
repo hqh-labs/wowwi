@@ -86,6 +86,7 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-02** - Level board, blocking system, and deterministic tile assignment.
-BUILD-01 shell complete. BUILD-02 renders a static board only; no tray, matching,
-timer, tutorial hand, audio, CTA, end card, effects, or exporters.
+**BUILD-03** - Tray, tile selection, and fly-to-tray interaction.
+BUILD-03 allows selectable tiles to move into the tray and leave the board.
+Match-three removal, timer, tutorial, audio, CTA, end card, effects, and
+exporters remain out of scope.
