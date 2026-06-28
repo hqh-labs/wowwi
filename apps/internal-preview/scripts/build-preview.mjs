@@ -257,14 +257,24 @@ async function main() {
 
   for (const project of projects) {
     const projectFolder = path.join(REPO_ROOT, project.folder);
-    const deliveryRoot = path.join(projectFolder, 'delivery/latest');
-    const manifestPath = path.join(deliveryRoot, 'delivery-manifest.json');
-    const manifest = await tryReadJson(manifestPath);
+
+    // Prefer Vercel-generated preview delivery; fall back to real delivery package
+    const previewDeliveryRoot = path.join(projectFolder, 'delivery/preview');
+    const realDeliveryRoot = path.join(projectFolder, 'delivery/latest');
+
+    let manifest = await tryReadJson(path.join(previewDeliveryRoot, 'delivery-manifest.json'));
+    let deliveryRoot = previewDeliveryRoot;
+    if (!manifest) {
+      manifest = await tryReadJson(path.join(realDeliveryRoot, 'delivery-manifest.json'));
+      deliveryRoot = realDeliveryRoot;
+    }
 
     if (!manifest) {
       console.error(`\nERROR: Delivery manifest not found for ${project.projectId}`);
-      console.error(`  Expected: ${manifestPath}`);
-      console.error(`  Run: cd ${project.folder} && npm run package:delivery`);
+      console.error(`  Expected (Vercel): ${previewDeliveryRoot}/delivery-manifest.json`);
+      console.error(`  Expected (local):  ${realDeliveryRoot}/delivery-manifest.json`);
+      console.error(`  Run: npm run vercel:generate-delivery  (Vercel path)`);
+      console.error(`  OR:  cd ${project.folder} && npm run package:delivery  (local path)`);
       process.exit(1);
     }
 

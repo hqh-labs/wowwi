@@ -1,12 +1,15 @@
 /**
- * BUILD-16 Vercel Build Script
+ * BUILD-17 Vercel Build Script (Playwright-free)
  *
- * Orchestrates the full Vercel/CI build pipeline:
- *   1. Validate project registry
- *   2. Generate TilePyramid_PL01 delivery package (runs package:delivery)
- *   3. Validate delivery package
- *   4. Build internal preview site (runs preview:build)
- *   5. Validate preview site output
+ * Orchestrates the Vercel build pipeline without any browser automation:
+ *   1. Validate project registry (static JSON + schema)
+ *   2. Export Unity + AppLovin HTML (Vite build + static validation — no Playwright)
+ *   3. Generate preview delivery manifest (copy HTML + write delivery-manifest.json)
+ *   4. Build internal preview site
+ *   5. Validate preview site output (static checks only)
+ *
+ * This script does NOT call: package:candidate, package:delivery,
+ * test:exports, test:smoke, or any Playwright command.
  *
  * Usage: node apps/internal-preview/scripts/vercel-build.mjs
  * Root shortcut: npm run vercel:build-preview
@@ -25,13 +28,13 @@ const IS_WIN = process.platform === 'win32';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function step(label) {
+function step(n, total, label) {
   console.log(`\n${'─'.repeat(50)}`);
-  console.log(`  STEP: ${label}`);
+  console.log(`  STEP ${n}/${total}: ${label}`);
   console.log('─'.repeat(50));
 }
 
-function runNpm(args, cwd, label, timeoutMs = 600_000) {
+function runNpm(args, cwd, label, timeoutMs = 300_000) {
   return new Promise((resolve, reject) => {
     const cmd = IS_WIN ? 'cmd.exe' : 'npm';
     const argv = IS_WIN ? ['/d', '/s', '/c', `npm ${args}`] : args.split(' ');
@@ -56,29 +59,30 @@ function runNpm(args, cwd, label, timeoutMs = 600_000) {
 async function main() {
   const startMs = Date.now();
 
-  console.log('\nWowwi Vercel Build — BUILD-16');
+  console.log('\nWowwi Vercel Build — BUILD-17 (Playwright-free)');
   console.log('='.repeat(50));
   console.log('Output directory: apps/internal-preview/dist');
+  console.log('No Playwright. No Chromium. No browser.');
 
-  // 1. Validate project registry
-  step('1/5 — Validate project registry');
+  // 1. Validate project registry (static)
+  step(1, 5, 'Validate project registry');
   await runNpm('run wowwi:validate', REPO_ROOT, 'wowwi:validate');
 
-  // 2. Generate delivery package (includes test:exports Playwright smoke tests)
-  step('2/5 — Generate TilePyramid_PL01 delivery package');
-  console.log('Running: npm run package:delivery (includes Playwright export tests)');
-  await runNpm('run package:delivery', TP_ROOT, 'package:delivery', 600_000);
+  // 2. Export Unity + AppLovin HTML (Vite build + static validation only — no Playwright)
+  step(2, 5, 'Export TilePyramid_PL01 HTML (Vite build + static checks, no Playwright)');
+  console.log('Running: npm run export:all:static');
+  await runNpm('run export:all:static', TP_ROOT, 'export:all:static', 300_000);
 
-  // 3. Validate delivery package
-  step('3/5 — Validate delivery package');
-  await runNpm('run validate:delivery', TP_ROOT, 'validate:delivery');
+  // 3. Generate preview delivery manifest (copy HTML + write delivery-manifest.json)
+  step(3, 5, 'Generate preview delivery manifest');
+  await runNpm('run vercel:generate-delivery', REPO_ROOT, 'vercel:generate-delivery');
 
   // 4. Build preview site
-  step('4/5 — Build internal preview site');
+  step(4, 5, 'Build internal preview site');
   await runNpm('run preview:build', REPO_ROOT, 'preview:build');
 
-  // 5. Validate preview site
-  step('5/5 — Validate internal preview site');
+  // 5. Validate preview site (static checks only — no Playwright)
+  step(5, 5, 'Validate internal preview site (static)');
   await runNpm('run preview:validate', REPO_ROOT, 'preview:validate');
 
   const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
@@ -86,6 +90,7 @@ async function main() {
   console.log(`\n${'='.repeat(50)}`);
   console.log(`Vercel build complete in ${elapsed}s`);
   console.log('Output: apps/internal-preview/dist/');
+  console.log('No Playwright was used.');
   console.log('='.repeat(50));
   console.log('');
 }

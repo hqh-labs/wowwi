@@ -166,7 +166,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-13**: Delivery candidate lock, network QA evidence, final handoff package
 - **BUILD-14**: Project registry and local tool foundation
 - **BUILD-15**: Internal preview site foundation
-- **BUILD-16**: Vercel deployment configuration and deploy prep ← current
+- **BUILD-16**: Vercel deployment configuration and deploy prep
+- **BUILD-17**: Playwright-free Vercel build pipeline fix ← current
 
 ## Documentation index
 

@@ -137,5 +137,11 @@ export async function validateVercelConfig(repoRoot) {
     );
   }
 
+  if (config.installCommand && config.installCommand.includes('playwright')) {
+    errors.push(
+      'vercel.json installCommand must not include playwright — Playwright is not available in Vercel build'
+    );
+  }
+
   return { pass: errors.length === 0, errors, config };
 }

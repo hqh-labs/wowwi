@@ -1,8 +1,8 @@
 # Vercel Preview Preparation
 
-> **BUILD-16 UPDATE:** The Vercel configuration (`vercel.json`) has been created
-> and all remaining blockers have been addressed. See
-> `docs/VERCEL_DEPLOYMENT.md` for the full deployment guide and
+> **BUILD-17 UPDATE:** The Vercel build Playwright dependency has been removed.
+> `vercel:build-preview` now runs without Playwright or Chromium and completes in
+> ~15s locally. See `docs/VERCEL_DEPLOYMENT.md` for the full deployment guide and
 > `docs/VERCEL_PREVIEW_CHECKLIST.md` for the step-by-step checklist.
 
 This document describes what is and is not ready for a future Vercel deployment of
@@ -67,16 +67,15 @@ from version control and any public or semi-public hosting.
 {
   "buildCommand": "npm run vercel:build-preview",
   "outputDirectory": "apps/internal-preview/dist",
-  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install && npx playwright install chromium",
+  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install",
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false
 }
 ```
 
-The build command generates TilePyramid delivery HTML during the Vercel build
-itself — no pre-committed delivery files are needed. The Playwright Chromium
-browser is installed by the `installCommand`.
+The build command generates TilePyramid HTML via Vite build + static validation only.
+No Playwright, no Chromium, no browser system libraries required.
 
 ## Status summary — updated BUILD-16
 
@@ -92,6 +91,8 @@ browser is installed by the `installCommand`.
 | vercel.json created | DONE (BUILD-16) |
 | Delivery generated during build | DONE (BUILD-16) |
 | Local Vercel-like build verified | DONE (BUILD-16) |
+| Playwright removed from Vercel path | DONE (BUILD-17) |
+| Vercel build time < 20s locally | DONE (BUILD-17) |
 | Authentication | NOT YET |
 | CI/GitHub Actions workflow | NOT YET |
 | Actual Vercel deployment | NOT YET |

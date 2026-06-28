@@ -86,13 +86,16 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-16** — Vercel deployment configuration and internal preview deploy prep.
-BUILD-16 adds `vercel.json`, the `vercel:build-preview` command (5-step pipeline:
-registry validate → delivery generation → delivery validate → preview build →
-preview validate), `vercel:preflight`, `vercel:validate-preview`, `vercel:test`
-(14 tests), and deployment documentation. The Vercel build generates TilePyramid
-delivery HTML during the build itself (no pre-committed files needed). No actual
-Vercel deployment is performed.
+**BUILD-17** — Vercel build Playwright fix (Playwright-free Vercel pipeline).
+BUILD-17 fixes the Vercel build failure caused by missing Playwright system
+libraries (`libnspr4.so`). The new Vercel-safe export path (`export:all:static`,
+`validate:exports:static`) runs Vite build + static HTML validation only — never
+importing `export-visual-validator.mjs` or `@playwright/test`. The
+`vercel:build-preview` pipeline no longer calls `package:candidate`,
+`package:delivery`, `test:exports`, or `test:smoke`. The Vercel `installCommand`
+no longer includes `playwright`. Preview delivery is written to `delivery/preview/`
+(never touching `delivery/latest/`). 15 vercel tests. No actual Vercel deployment
+is performed.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API

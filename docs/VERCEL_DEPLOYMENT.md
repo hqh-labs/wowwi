@@ -13,7 +13,7 @@ deploy the internal preview site. No Vercel CLI is required.
 {
   "buildCommand": "npm run vercel:build-preview",
   "outputDirectory": "apps/internal-preview/dist",
-  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install && npx playwright install chromium",
+  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install",
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false
@@ -24,21 +24,28 @@ deploy the internal preview site. No Vercel CLI is required.
 |---|---|
 | Build command | `npm run vercel:build-preview` |
 | Output directory | `apps/internal-preview/dist` |
-| Install command | Installs root + TilePyramid deps + Playwright Chromium |
+| Install command | Installs root + TilePyramid deps — **no Playwright** |
 | Framework | None (static output) |
 
 ---
 
-## What `vercel:build-preview` does
+## What `vercel:build-preview` does (BUILD-17 — Playwright-free)
 
-Runs 5 sequential steps:
+Runs 5 sequential steps. **No Chromium, no browser, no Playwright system libraries required.**
 
-1. **Validate project registry** — `npm run wowwi:validate`
-2. **Generate TilePyramid_PL01 delivery** — `npm run package:delivery` from `projects/TilePyramid_PL01/`
-   — includes Playwright export smoke tests (14 tests, ~90s)
-3. **Validate delivery** — `npm run validate:delivery`
+1. **Validate project registry** — `npm run wowwi:validate` (static JSON + schema)
+2. **Export Unity + AppLovin HTML** — `npm run export:all:static` (Vite build + static validation only)
+3. **Generate preview delivery manifest** — `npm run vercel:generate-delivery` (copy HTML + write `delivery/preview/delivery-manifest.json`)
 4. **Build preview site** — `npm run preview:build`
-5. **Validate preview output** — `npm run preview:validate`
+5. **Validate preview output** — `npm run preview:validate` (static checks only)
+
+**Does NOT call:** `package:candidate`, `package:delivery`, `test:exports`, `test:smoke`, or any Playwright command.
+
+### Why not package:delivery?
+
+`package:delivery` → `package:candidate` → `test:exports` → Playwright Chromium.
+Vercel's build environment lacks `libnspr4.so` and other Playwright system libraries.
+The Vercel path uses `export:all:static` instead, which skips visual validation entirely.
 
 ---
 
@@ -119,16 +126,14 @@ variables and document them here.
 
 ## Known limitations
 
-1. **Playwright dependency.** The build runs `package:delivery` which includes
-   Playwright Chromium smoke tests. The install command runs
-   `npx playwright install chromium` in Vercel's build container. This adds ~2–4
-   minutes to first-time builds and requires Vercel's build environment to have
-   access to install Playwright dependencies (`apt-get` may be needed — see
-   Playwright CI docs). If Playwright fails in Vercel, consider pre-building
-   delivery HTML files on a separate CI runner and caching them.
+1. **Visual smoke tests not run in Vercel.** The Vercel build (`export:all:static`)
+   skips Playwright visual validation. Visual boot, portrait/landscape layout, and
+   store-open behavioral tests are only confirmed by local `npm run test:exports`
+   or `npm run package:delivery`. The Vercel preview HTML is structurally valid
+   (static checks pass) but visual confirmation requires a local full QA run.
 
-2. **Build time.** Full `vercel:build-preview` takes ~90–120s locally. In Vercel's
-   environment, first-run install + Playwright + tests may take 5–10 minutes.
+2. **Build time.** `vercel:build-preview` takes ~15–20s locally (mostly Vite build).
+   In Vercel's environment, expect ~2–4 minutes (install + Vite + inlining).
 
 3. **No authentication.** The deployed preview is publicly accessible via the
    Vercel URL. For a truly internal tool, enable Vercel Password Protection or
@@ -141,14 +146,11 @@ variables and document them here.
 
 ## Recommended next steps after connecting Vercel
 
-1. Trigger a deploy and verify the 5-step build log in Vercel.
+1. Trigger a deploy and verify the 5-step build log in Vercel (no Playwright steps).
 2. Open the deployed URL and walk through the manual verification checklist
    (see `docs/VERCEL_PREVIEW_CHECKLIST.md`).
-3. If Playwright fails in Vercel's environment, consider adding a Vercel build
-   image that pre-installs `libglib2.0-0 libnss3 libnspr4 libdbus-1-3 libatk1.0-0
-   libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1
-   libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2`
-   (Playwright Chromium system dependencies on Ubuntu).
-4. Enable Vercel Password Protection for the internal preview.
-5. Add a GitHub Actions workflow that runs `npm run vercel:preflight` on PRs before
+3. Enable Vercel Password Protection for the internal preview.
+4. Add a GitHub Actions workflow that runs `npm run vercel:preflight` on PRs before
    merging to main.
+5. For full visual QA, run `npm run test:exports` or `npm run package:delivery`
+   locally (these still use Playwright as intended).

@@ -34,7 +34,7 @@ Use this checklist before connecting the repo to Vercel and after each deploy.
 - [ ] `vercel.json` exists at repo root
 - [ ] `buildCommand` is `npm run vercel:build-preview`
 - [ ] `outputDirectory` is `apps/internal-preview/dist`
-- [ ] `installCommand` installs TilePyramid deps + Playwright Chromium
+- [ ] `installCommand` installs TilePyramid deps — does NOT include playwright
 - [ ] `apps/internal-preview/dist/` is in `.gitignore`
 - [ ] No secrets are committed to the repo
 
@@ -54,7 +54,7 @@ Use this checklist before connecting the repo to Vercel and after each deploy.
 
 After Vercel deploy completes:
 
-- [ ] Vercel build log shows all 5 steps completed without error
+- [ ] Vercel build log shows all 5 steps completed without error (no Playwright output)
 - [ ] Deployed URL accessible
 - [ ] `<deployed-url>/index.html` — home page renders with project list
 - [ ] `<deployed-url>/projects/TilePyramid_PL01/index.html` — detail page renders
