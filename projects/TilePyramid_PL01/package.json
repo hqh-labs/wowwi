@@ -13,6 +13,8 @@
     "validate:exports": "node scripts/export/validate-exports.mjs",
     "package:candidate": "node scripts/package/package-candidate.mjs",
     "validate:candidate": "node scripts/package/validate-candidate.mjs",
+    "package:delivery": "node scripts/package/package-delivery.mjs",
+    "validate:delivery": "node scripts/package/validate-delivery.mjs",
     "optimize:assets": "node scripts/optimize-assets.mjs",
     "measure:size": "node scripts/measure-size.mjs",
     "typecheck": "tsc --noEmit",

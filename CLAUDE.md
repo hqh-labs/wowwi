@@ -86,10 +86,9 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-11** - Upload candidate package and store URL wiring.
-BUILD-11 wires real Google Play/App Store URLs through config, store-open
-selection, export metadata, and candidate manifests. It adds upload-candidate
-package generation, SHA256 checksums, candidate validation, QA summaries, and
-network-specific upload notes. Final ad-network approval, upload automation,
-real network API integration, formal level solving, and visual editor remain out
-of scope.
+**BUILD-13** - Delivery candidate lock, network QA evidence, and final handoff package.
+BUILD-13 freezes the current playable as a locked delivery candidate. It adds the
+`package:delivery` and `validate:delivery` workflow, delivery documentation,
+network QA evidence records, release notes, and a reproducible final handoff
+package. New gameplay features, board solver, visual editor, cloud deployment, and
+real network API upload automation remain out of scope.

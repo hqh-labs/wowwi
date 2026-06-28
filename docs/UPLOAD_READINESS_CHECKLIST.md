@@ -73,6 +73,27 @@ Project: TilePyramid_PL01
 - Chromium file:// behavior may differ from final in-network mobile webviews.
 - Formal solvability remains `NOT YET PROVEN`.
 
+## BUILD-13 delivery workflow (added)
+
+- `npm run package:delivery` generates and validates the final delivery package.
+- `npm run validate:delivery` re-validates the delivery package standalone.
+- `delivery/latest/DELIVERY_README.md` — recipient instructions and checksums.
+- `delivery/latest/QA_EVIDENCE.md` — network QA evidence embedded in package.
+- `delivery/latest/RELEASE_NOTES.md` — release notes embedded in package.
+- `delivery/latest/delivery-manifest.json` — machine-readable delivery manifest.
+- `delivery/latest/checksums.sha256` — SHA256 of both HTML delivery files.
+- `docs/DELIVERY_CANDIDATE.md` — delivery workflow documentation.
+- `docs/NETWORK_QA_EVIDENCE.md` — network upload testing evidence.
+- `docs/RELEASE_NOTES_TILEPYRAMID_PL01.md` — project release notes.
+
+## Network QA sign-off (BUILD-12 / BUILD-13)
+
+- Unity Ads: Passed current upload/testing after BUILD-12 window.top fix.
+- AppLovin: Passed current AppLovin upload/testing after BUILD-12 window.top fix.
+- window.top not present in either export: confirmed by validator and PowerShell scan.
+- Formal solvability remains NOT YET PROVEN.
+- Final approval not guaranteed by local validation.
+
 ## Final sign-off items
 
 - Latest `npm run export:all` passes.
@@ -81,8 +102,10 @@ Project: TilePyramid_PL01
 - Latest `npm run test:smoke` passes.
 - Latest `npm run package:candidate` passes.
 - Latest `npm run validate:candidate` passes.
-- Export sizes are recorded in the delivery notes.
-- Candidate `checksums.sha256` is recorded.
-- Unity manual upload result is recorded.
-- AppLovin manual upload result is recorded.
+- Latest `npm run package:delivery` passes.
+- Latest `npm run validate:delivery` passes.
+- Export sizes are recorded in delivery manifest and QA evidence.
+- Delivery `checksums.sha256` is recorded and matches HTML files.
+- Unity manual upload result is recorded in `docs/NETWORK_QA_EVIDENCE.md`.
+- AppLovin manual upload result is recorded in `docs/NETWORK_QA_EVIDENCE.md`.
 - Client confirms final destination URL/store behavior.

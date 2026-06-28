@@ -8,7 +8,7 @@ export const ANDROID_STORE_URL =
 export const IOS_STORE_URL = 'https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033';
 export const FALLBACK_STORE_URL = ANDROID_STORE_URL;
 export const FINAL_APPROVAL_DISCLAIMER =
-  'Local BUILD-12 packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
+  'Local BUILD-13 packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
 export const FORMAL_SOLVABILITY = 'NOT YET PROVEN';
 
 const FORBIDDEN_SEGMENTS = new Set([
