@@ -64,6 +64,20 @@ describe('Build-11 candidate package utilities', () => {
     await fixture.dispose();
   });
 
+  it('rejects forbidden top-window access in candidate HTML', async () => {
+    const fixture = await createCandidateFixture({
+      html: createCandidateHtml({
+        androidUrl: ANDROID_STORE_URL,
+        iosUrl: IOS_STORE_URL,
+        fallbackUrl: ANDROID_STORE_URL,
+      }).replace('</body>', '<script>window.top.location.href="about:blank";</script></body>'),
+    });
+    const validation = await validateCandidatePackage(fixture.root);
+    expect(validation.status).toBe('FAIL');
+    expect(validation.errors.join('\n')).toMatch(/Forbidden top-window access detected: window\.top/);
+    await fixture.dispose();
+  });
+
   it('rejects missing Unity HTML', async () => {
     const fixture = await createCandidateFixture({ unityHtml: false });
     const validation = await validateCandidatePackage(fixture.root);
@@ -134,7 +148,7 @@ async function createCandidateFixture(options = {}) {
   const applovinSha = options.applovinHtml === false ? 'missing' : await sha256File(applovinPath);
   const manifest = {
     projectId: 'TilePyramid_PL01',
-    build: 'BUILD-11',
+    build: 'BUILD-12',
     storeUrls: {
       androidUrl: ANDROID_STORE_URL,
       iosUrl: IOS_STORE_URL,

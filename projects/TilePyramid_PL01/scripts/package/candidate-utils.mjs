@@ -1,13 +1,14 @@
 import { createHash } from 'node:crypto';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { findForbiddenTopWindowAccess } from '../export/validators/export-validator.mjs';
 
 export const ANDROID_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games';
 export const IOS_STORE_URL = 'https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033';
 export const FALLBACK_STORE_URL = ANDROID_STORE_URL;
 export const FINAL_APPROVAL_DISCLAIMER =
-  'Local BUILD-11 packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
+  'Local BUILD-12 packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
 export const FORMAL_SOLVABILITY = 'NOT YET PROVEN';
 
 const FORBIDDEN_SEGMENTS = new Set([
@@ -125,6 +126,9 @@ async function validateHtmlOutput({ label, filePath, manifestOutput, manifest, c
   const relative = manifestOutput.path.replaceAll('\\', '/');
   if (checksumsText && !checksumsText.includes(`${actualSha}  ${relative}`)) {
     errors.push(`${label} SHA256 is missing or mismatched in checksums.sha256.`);
+  }
+  for (const forbiddenAccess of findForbiddenTopWindowAccess(html)) {
+    errors.push(`Forbidden top-window access detected: ${forbiddenAccess}`);
   }
   const storeUrlValidation = validateHtmlStoreUrls(html, normalizeStoreUrls(manifest));
   if (!storeUrlValidation.android) {

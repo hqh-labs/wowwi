@@ -40,6 +40,9 @@ test.describe('Build-10 exported HTML compliance smoke tests', () => {
       expect(html).toContain('__PLAYABLE_STORE_OPEN__');
       expect(html).toContain('__PLAYABLE_STORE_OPEN_DIAGNOSTICS__');
       expect(html).toContain('NOT YET PROVEN');
+      expect(html).not.toContain('window.top');
+      expect(html).not.toContain('top.location');
+      expect(html).not.toContain('window.parent.top');
       expect(html).not.toMatch(/(?:src|href)=["']https?:\/\//i);
       expect(html).not.toMatch(/(?:src|href)=["'][^"']*(?:assets\/|config\/|dist\/)/i);
       expect(html).not.toMatch(/sourceMappingURL\s*=|(?:src|href)=["'][^"']+\.map(?:[?#][^"']*)?["']/i);

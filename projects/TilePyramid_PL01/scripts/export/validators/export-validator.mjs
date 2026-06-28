@@ -30,6 +30,9 @@ export function validateExportHtml({ html, profile, actualBytes = Buffer.byteLen
   if (hasUnresolvedPlaceholder(html)) {
     errors.push('Export contains an unresolved placeholder marker.');
   }
+  for (const forbiddenAccess of findForbiddenTopWindowAccess(html)) {
+    errors.push(`Forbidden top-window access detected: ${forbiddenAccess}`);
+  }
   if (!html.includes('__PLAYABLE_NETWORK__') || !html.includes(profile.id)) {
     errors.push('Export profile metadata marker is missing.');
   }
@@ -90,6 +93,7 @@ export function validateExportHtml({ html, profile, actualBytes = Buffer.byteLen
       noSourceMapReferences: !hasSourceMapReference(html),
       noUninlinedJsOrCssReferences: !hasUninlinedJsOrCssReference(html),
       noUnresolvedPlaceholders: !hasUnresolvedPlaceholder(html),
+      noForbiddenTopWindowAccess: !hasForbiddenTopWindowAccess(html),
       profileMetadataPresent: html.includes('__PLAYABLE_NETWORK__') && html.includes(profile.id),
       storeOpenBridgePresent: html.includes('__PLAYABLE_STORE_OPEN__'),
       storeOpenDiagnosticsPresent: html.includes('__PLAYABLE_STORE_OPEN_DIAGNOSTICS__'),
@@ -134,4 +138,23 @@ export function hasUninlinedJsOrCssReference(html) {
 
 export function hasUnresolvedPlaceholder(html) {
   return /{{\s*[\w.-]+\s*}}|%%[\w.-]+%%|__REPLACE_[A-Z0-9_]+__|TODO_EXPORT|REPLACE_ME/i.test(html);
+}
+
+const FORBIDDEN_TOP_WINDOW_ACCESS_PATTERNS = [
+  { label: 'window.parent.top', pattern: /\bwindow\.parent\.top\b/ },
+  { label: 'window.top', pattern: /\bwindow\.top\b/ },
+  { label: 'globalThis.top', pattern: /\bglobalThis\.top\b/ },
+  { label: 'self.top', pattern: /\bself\.top\b/ },
+  { label: 'parent.top', pattern: /\bparent\.top\b/ },
+  { label: 'top.location', pattern: /\btop\.location\b/ },
+];
+
+export function findForbiddenTopWindowAccess(html) {
+  return FORBIDDEN_TOP_WINDOW_ACCESS_PATTERNS
+    .filter(({ pattern }) => pattern.test(html))
+    .map(({ label }) => label);
+}
+
+export function hasForbiddenTopWindowAccess(html) {
+  return findForbiddenTopWindowAccess(html).length > 0;
 }

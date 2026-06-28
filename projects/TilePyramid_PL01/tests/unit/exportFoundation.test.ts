@@ -16,6 +16,7 @@ import {
   hasSourceMapReference,
   hasUninlinedJsOrCssReference,
   hasUnresolvedPlaceholder,
+  hasForbiddenTopWindowAccess,
   validateExportHtml,
 } from '../../scripts/export/validators/export-validator.mjs';
 import { createNetworkExportMetadata } from '../../scripts/export/adapters/network-adapters.mjs';
@@ -99,6 +100,15 @@ describe('Build-09 single-file inliner', () => {
     expect(script).toContain("addEventListener('ready'");
     expect(script).toContain('mraid.open');
     expect(script).toContain('record-only');
+    expect(script).not.toContain('window.top');
+    expect(script).not.toContain('top.location');
+  });
+
+  it('store-open bridge fallback stays on the current window', () => {
+    const script = createStoreOpenBridgeScript(getExportProfile('applovin-2026-06'), '2026-06-28T00:00:00.000Z');
+    expect(script).toContain("window.open(url, '_blank', 'noopener')");
+    expect(script).toContain('window.location.href=url');
+    expect(hasForbiddenTopWindowAccess(script)).toBe(false);
   });
 
   it('injects configured store URLs into export metadata', async () => {
@@ -175,6 +185,17 @@ describe('Build-09 export validation', () => {
     const html = `${validHtmlForProfile('applovin-2026-06')}{{STORE_URL}}`;
     expect(hasUnresolvedPlaceholder(html)).toBe(true);
     expect(validateExportHtml({ html, profile: getExportProfile('applovin-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+  });
+
+  it('rejects forbidden top-window access', () => {
+    const html = validHtmlForProfile('unity-2026-06').replace(
+      '</head>',
+      '<script>window.top.addEventListener("click", function(){});</script></head>'
+    );
+    expect(hasForbiddenTopWindowAccess(html)).toBe(true);
+    const result = validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' });
+    expect(result.status).toBe('FAIL');
+    expect(result.errors.join('\n')).toMatch(/Forbidden top-window access detected: window\.top/);
   });
 
   it('Unity export report includes target max bytes and actual bytes', () => {

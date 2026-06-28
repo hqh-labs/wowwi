@@ -47,7 +47,7 @@ async function main() {
 
   const manifest = {
     projectId: 'TilePyramid_PL01',
-    build: 'BUILD-11',
+    build: 'BUILD-12',
     generatedAt,
     gitBranch,
     outputRoot: 'upload-candidates/latest',

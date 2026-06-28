@@ -16,6 +16,9 @@ export function createGame(config: GameConfig, manifest: AssetManifestData): Pha
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
+    input: {
+      windowEvents: false,
+    },
     scene: [BootScene, PreloadScene, GameScene],
     fps: { target: 60, forceSetTimeOut: false },
   };
