@@ -25,6 +25,45 @@ describe('Build-11 candidate package utilities', () => {
     await fixture.dispose();
   });
 
+  it('passes when store URLs exist in export metadata', async () => {
+    const fixture = await createCandidateFixture({
+      html: createCandidateHtml({
+        androidUrl: ANDROID_STORE_URL,
+        iosUrl: IOS_STORE_URL,
+        fallbackUrl: ANDROID_STORE_URL,
+      }),
+    });
+    const validation = await validateCandidatePackage(fixture.root);
+    expect(validation.status).toBe('PASS');
+    await fixture.dispose();
+  });
+
+  it('rejects missing Android store URL metadata', async () => {
+    const fixture = await createCandidateFixture({
+      html: createCandidateHtml({
+        iosUrl: IOS_STORE_URL,
+        fallbackUrl: ANDROID_STORE_URL,
+      }),
+    });
+    const validation = await validateCandidatePackage(fixture.root);
+    expect(validation.status).toBe('FAIL');
+    expect(validation.errors.join('\n')).toMatch(/Android store URL metadata/);
+    await fixture.dispose();
+  });
+
+  it('rejects missing iOS store URL metadata', async () => {
+    const fixture = await createCandidateFixture({
+      html: createCandidateHtml({
+        androidUrl: ANDROID_STORE_URL,
+        fallbackUrl: ANDROID_STORE_URL,
+      }),
+    });
+    const validation = await validateCandidatePackage(fixture.root);
+    expect(validation.status).toBe('FAIL');
+    expect(validation.errors.join('\n')).toMatch(/iOS store URL metadata/);
+    await fixture.dispose();
+  });
+
   it('rejects missing Unity HTML', async () => {
     const fixture = await createCandidateFixture({ unityHtml: false });
     const validation = await validateCandidatePackage(fixture.root);
@@ -79,7 +118,13 @@ async function createCandidateFixture(options = {}) {
   await mkdir(path.join(root, 'unity'), { recursive: true });
   await mkdir(path.join(root, 'applovin'), { recursive: true });
 
-  const html = `<html><body>${ANDROID_STORE_URL} ${IOS_STORE_URL} ${FORMAL_SOLVABILITY}</body></html>`;
+  const html =
+    options.html ??
+    createCandidateHtml({
+      androidUrl: ANDROID_STORE_URL,
+      iosUrl: IOS_STORE_URL,
+      fallbackUrl: ANDROID_STORE_URL,
+    });
   const unityPath = path.join(root, 'unity/TilePyramid_PL01_unity.html');
   const applovinPath = path.join(root, 'applovin/TilePyramid_PL01_applovin.html');
   if (options.unityHtml !== false) await writeFile(unityPath, html);
@@ -129,4 +174,19 @@ async function createCandidateFixture(options = {}) {
     root,
     dispose: () => rm(root, { recursive: true, force: true }),
   };
+}
+
+function createCandidateHtml(storeUrls) {
+  const metadata = {
+    androidStoreUrl: storeUrls.androidUrl,
+    iosStoreUrl: storeUrls.iosUrl,
+    fallbackStoreUrl: storeUrls.fallbackUrl,
+    storeUrls: {
+      androidUrl: storeUrls.androidUrl,
+      iosUrl: storeUrls.iosUrl,
+      fallbackUrl: storeUrls.fallbackUrl,
+    },
+    formalSolvability: FORMAL_SOLVABILITY,
+  };
+  return `<html><head><script>window.__PLAYABLE_NETWORK__=${JSON.stringify(metadata)};</script></head><body>${FORMAL_SOLVABILITY}</body></html>`;
 }

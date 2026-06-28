@@ -205,6 +205,9 @@ export interface PlayableNetworkRuntime {
   safeAreaPolicy: string;
   domOverlayPolicy: string;
   finalApprovalDisclaimer: string;
+  androidStoreUrl: string;
+  iosStoreUrl: string;
+  fallbackStoreUrl: string;
   storeUrls: {
     androidUrl: string;
     iosUrl: string;
@@ -234,6 +237,9 @@ export interface PlayableStoreOpenDiagnostics {
   methodUsed: PlayableStoreOpenResult['method'] | null;
   errorCount: number;
   lastErrorMessage: string | null;
+  androidStoreUrl?: string;
+  iosStoreUrl?: string;
+  fallbackStoreUrl?: string;
   androidUrl?: string;
   iosUrl?: string;
   fallbackUrl?: string;

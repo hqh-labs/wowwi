@@ -56,6 +56,9 @@ async function main() {
       iosUrl: IOS_STORE_URL,
       fallbackUrl: FALLBACK_STORE_URL,
     },
+    androidStoreUrl: ANDROID_STORE_URL,
+    iosStoreUrl: IOS_STORE_URL,
+    fallbackStoreUrl: FALLBACK_STORE_URL,
     outputs: {
       unity: unityCandidate,
       applovin: applovinCandidate,

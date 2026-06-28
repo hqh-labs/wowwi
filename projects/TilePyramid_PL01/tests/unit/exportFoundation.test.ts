@@ -110,6 +110,32 @@ describe('Build-09 single-file inliner', () => {
     expect(result.exportConfig.app.androidUrl).toBe(ANDROID_URL);
     await fixture.dispose();
   });
+
+  it('Unity exported metadata contains Android and iOS store URLs', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('unity-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-28T00:00:00.000Z' });
+    const metadata = extractPlayableNetworkMetadata(result.html);
+    expect(metadata.androidStoreUrl).toBe(ANDROID_URL);
+    expect(metadata.iosStoreUrl).toBe(IOS_URL);
+    expect(metadata.fallbackStoreUrl).toBe(ANDROID_URL);
+    expect(metadata.storeUrls.androidUrl).toBe(ANDROID_URL);
+    expect(metadata.storeUrls.iosUrl).toBe(IOS_URL);
+    await fixture.dispose();
+  });
+
+  it('AppLovin exported metadata contains Android and iOS store URLs', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('applovin-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-28T00:00:00.000Z' });
+    const metadata = extractPlayableNetworkMetadata(result.html);
+    expect(metadata.androidStoreUrl).toBe(ANDROID_URL);
+    expect(metadata.iosStoreUrl).toBe(IOS_URL);
+    expect(metadata.fallbackStoreUrl).toBe(ANDROID_URL);
+    expect(metadata.storeUrls.androidUrl).toBe(ANDROID_URL);
+    expect(metadata.storeUrls.iosUrl).toBe(IOS_URL);
+    await fixture.dispose();
+  });
 });
 
 describe('Build-09 export validation', () => {
@@ -190,6 +216,8 @@ describe('Build-09 export validation', () => {
     });
     expect(report.storeUrls.androidUrl).toBe(ANDROID_URL);
     expect(report.storeUrls.iosUrl).toBe(IOS_URL);
+    expect(report.androidStoreUrl).toBe(ANDROID_URL);
+    expect(report.iosStoreUrl).toBe(IOS_URL);
   });
 });
 
@@ -243,4 +271,10 @@ function validHtmlForProfile(profileId: string) {
     <meta name="playable-timer-first-interaction" content="true">
     <script>window.__PLAYABLE_NETWORK__={profileId:"${profileId}",formalSolvability:"NOT YET PROVEN",networkProvidedMraid:${profile.networkProvidedMraid},hostCloseButtonSafeZone:{corner:"top-right"},safeAreaPolicy:"${profile.safeAreaPolicy}",domOverlayPolicy:"${profile.domOverlayPolicy}",finalApprovalDisclaimer:"${profile.finalApprovalDisclaimer}"};window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__={};window.__PLAYABLE_STORE_OPEN__=function(){return {handled:true,method:"mraid.open"};};</script>
   </head><body>NOT YET PROVEN</body></html>`;
+}
+
+function extractPlayableNetworkMetadata(html: string) {
+  const match = html.match(/window\.__PLAYABLE_NETWORK__\s*=\s*({[\s\S]*?})\s*;/);
+  if (!match) throw new Error('Missing playable network metadata');
+  return JSON.parse(match[1]);
 }

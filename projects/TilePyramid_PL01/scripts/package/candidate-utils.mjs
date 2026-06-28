@@ -85,10 +85,11 @@ export async function validateCandidatePackage(candidateRoot) {
   if (!/not guarantee final/i.test(String(manifest.finalApprovalDisclaimer ?? ''))) {
     errors.push('Final approval disclaimer is missing from package manifest.');
   }
-  if (manifest.storeUrls?.androidUrl !== ANDROID_STORE_URL) {
+  const manifestStoreUrls = normalizeStoreUrls(manifest);
+  if (manifestStoreUrls.androidUrl !== ANDROID_STORE_URL) {
     errors.push('Android store URL is missing or incorrect in package manifest.');
   }
-  if (manifest.storeUrls?.iosUrl !== IOS_STORE_URL) {
+  if (manifestStoreUrls.iosUrl !== IOS_STORE_URL) {
     errors.push('iOS store URL is missing or incorrect in package manifest.');
   }
 
@@ -125,12 +126,72 @@ async function validateHtmlOutput({ label, filePath, manifestOutput, manifest, c
   if (checksumsText && !checksumsText.includes(`${actualSha}  ${relative}`)) {
     errors.push(`${label} SHA256 is missing or mismatched in checksums.sha256.`);
   }
-  if (!html.includes(manifest.storeUrls.androidUrl) || !html.includes(manifest.storeUrls.iosUrl)) {
-    errors.push(`${label} HTML does not contain both configured store URLs.`);
+  const storeUrlValidation = validateHtmlStoreUrls(html, normalizeStoreUrls(manifest));
+  if (!storeUrlValidation.android) {
+    errors.push(`${label} HTML does not contain Android store URL metadata.`);
+  }
+  if (!storeUrlValidation.ios) {
+    errors.push(`${label} HTML does not contain iOS store URL metadata.`);
+  }
+  if (!storeUrlValidation.fallback) {
+    errors.push(`${label} HTML does not contain fallback store URL metadata.`);
   }
   if (!html.includes(FORMAL_SOLVABILITY)) {
     errors.push(`${label} HTML does not record formal solvability.`);
   }
+}
+
+export function validateHtmlStoreUrls(html, expectedStoreUrls) {
+  const metadata = extractPlayableNetworkMetadata(html);
+  if (Object.keys(metadata).length > 0) {
+    return {
+      android:
+        metadata.androidStoreUrl === expectedStoreUrls.androidUrl ||
+        metadata.storeUrls?.androidUrl === expectedStoreUrls.androidUrl,
+      ios:
+        metadata.iosStoreUrl === expectedStoreUrls.iosUrl ||
+        metadata.storeUrls?.iosUrl === expectedStoreUrls.iosUrl,
+      fallback:
+        metadata.fallbackStoreUrl === expectedStoreUrls.fallbackUrl ||
+        metadata.storeUrls?.fallbackUrl === expectedStoreUrls.fallbackUrl,
+    };
+  }
+  return {
+    android: htmlContainsUrlVariant(html, expectedStoreUrls.androidUrl),
+    ios: htmlContainsUrlVariant(html, expectedStoreUrls.iosUrl),
+    fallback: htmlContainsUrlVariant(html, expectedStoreUrls.fallbackUrl),
+  };
+}
+
+export function extractPlayableNetworkMetadata(html) {
+  const match = html.match(/window\.__PLAYABLE_NETWORK__\s*=\s*({[\s\S]*?})\s*;/);
+  if (!match) return {};
+  try {
+    const parsed = JSON.parse(match[1]);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeStoreUrls(manifest) {
+  return {
+    androidUrl: manifest.storeUrls?.androidUrl ?? manifest.androidStoreUrl ?? '',
+    iosUrl: manifest.storeUrls?.iosUrl ?? manifest.iosStoreUrl ?? '',
+    fallbackUrl: manifest.storeUrls?.fallbackUrl ?? manifest.fallbackStoreUrl ?? '',
+  };
+}
+
+function htmlContainsUrlVariant(html, url) {
+  if (!url) return false;
+  const variants = new Set([
+    url,
+    url.replaceAll('/', '\\/'),
+    encodeURI(url),
+    encodeURIComponent(url),
+    url.replaceAll('&', '&amp;'),
+  ]);
+  return [...variants].some(variant => html.includes(variant));
 }
 
 async function readJsonIfExists(filePath, errors, message) {
