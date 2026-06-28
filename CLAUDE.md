@@ -86,12 +86,12 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-24** - Asset Intake Analyzer Foundation.
-BUILD-24 adds root-level commands for scanning registered project intake folders,
-writing asset audit reports, validating audit output, and testing the analyzer. It
-must not change TilePyramid_PL01 gameplay/export logic or modify raw/extracted
-client assets.
+**BUILD-25** - First Real Second Project Intake.
+BUILD-25 uses the BUILD-23 project-creation pipeline and BUILD-24 asset intake
+analyzer to onboard `SecondPlayable_PL01` as the first real second playable project.
+It creates the skeleton, registers it, validates it, and updates the preview site to
+list development projects safely.
 
-Login/auth, cloud database, user accounts, billing, upload automation, visual
-editor, new gameplay, new project creation UI, level solver, network API
-integrations, and the actual Vercel deployment remain out of scope.
+Gameplay runtime, exports, candidate/delivery packaging, visual editor, asset
+extraction, network upload automation, authentication, billing, and cloud storage
+remain out of scope.

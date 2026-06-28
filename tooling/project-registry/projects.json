@@ -9,7 +9,10 @@
       "status": "delivery-locked",
       "client": "SKL",
       "gameName": "Tile Pyramid Match Quest",
-      "supportedNetworks": ["unity", "applovin"],
+      "supportedNetworks": [
+        "unity",
+        "applovin"
+      ],
       "storeUrls": {
         "androidUrl": "https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games",
         "iosUrl": "https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033",
@@ -67,6 +70,22 @@
         "unity": "https://wowwi.vercel.app/projects/TilePyramid_PL01/unity",
         "applovin": "https://wowwi.vercel.app/projects/TilePyramid_PL01/applovin"
       }
+    },
+    {
+      "projectId": "SecondPlayable_PL01",
+      "displayName": "Second Playable Intake",
+      "folder": "projects/SecondPlayable_PL01",
+      "status": "development",
+      "supportedNetworks": [],
+      "storeUrls": {
+        "androidUrl": "",
+        "iosUrl": "",
+        "fallbackUrl": ""
+      },
+      "availableWorkflows": [],
+      "deliveryCandidateStatus": "not-started",
+      "formalSolvability": "NOT_APPLICABLE",
+      "notes": "Created from the BUILD-23 playable project skeleton template. Intake and planning only; no playable implementation yet."
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "projectId": "SecondPlayable_PL01",
+  "displayName": "Second Playable Intake",
+  "client": "TBD",
+  "gameName": "Second Playable Intake",
+  "status": "development",
+  "deliveryCandidateStatus": "not-started",
+  "formalSolvability": "NOT_APPLICABLE",
+  "supportedNetworks": [],
+  "storeUrls": {
+    "androidUrl": "",
+    "iosUrl": "",
+    "fallbackUrl": ""
+  },
+  "createdAt": "2026-06-28"
+}
+

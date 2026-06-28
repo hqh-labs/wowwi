@@ -138,6 +138,44 @@ ${cards}
   return page('Projects', body);
 }
 
+// ─── development project detail page ─────────────────────────────────────────
+
+function buildDevelopmentProjectPage(project) {
+  const rows = [
+    ['Project ID', `<span class="mono">${esc(project.projectId)}</span>`],
+    ['Display name', esc(project.displayName)],
+    ['Status', statusBadge(project.status)],
+    ['Folder', `<span class="mono">${esc(project.folder)}</span>`],
+    ['Networks', 'None assigned yet'],
+    ['Delivery status', esc(project.deliveryCandidateStatus ?? 'not-started')],
+    ['Formal solvability', `<strong>${esc(project.formalSolvability ?? 'NOT_APPLICABLE')}</strong>`],
+  ];
+  const tableRows = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+
+  const body = `
+<nav><a href="../../index.html">← All Projects</a></nav>
+
+<h2>${esc(project.displayName)}</h2>
+
+<div class="notice">This project is in <strong>development</strong> status and is not playable yet. No delivery HTML has been generated.</div>
+
+<table>
+  <thead><tr><th>Field</th><th>Value</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+
+<h2>Playable Preview</h2>
+<div class="preview-box">
+  <h3>Not available — development project</h3>
+  <p style="font-size:.85rem;color:#4b5563">This project has no exported Unity or AppLovin HTML yet. Complete the intake and planning phase, then implement the playable runtime in a later build phase.</p>
+</div>
+
+${project.notes ? `<h2>Notes</h2><p style="font-size:.85rem;color:#4b5563">${esc(project.notes)}</p>` : ''}
+`;
+
+  return page(project.displayName, body, '');
+}
+
 // ─── project detail page ──────────────────────────────────────────────────────
 
 function buildProjectPage(project, manifest) {
@@ -253,6 +291,7 @@ async function main() {
   await mkdir(DIST, { recursive: true });
 
   const previewableProjects = projects.filter(project => project.status === 'delivery-locked');
+  const developmentProjects = projects.filter(project => project.status === 'development');
 
   // Per-project: load manifest, copy delivery HTMLs, build detail page
   const previewData = {
@@ -260,6 +299,23 @@ async function main() {
     registryVersion: registry.registryVersion,
     projects: [],
   };
+
+  // Build development project detail pages (no HTML copy)
+  for (const project of developmentProjects) {
+    const projectDist = path.join(DIST, 'projects', project.projectId);
+    await mkdir(projectDist, { recursive: true });
+    const detailHtml = buildDevelopmentProjectPage(project);
+    await writeFile(path.join(projectDist, 'index.html'), detailHtml, 'utf8');
+    console.log(`Generated            → dist/projects/${project.projectId}/index.html (development)`);
+    previewData.projects.push({
+      projectId: project.projectId,
+      displayName: project.displayName,
+      status: project.status,
+      supportedNetworks: project.supportedNetworks ?? [],
+      folder: project.folder,
+      formalSolvability: project.formalSolvability ?? 'NOT_APPLICABLE',
+    });
+  }
 
   for (const project of previewableProjects) {
     const projectFolder = path.join(REPO_ROOT, project.folder);
@@ -327,8 +383,8 @@ async function main() {
   await writeFile(previewDataPath, JSON.stringify(previewData, null, 2), 'utf8');
   console.log('Generated            → dist/preview-data.json');
 
-  // Build home page
-  const homeHtml = buildHomePage(previewableProjects, previewData);
+  // Build home page (all projects, including development)
+  const homeHtml = buildHomePage(projects, previewData);
   await writeFile(path.join(DIST, 'index.html'), homeHtml, 'utf8');
   console.log('Generated            → dist/index.html');
 
