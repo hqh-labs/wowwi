@@ -66,6 +66,9 @@ commercial standard. No gameplay logic changes.
 **Objective:** Upgrade animation quality and add missing feedback systems to reach
 commercial visual standard. No network/export changes.
 
+**BUILD-29 status:** Implemented as a config-driven commercial juice pass. See
+`docs/BUILD_29_REPORT.md` and `docs/TILEPYRAMID_COMMERCIAL_JUICE_PASS.md`.
+
 **Scope:**
 - Combo feedback: add `combo` state when player matches 2+ sets consecutively;
   show combo counter + bonus burst

@@ -83,3 +83,11 @@ sets all debug flags to `false`, separate from the development config.
 4. **End card and effects richness** — Commercial visual standard
 5. **Asset/theme replacement pipeline** — Required for multi-client sales
 6. **Combo feedback + idle hint improvement** — Engagement quality
+
+## BUILD-29 Update
+
+BUILD-29 implemented a commercial juice pass covering end card v2, CTA v2, match
+reward feedback, tray landing, tile tap denial, idle hint v2, timer warning polish,
+and board/tray depth effects. This improves the medium visual/game-feel gaps, but
+does not resolve parameter injection, asset/theme replacement, or formal
+solvability.

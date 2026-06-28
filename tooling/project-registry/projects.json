@@ -61,16 +61,14 @@
         "Formal solvability remains NOT YET PROVEN."
       ],
       "technicalVersion": "technical-v1",
-      "commercialUpgradeStatus": "commercial-mode-hygiene-pass",
+      "commercialUpgradeStatus": "commercial-juice-pass",
       "commercialUpgradeBlockers": [
-        "No runtime parameter injection (store URLs not injectable at ad-serve time)",
-        "No asset/theme replacement pipeline",
-        "End card visual composition below commercial standard",
-        "No combo/reward feedback system",
+        "Runtime parameter injection still missing (store URLs not injectable at ad-serve time)",
+        "Asset/theme replacement pipeline still missing",
         "Formal solvability NOT YET PROVEN"
       ],
       "commercialModeStatus": "BUILD-28: debug-free export, viewability gate, mode separation complete",
-      "notes": "BUILD-20 creative polish passed Unity/AppLovin upload testing (BUILD-22). BUILD-27 commercial audit identified debug flags and mode gaps. BUILD-28: commercial mode export implemented — all debug flags forced off, buildMode:commercial, AppLovin viewability boot policy added. See docs/TILEPYRAMID_COMMERCIAL_MODE_LOCK.md and docs/COMMERCIAL_READY_CRITERIA.md.",
+      "notes": "BUILD-20 creative polish passed Unity/AppLovin upload testing (BUILD-22). BUILD-27 commercial audit identified debug flags and mode gaps. BUILD-28: commercial mode export implemented — all debug flags forced off, buildMode:commercial, AppLovin viewability boot policy added. BUILD-29: commercial juice pass added end card v2, CTA v2, reward feedback, tray/tile/idle/timer polish. TilePyramid_PL01 is still not commercial-ready; parameter injection, asset replacement, and formal solvability remain unresolved.",
       "livePreviewUrl": "https://wowwi.vercel.app/projects/TilePyramid_PL01",
       "livePreviewStatus": "verified",
       "livePreviewLastVerifiedAt": "2026-06-28",

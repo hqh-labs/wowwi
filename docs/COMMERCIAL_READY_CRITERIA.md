@@ -200,11 +200,16 @@ Any commercial delivery must include a written disclaimer covering:
 | Network upload passed | PASS | — |
 | Size within budget | PASS | — |
 | Parameter injection | **7 FAILs** | YES — BUILD-31 required |
-| End card quality | WARN | No (acceptable for v1) |
+| End card quality | IMPROVED by BUILD-29 | No fresh network QA lock yet |
 | QA evidence locked | PASS | — |
 | Review mode / mode separation | **PASS** ← BUILD-28 | — |
 | Formal solvability | NOT YET PROVEN | Separate track |
 
-**TilePyramid_PL01 commercial mode hygiene passes after BUILD-28. It is NOT yet
-commercially deliverable for template/reskin use cases — BUILD-31 (parameter injection)
-is required before store URLs can be changed without re-export.**
+BUILD-29 improves CTA, end card, match reward, tray landing, tile tap, idle hint,
+timer warning, and scene-depth polish.
+
+**TilePyramid_PL01 commercial mode hygiene passes after BUILD-28 and creative
+polish is improved after BUILD-29. It is NOT yet commercially deliverable for
+template/reskin use cases — BUILD-31 (parameter injection) is required before
+store URLs can be changed without re-export. Formal solvability remains
+`NOT YET PROVEN`.**

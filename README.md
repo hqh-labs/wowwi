@@ -190,7 +190,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-25**: Second project intake (SecondPlayable_PL01 skeleton + registry)
 - **BUILD-26**: Hotfix — git-tracked intake directories (`.gitkeep` + `.gitignore`)
 - **BUILD-27**: Partner reference commercial audit
-- **BUILD-28**: Debug-free commercial export, mode separation, AppLovin viewability boot policy ← current
+- **BUILD-28**: Debug-free commercial export, mode separation, AppLovin viewability boot policy
+- **BUILD-29**: Commercial juice, end card v2, reward feedback, CTA/tray/timer/idle polish ← current
 
 ## Documentation index
 
@@ -222,3 +223,5 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/ASSET_INTAKE_ANALYZER.md` | BUILD-24 asset audit command guide |
 | `docs/ASSET_AUDIT_REPORT_FORMAT.md` | Generated asset audit JSON and Markdown format |
 | `docs/BUILD_24_REPORT.md` | BUILD-24 implementation report |
+| `docs/BUILD_29_REPORT.md` | BUILD-29 commercial juice implementation report |
+| `docs/TILEPYRAMID_COMMERCIAL_JUICE_PASS.md` | BUILD-29 creative/game-feel polish notes |

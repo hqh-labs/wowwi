@@ -86,11 +86,12 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-28** - Debug-free commercial export + mode separation + safe network boot policy.
-BUILD-28 adds a first-class `buildMode` concept (`development` / `review` / `commercial`),
-forces all debug flags to `false` in commercial exports, adds AppLovin viewability-gated
-boot policy, and adds commercial export validation.
+**BUILD-29** - Commercial Juice + End Card + Reward Feedback.
+BUILD-29 upgrades TilePyramid_PL01 visual/game-feel polish through config-driven
+end card, CTA, match reward, tray landing, tile tap, idle hint, timer warning, and
+scene-depth effects.
 
-TilePyramid_PL01 gameplay rules are unchanged. Do not commit, push, deploy to Vercel,
-or install global software. See `docs/TILEPYRAMID_COMMERCIAL_MODE_LOCK.md` for the
-full mode design and QA checklist.
+TilePyramid_PL01 gameplay rules are unchanged. Preserve BUILD-28 commercial export
+hygiene. Do not copy partner code, change store URLs, commit, push, deploy to
+Vercel, install global software, modify raw/extracted assets, implement parametric
+asset replacement, or mark TilePyramid_PL01 commercial-ready.

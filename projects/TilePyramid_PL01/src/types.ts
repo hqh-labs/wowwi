@@ -38,7 +38,77 @@ export interface GameConfig {
   debugCtaEndCardStore: boolean;
   audio: AudioConfig;
   effects: EffectsConfig;
+  commercialJuice?: CommercialJuiceConfig;
   debugAudioEffects: boolean;
+}
+
+export interface CommercialJuiceConfig {
+  enabled: boolean;
+  intensity: number;
+  endCardV2: EndCardV2Config;
+  ctaPolish: CtaPolishConfig;
+  matchReward: MatchRewardConfig;
+  trayLanding: TrayLandingConfig;
+  tileTapPolish: TileTapPolishConfig;
+  idleHintV2: IdleHintV2Config;
+  timerWarningPolish: TimerWarningPolishConfig;
+  boardDepth: BoardDepthConfig;
+}
+
+export interface EndCardV2Config {
+  enabled: boolean;
+  installText: string;
+  particleCount: number;
+  rayCount: number;
+}
+
+export interface CtaPolishConfig {
+  enabled: boolean;
+  shineEnabled: boolean;
+  tapScale: number;
+  glowAlpha: number;
+}
+
+export interface MatchRewardConfig {
+  enabled: boolean;
+  texts: string[];
+  fontSize: number;
+  durationMs: number;
+  burstCount: number;
+}
+
+export interface TrayLandingConfig {
+  enabled: boolean;
+  popScale: number;
+  durationMs: number;
+  glowColor: string;
+}
+
+export interface TileTapPolishConfig {
+  enabled: boolean;
+  liftPixels: number;
+  blockedRingColor: string;
+  selectableGlowAlpha: number;
+}
+
+export interface IdleHintV2Config {
+  enabled: boolean;
+  targetPulseScale: number;
+  trailColor: string;
+}
+
+export interface TimerWarningPolishConfig {
+  enabled: boolean;
+  warningColor: string;
+  dangerColor: string;
+  glowAlpha: number;
+}
+
+export interface BoardDepthConfig {
+  enabled: boolean;
+  vignetteAlpha: number;
+  boardGlowAlpha: number;
+  trayGlowAlpha: number;
 }
 
 export interface AudioConfig {

@@ -163,6 +163,9 @@ export function validateConfig(data: unknown): GameConfig {
   }
   validateAudioConfig(obj['audio']);
   validateEffectsConfig(obj['effects']);
+  if (obj['commercialJuice'] !== undefined) {
+    validateCommercialJuiceConfig(obj['commercialJuice']);
+  }
   if (typeof obj['debugAudioEffects'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugAudioEffects must be a boolean');
   }
@@ -568,6 +571,146 @@ function validateTrayFullEffect(value: unknown): void {
     effect['alpha'] > 1
   ) {
     throw new ConfigValidationError('Config.effects.trayFullWarning.alpha must be between 0 and 1');
+  }
+}
+
+function validateCommercialJuiceConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.commercialJuice must be an object');
+  }
+  const cfg = value as Record<string, unknown>;
+  if (typeof cfg['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.commercialJuice.enabled must be a boolean');
+  }
+  if (
+    typeof cfg['intensity'] !== 'number' ||
+    !Number.isFinite(cfg['intensity']) ||
+    cfg['intensity'] < 0 ||
+    cfg['intensity'] > 1
+  ) {
+    throw new ConfigValidationError('Config.commercialJuice.intensity must be between 0 and 1');
+  }
+  validateEndCardV2Config(cfg['endCardV2']);
+  validateCtaPolishConfig(cfg['ctaPolish']);
+  validateMatchRewardConfig(cfg['matchReward']);
+  validateTrayLandingConfig(cfg['trayLanding']);
+  validateTileTapPolishConfig(cfg['tileTapPolish']);
+  validateIdleHintV2Config(cfg['idleHintV2']);
+  validateTimerWarningPolishConfig(cfg['timerWarningPolish']);
+  validateBoardDepthConfig(cfg['boardDepth']);
+}
+
+function validateEndCardV2Config(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.endCardV2');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.endCardV2.enabled');
+  expectNonEmptyString(cfg['installText'], 'Config.commercialJuice.endCardV2.installText');
+  expectPositiveInteger(cfg['particleCount'], 'Config.commercialJuice.endCardV2.particleCount');
+  expectPositiveInteger(cfg['rayCount'], 'Config.commercialJuice.endCardV2.rayCount');
+}
+
+function validateCtaPolishConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.ctaPolish');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.ctaPolish.enabled');
+  expectBoolean(cfg['shineEnabled'], 'Config.commercialJuice.ctaPolish.shineEnabled');
+  if (!isPositiveFiniteNumber(cfg['tapScale'])) {
+    throw new ConfigValidationError('Config.commercialJuice.ctaPolish.tapScale must be a positive finite number');
+  }
+  expectAlpha(cfg['glowAlpha'], 'Config.commercialJuice.ctaPolish.glowAlpha');
+}
+
+function validateMatchRewardConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.matchReward');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.matchReward.enabled');
+  if (!Array.isArray(cfg['texts']) || cfg['texts'].length === 0) {
+    throw new ConfigValidationError('Config.commercialJuice.matchReward.texts must be a non-empty array');
+  }
+  for (const text of cfg['texts']) {
+    expectNonEmptyString(text, 'Config.commercialJuice.matchReward.texts item');
+  }
+  if (!isPositiveFiniteNumber(cfg['fontSize'])) {
+    throw new ConfigValidationError('Config.commercialJuice.matchReward.fontSize must be a positive finite number');
+  }
+  if (!isNonNegativeFiniteNumber(cfg['durationMs'])) {
+    throw new ConfigValidationError('Config.commercialJuice.matchReward.durationMs must be a non-negative finite number');
+  }
+  expectPositiveInteger(cfg['burstCount'], 'Config.commercialJuice.matchReward.burstCount');
+}
+
+function validateTrayLandingConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.trayLanding');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.trayLanding.enabled');
+  if (!isPositiveFiniteNumber(cfg['popScale'])) {
+    throw new ConfigValidationError('Config.commercialJuice.trayLanding.popScale must be a positive finite number');
+  }
+  if (!isNonNegativeFiniteNumber(cfg['durationMs'])) {
+    throw new ConfigValidationError('Config.commercialJuice.trayLanding.durationMs must be a non-negative finite number');
+  }
+  expectNonEmptyString(cfg['glowColor'], 'Config.commercialJuice.trayLanding.glowColor');
+}
+
+function validateTileTapPolishConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.tileTapPolish');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.tileTapPolish.enabled');
+  if (!isNonNegativeFiniteNumber(cfg['liftPixels'])) {
+    throw new ConfigValidationError('Config.commercialJuice.tileTapPolish.liftPixels must be a non-negative finite number');
+  }
+  expectNonEmptyString(cfg['blockedRingColor'], 'Config.commercialJuice.tileTapPolish.blockedRingColor');
+  expectAlpha(cfg['selectableGlowAlpha'], 'Config.commercialJuice.tileTapPolish.selectableGlowAlpha');
+}
+
+function validateIdleHintV2Config(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.idleHintV2');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.idleHintV2.enabled');
+  if (!isPositiveFiniteNumber(cfg['targetPulseScale'])) {
+    throw new ConfigValidationError('Config.commercialJuice.idleHintV2.targetPulseScale must be a positive finite number');
+  }
+  expectNonEmptyString(cfg['trailColor'], 'Config.commercialJuice.idleHintV2.trailColor');
+}
+
+function validateTimerWarningPolishConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.timerWarningPolish');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.timerWarningPolish.enabled');
+  expectNonEmptyString(cfg['warningColor'], 'Config.commercialJuice.timerWarningPolish.warningColor');
+  expectNonEmptyString(cfg['dangerColor'], 'Config.commercialJuice.timerWarningPolish.dangerColor');
+  expectAlpha(cfg['glowAlpha'], 'Config.commercialJuice.timerWarningPolish.glowAlpha');
+}
+
+function validateBoardDepthConfig(value: unknown): void {
+  const cfg = expectObject(value, 'Config.commercialJuice.boardDepth');
+  expectBoolean(cfg['enabled'], 'Config.commercialJuice.boardDepth.enabled');
+  expectAlpha(cfg['vignetteAlpha'], 'Config.commercialJuice.boardDepth.vignetteAlpha');
+  expectAlpha(cfg['boardGlowAlpha'], 'Config.commercialJuice.boardDepth.boardGlowAlpha');
+  expectAlpha(cfg['trayGlowAlpha'], 'Config.commercialJuice.boardDepth.trayGlowAlpha');
+}
+
+function expectObject(value: unknown, label: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError(`${label} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function expectBoolean(value: unknown, label: string): void {
+  if (typeof value !== 'boolean') {
+    throw new ConfigValidationError(`${label} must be a boolean`);
+  }
+}
+
+function expectNonEmptyString(value: unknown, label: string): void {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new ConfigValidationError(`${label} must be a non-empty string`);
+  }
+}
+
+function expectPositiveInteger(value: unknown, label: string): void {
+  if (!Number.isInteger(value) || (value as number) <= 0) {
+    throw new ConfigValidationError(`${label} must be a positive integer`);
+  }
+}
+
+function expectAlpha(value: unknown, label: string): void {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1) {
+    throw new ConfigValidationError(`${label} must be between 0 and 1`);
   }
 }
 

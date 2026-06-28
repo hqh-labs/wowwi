@@ -182,5 +182,57 @@
       "staggerMs": 12
     }
   },
+  "commercialJuice": {
+    "enabled": true,
+    "intensity": 0.85,
+    "endCardV2": {
+      "enabled": true,
+      "installText": "Download and play free",
+      "particleCount": 18,
+      "rayCount": 14
+    },
+    "ctaPolish": {
+      "enabled": true,
+      "shineEnabled": true,
+      "tapScale": 0.94,
+      "glowAlpha": 0.42
+    },
+    "matchReward": {
+      "enabled": true,
+      "texts": ["Nice!", "Great!", "Combo!"],
+      "fontSize": 54,
+      "durationMs": 760,
+      "burstCount": 10
+    },
+    "trayLanding": {
+      "enabled": true,
+      "popScale": 1.16,
+      "durationMs": 180,
+      "glowColor": "#7fd7ff"
+    },
+    "tileTapPolish": {
+      "enabled": true,
+      "liftPixels": 10,
+      "blockedRingColor": "#ff5d73",
+      "selectableGlowAlpha": 0.12
+    },
+    "idleHintV2": {
+      "enabled": true,
+      "targetPulseScale": 1.12,
+      "trailColor": "#7fd7ff"
+    },
+    "timerWarningPolish": {
+      "enabled": true,
+      "warningColor": "#ffb347",
+      "dangerColor": "#ff4f6d",
+      "glowAlpha": 0.34
+    },
+    "boardDepth": {
+      "enabled": true,
+      "vignetteAlpha": 0.28,
+      "boardGlowAlpha": 0.18,
+      "trayGlowAlpha": 0.26
+    }
+  },
   "debugAudioEffects": true
 }

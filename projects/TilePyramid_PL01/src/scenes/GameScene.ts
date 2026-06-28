@@ -72,7 +72,7 @@ import {
 import { resolveAsset } from '../manifest/AssetManifest';
 import { isDebugAllowed } from '../config/ConfigLoader';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
-import type { AssetManifestData, Build08Snapshot, GameConfig, GameOutcomeState } from '../types';
+import type { AssetManifestData, Build08Snapshot, CommercialJuiceConfig, GameConfig, GameOutcomeState } from '../types';
 
 const TILE_SOURCE_SIZE = { width: 132, height: 144 };
 const BOARD_DEPTH = 1000;
@@ -119,6 +119,7 @@ export class GameScene extends Phaser.Scene {
   private endCardObjects: Phaser.GameObjects.GameObject[] = [];
   private renderedIdleKey = '';
   private timerWarningLoopTween?: Phaser.Tweens.Tween;
+  private matchStreak = 0;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -134,6 +135,7 @@ export class GameScene extends Phaser.Scene {
     this.orientationController = new OrientationController(bgAsset?.path ?? '', config.backgroundFit);
 
     this.initializeRuntime(config);
+    this.renderSceneDepth(config);
     this.renderBoard(config);
     this.renderTray(config);
     this.renderTimer(config);
@@ -255,6 +257,50 @@ export class GameScene extends Phaser.Scene {
       this.publishSnapshot(config);
       this.updateDebugText(config);
     }
+  }
+
+  private renderSceneDepth(config: GameConfig): void {
+    const juice = getCommercialJuice(config);
+    if (!juice?.boardDepth.enabled) return;
+
+    const W = config.designWidth;
+    const H = config.designHeight;
+    const depth = juice.boardDepth;
+
+    const boardGlow = this.add
+      .ellipse(W / 2, 805, 930, 1020, 0x7fd7ff, depth.boardGlowAlpha * juice.intensity)
+      .setDepth(BOARD_DEPTH - 35)
+      .setName('build29-board-depth-glow');
+    this.tweens.add({
+      targets: boardGlow,
+      alpha: depth.boardGlowAlpha * 0.55 * juice.intensity,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    const trayGlow = this.add
+      .ellipse(W / 2, config.trayLayout.centerY, 780, 260, 0xffd447, depth.trayGlowAlpha * juice.intensity)
+      .setDepth(TRAY_DEPTH - 35)
+      .setName('build29-tray-depth-glow');
+    this.tweens.add({
+      targets: trayGlow,
+      alpha: depth.trayGlowAlpha * 0.45 * juice.intensity,
+      duration: 1450,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    const vignette = this.add.graphics()
+      .setDepth(BOARD_DEPTH - 60)
+      .setName('build29-scene-vignette');
+    vignette.fillStyle(0x020617, depth.vignetteAlpha * juice.intensity);
+    vignette.fillRect(0, 0, W, 180);
+    vignette.fillRect(0, H - 220, W, 220);
+    vignette.fillRect(0, 0, 70, H);
+    vignette.fillRect(W - 70, 0, 70, H);
   }
 
   private renderBoard(config: GameConfig): void {
@@ -389,6 +435,10 @@ export class GameScene extends Phaser.Scene {
 
     sprite.disableInteractive();
     sprite.setDepth(TRAY_DEPTH + 100);
+    const juice = getCommercialJuice(config);
+    if (juice?.tileTapPolish.enabled) {
+      sprite.y -= juice.tileTapPolish.liftPixels;
+    }
     if (config.effects.enabled && config.effects.tileSelectPop.enabled) {
       sprite.setScale(config.boardLayout.tileScale * config.effects.tileSelectPop.scale);
 
@@ -428,7 +478,7 @@ export class GameScene extends Phaser.Scene {
     this.selectionState = completion.selection;
 
     this.updateBoardVisualStates(config);
-    this.renderTray(config);
+    this.renderTray(config, tile.id);
 
     const matchGroup = findNextMatchGroup(this.trayState);
     if (matchGroup) {
@@ -436,6 +486,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    this.matchStreak = 0;
     this.updateOutcome(config);
     this.updateDebugText(config);
   }
@@ -443,12 +494,14 @@ export class GameScene extends Phaser.Scene {
   private startMatchResolution(config: GameConfig, group: MatchGroup): void {
     this.resolvingGroup = group;
     this.lastMatchedTileType = group.tileTypeId;
+    this.matchStreak += 1;
     this.selectionState = { inputLocked: config.inputLockDuringMatchResolution };
     this.playSfx(config, config.audio.sfx.match);
     this.triggerEffect('match-resolve');
     this.renderTray(config);
     this.showMatchResolveFlash(config);
     this.showMatchSparkle(config, group);
+    this.showMatchReward(config, group);
     this.publishSnapshot(config);
     this.updateDebugText(config);
 
@@ -514,6 +567,7 @@ export class GameScene extends Phaser.Scene {
 
   private updateBoardVisualStates(config: GameConfig): void {
     const tilesById = new Map(this.boardState.tiles.map(tile => [tile.id, tile]));
+    const juice = getCommercialJuice(config);
 
     for (const [tileId, sprite] of this.boardSprites) {
       const tile = tilesById.get(tileId);
@@ -529,6 +583,9 @@ export class GameScene extends Phaser.Scene {
       sprite.setData('tileId', tile.id);
       sprite.setData('selectable', tile.selectable);
       sprite.setData('tileTypeId', tile.tileTypeId);
+      if (juice?.tileTapPolish.enabled && tile.selectable) {
+        sprite.setAlpha(0.98);
+      }
 
       if (!tile.selectable && isDebugAllowed(config) && config.debugBlockedState) {
         sprite.setTint(0x5a5f75).setAlpha(0.58);
@@ -536,7 +593,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private renderTray(config: GameConfig): void {
+  private renderTray(config: GameConfig, landingTileId?: string): void {
     for (const object of this.trayObjects) object.destroy();
     this.trayObjects = [];
     this.trayTileSprites.clear();
@@ -544,6 +601,7 @@ export class GameScene extends Phaser.Scene {
     const layout = calculateTrayLayout(this.trayState, config.trayLayout);
     const matchReadyTypes = new Set(getMatchReadyTileTypes(this.trayState));
     const resolvingIds = new Set(this.resolvingGroup?.sourceTileIds ?? []);
+    const juice = getCommercialJuice(config);
 
     const trayBgX = layout.bounds.left - 21;
     const trayBgY = layout.bounds.top - 17;
@@ -555,11 +613,28 @@ export class GameScene extends Phaser.Scene {
     const background = this.add.graphics()
       .setDepth(TRAY_DEPTH - 10)
       .setName('build04-tray-background');
-    background.fillStyle(0x18213a, 0.76);
+    background.fillStyle(0x111a32, 0.86);
     background.fillRoundedRect(trayBgX, trayBgY, trayBgW, trayBgH, trayCorner);
+    background.lineStyle(10, 0xffffff, 0.08);
+    background.strokeRoundedRect(trayBgX + 4, trayBgY + 4, trayBgW - 8, trayBgH - 8, trayCorner);
     background.lineStyle(4, 0x7fd7ff, strokeAlpha);
     background.strokeRoundedRect(trayBgX, trayBgY, trayBgW, trayBgH, trayCorner);
     this.trayObjects.push(background);
+
+    if (juice?.trayLanding.enabled) {
+      const glow = this.add
+        .ellipse(
+          layout.bounds.left + layout.bounds.width / 2,
+          layout.bounds.top + layout.bounds.height / 2,
+          layout.bounds.width + 92,
+          layout.bounds.height + 70,
+          colorFromHex(juice.trayLanding.glowColor),
+          0.16 * juice.intensity
+        )
+        .setDepth(TRAY_DEPTH - 18)
+        .setName('build29-tray-soft-glow');
+      this.trayObjects.push(glow);
+    }
 
     for (const slot of layout.slots) {
       const slotObject = this.add
@@ -586,6 +661,32 @@ export class GameScene extends Phaser.Scene {
         sprite.setTint(0xffd447).setAlpha(0.85);
       }
 
+      if (juice?.trayLanding.enabled && matchReadyTypes.has(tile.tileTypeId)) {
+        const readyGlow = this.add
+          .ellipse(
+            tile.screenX,
+            tile.screenY,
+            tile.width + 24,
+            tile.height + 24,
+            0xffd447,
+            resolvingIds.has(tile.sourceTileId) ? 0.24 : 0.16
+          )
+          .setDepth(TRAY_DEPTH + 18 + tile.slotIndex)
+          .setName('build29-match-ready-glow');
+        this.trayObjects.push(readyGlow);
+      }
+
+      if (juice?.trayLanding.enabled && landingTileId === tile.sourceTileId) {
+        sprite.setScale(config.trayLayout.tileScale * juice.trayLanding.popScale);
+        this.tweens.add({
+          targets: sprite,
+          scale: config.trayLayout.tileScale,
+          duration: juice.trayLanding.durationMs,
+          ease: 'Back.easeOut',
+        });
+        this.showTrayLandingRipple(config, tile.screenX, tile.screenY);
+      }
+
       if (this.debugEnabled && config.debugMatchReadyMarker && matchReadyTypes.has(tile.tileTypeId)) {
         const marker = this.add
           .rectangle(tile.screenX, tile.screenY, tile.width + 8, tile.height + 8)
@@ -606,6 +707,28 @@ export class GameScene extends Phaser.Scene {
       !config.effects.blockedShake.enabled
     ) {
       return;
+    }
+
+    const juice = getCommercialJuice(config);
+    if (juice?.tileTapPolish.enabled) {
+      const ring = this.add
+        .ellipse(
+          sprite.x,
+          sprite.y,
+          TILE_SOURCE_SIZE.width * config.boardLayout.tileScale + 28,
+          TILE_SOURCE_SIZE.height * config.boardLayout.tileScale + 28
+        )
+        .setStrokeStyle(8, colorFromHex(juice.tileTapPolish.blockedRingColor), 0.9)
+        .setDepth(sprite.depth + 2)
+        .setName('build29-blocked-tile-denial-ring');
+      this.tweens.add({
+        targets: ring,
+        alpha: 0,
+        scale: 1.26,
+        duration: 260,
+        ease: 'Cubic.easeOut',
+        onComplete: () => { if (ring.active) ring.destroy(); },
+      });
     }
 
     if (config.blockedTileFeedback === 'tint') {
@@ -657,12 +780,102 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private showTrayLandingRipple(config: GameConfig, x: number, y: number): void {
+    const juice = getCommercialJuice(config);
+    if (!juice?.trayLanding.enabled) return;
+    const ripple = this.add
+      .ellipse(x, y, 148, 116)
+      .setStrokeStyle(6, colorFromHex(juice.trayLanding.glowColor), 0.72 * juice.intensity)
+      .setDepth(TRAY_DEPTH + 16)
+      .setName('build29-tray-landing-ripple');
+    this.trayObjects.push(ripple);
+    this.tweens.add({
+      targets: ripple,
+      alpha: 0,
+      scale: 1.45,
+      duration: juice.trayLanding.durationMs * 2,
+      ease: 'Cubic.easeOut',
+      onComplete: () => { if (ripple.active) ripple.destroy(); },
+    });
+  }
+
   private renderGameplayCta(config: GameConfig): void {
     for (const object of this.ctaObjects) object.destroy();
     this.ctaObjects = [];
 
     this.ctaState = setCtaVisible(this.ctaState, this.gameState === 'playing' && config.cta.visibleDuringGameplay);
     if (!this.ctaState.visible) return;
+
+    const juice = getCommercialJuice(config);
+    if (juice?.ctaPolish.enabled) {
+      const glow = this.add
+        .ellipse(
+          config.cta.position.x,
+          config.cta.position.y,
+          config.cta.size.width + 88,
+          config.cta.size.height + 58,
+          colorFromHex(config.cta.borderColor),
+          juice.ctaPolish.glowAlpha * juice.intensity
+        )
+        .setDepth(CTA_DEPTH - 2)
+        .setName('build29-gameplay-cta-glow');
+      this.ctaObjects.push(glow);
+
+      const shell = this.add.graphics()
+        .setPosition(config.cta.position.x, config.cta.position.y)
+        .setDepth(CTA_DEPTH - 1)
+        .setName('build29-gameplay-cta-shell');
+      shell.fillStyle(colorFromHex(config.cta.backgroundColor), 0.98);
+      shell.fillRoundedRect(
+        -config.cta.size.width / 2,
+        -config.cta.size.height / 2,
+        config.cta.size.width,
+        config.cta.size.height,
+        config.cta.cornerRadius
+      );
+      shell.lineStyle(8, colorFromHex(config.cta.borderColor), 1);
+      shell.strokeRoundedRect(
+        -config.cta.size.width / 2,
+        -config.cta.size.height / 2,
+        config.cta.size.width,
+        config.cta.size.height,
+        config.cta.cornerRadius
+      );
+      shell.lineStyle(3, 0xffffff, 0.45);
+      shell.strokeRoundedRect(
+        -config.cta.size.width / 2 + 9,
+        -config.cta.size.height / 2 + 9,
+        config.cta.size.width - 18,
+        config.cta.size.height - 18,
+        Math.max(0, config.cta.cornerRadius - 8)
+      );
+      this.ctaObjects.push(shell);
+
+      if (juice.ctaPolish.shineEnabled) {
+        const shine = this.add
+          .rectangle(
+            config.cta.position.x - config.cta.size.width * 0.32,
+            config.cta.position.y - config.cta.size.height * 0.22,
+            config.cta.size.width * 0.34,
+            12,
+            0xffffff,
+            0.38
+          )
+          .setAngle(-10)
+          .setDepth(CTA_DEPTH)
+          .setName('build29-gameplay-cta-shine');
+        this.ctaObjects.push(shine);
+        this.tweens.add({
+          targets: shine,
+          x: config.cta.position.x + config.cta.size.width * 0.34,
+          alpha: { from: 0.18, to: 0.52 },
+          duration: 1250,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+      }
+    }
 
     const bg = this.add
       .rectangle(
@@ -671,7 +884,7 @@ export class GameScene extends Phaser.Scene {
         config.cta.size.width,
         config.cta.size.height,
         colorFromHex(config.cta.backgroundColor),
-        0.96
+        juice?.ctaPolish.enabled ? 0.01 : 0.96
       )
       .setStrokeStyle(6, colorFromHex(config.cta.borderColor), 1)
       .setDepth(CTA_DEPTH)
@@ -697,7 +910,7 @@ export class GameScene extends Phaser.Scene {
 
     if (config.effects.enabled && config.effects.ctaPulse.enabled) {
       this.tweens.add({
-        targets: [bg, label],
+        targets: this.ctaObjects.filter(object => object.active),
         scale: config.effects.ctaPulse.scale,
         duration: config.effects.ctaPulse.durationMs,
         yoyo: true,
@@ -710,10 +923,24 @@ export class GameScene extends Phaser.Scene {
   private handleGameplayCtaClick(config: GameConfig): void {
     this.playSfx(config, config.audio.sfx.ctaClick);
     this.triggerEffect('cta-click');
+    this.pulseCtaTapFeedback(config, this.ctaObjects);
     this.ctaState = recordCtaClick(this.ctaState);
     this.storeOpenState = this.storeOpenService.openStore('gameplay-cta');
     this.publishSnapshot(config);
     this.updateDebugText(config);
+  }
+
+  private pulseCtaTapFeedback(config: GameConfig, objects: Phaser.GameObjects.GameObject[]): void {
+    const juice = getCommercialJuice(config);
+    if (!juice?.ctaPolish.enabled) return;
+    const targets = objects.filter(object => object.active);
+    this.tweens.add({
+      targets,
+      scale: juice.ctaPolish.tapScale,
+      duration: 70,
+      yoyo: true,
+      ease: 'Sine.easeOut',
+    });
   }
 
   private updateEndCardState(config: GameConfig): void {
@@ -733,6 +960,7 @@ export class GameScene extends Phaser.Scene {
     this.endCardObjects = [];
 
     if (!this.endCardState.visible) return;
+    const juice = getCommercialJuice(config);
 
     const surface = this.add
       .rectangle(
@@ -740,8 +968,8 @@ export class GameScene extends Phaser.Scene {
         config.designHeight / 2,
         config.designWidth,
         config.designHeight,
-        0x081225,
-        0.9
+        0x050b18,
+        juice?.endCardV2.enabled ? 0.94 : 0.9
       )
       .setDepth(END_CARD_DEPTH)
       .setName('build06-end-card-surface');
@@ -757,6 +985,53 @@ export class GameScene extends Phaser.Scene {
     }
     this.endCardObjects.push(surface);
 
+    if (juice?.endCardV2.enabled) {
+      const rays = this.add.graphics()
+        .setPosition(config.designWidth / 2, 500)
+        .setDepth(END_CARD_DEPTH + 0.2)
+        .setName('build29-end-card-rays');
+      for (let i = 0; i < juice.endCardV2.rayCount; i += 1) {
+        const angle = (i / juice.endCardV2.rayCount) * Math.PI * 2;
+        const width = 0.08;
+        rays.fillStyle(i % 2 === 0 ? 0xffd447 : 0x7fd7ff, 0.12 * juice.intensity);
+        rays.slice(0, 0, 940, angle - width, angle + width, false);
+        rays.fillPath();
+      }
+      this.endCardObjects.push(rays);
+      this.tweens.add({
+        targets: rays,
+        angle: 360,
+        duration: 18000,
+        repeat: -1,
+        ease: 'Linear',
+      });
+
+      const iconGlow = this.add
+        .ellipse(config.designWidth / 2, 420, 340, 340, 0xffd447, 0.24 * juice.intensity)
+        .setDepth(END_CARD_DEPTH + 0.8)
+        .setName('build29-end-card-icon-glow');
+      this.endCardObjects.push(iconGlow);
+
+      for (let i = 0; i < juice.endCardV2.particleCount; i += 1) {
+        const x = 130 + ((i * 79) % 820);
+        const y = 220 + ((i * 137) % 980);
+        const particle = this.add
+          .circle(x, y, i % 3 === 0 ? 5 : 3, i % 2 === 0 ? 0xffd447 : 0x7fd7ff, 0.38)
+          .setDepth(END_CARD_DEPTH + 0.6)
+          .setName('build29-end-card-particle');
+        this.endCardObjects.push(particle);
+        this.tweens.add({
+          targets: particle,
+          y: y - 34,
+          alpha: { from: 0.16, to: 0.52 },
+          duration: 1300 + i * 28,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+      }
+    }
+
     const icon = this.add
       .image(config.designWidth / 2, 420, config.app.iconAssetId)
       .setDisplaySize(256, 256)
@@ -770,6 +1045,20 @@ export class GameScene extends Phaser.Scene {
       .setDepth(END_CARD_DEPTH + 1)
       .setName('build06-end-card-logo');
     this.endCardObjects.push(logo);
+
+    const title = this.add
+      .text(config.designWidth / 2, 220, config.endCard.titleText, {
+        color: '#ffffff',
+        fontSize: '62px',
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+        stroke: '#081225',
+        strokeThickness: 10,
+      })
+      .setOrigin(0.5)
+      .setDepth(END_CARD_DEPTH + 2)
+      .setName('build29-end-card-title');
+    this.endCardObjects.push(title);
 
     const message = this.endCardState.reason === 'win' ? config.endCard.winMessage : config.endCard.failMessage;
     const messageColor = this.endCardState.reason === 'win' ? config.endCard.winMessageColor : config.endCard.failMessageColor;
@@ -787,7 +1076,31 @@ export class GameScene extends Phaser.Scene {
       .setName('build06-end-card-message');
     this.endCardObjects.push(messageText);
 
+    let installCopy: Phaser.GameObjects.Text | undefined;
+    if (juice?.endCardV2.enabled) {
+      installCopy = this.add
+        .text(config.designWidth / 2, 1110, juice.endCardV2.installText, {
+          color: '#e7f7ff',
+          fontSize: '42px',
+          fontFamily: 'Arial, sans-serif',
+          fontStyle: 'bold',
+          stroke: '#081225',
+          strokeThickness: 7,
+        })
+        .setOrigin(0.5)
+        .setDepth(END_CARD_DEPTH + 2)
+        .setName('build29-end-card-install-text');
+      this.endCardObjects.push(installCopy);
+    }
+
     const ctaY = 1310;
+    if (juice?.ctaPolish.enabled) {
+      const ctaGlow = this.add
+        .ellipse(config.designWidth / 2, ctaY, 650, 188, colorFromHex(config.cta.borderColor), juice.ctaPolish.glowAlpha)
+        .setDepth(END_CARD_DEPTH + 1)
+        .setName('build29-end-card-cta-glow');
+      this.endCardObjects.push(ctaGlow);
+    }
     const ctaBg = this.add
       .rectangle(config.designWidth / 2, ctaY, 520, 132, colorFromHex(config.cta.backgroundColor), 0.98)
       .setStrokeStyle(7, colorFromHex(config.cta.borderColor), 1)
@@ -813,15 +1126,17 @@ export class GameScene extends Phaser.Scene {
     this.endCardObjects.push(ctaLabel);
 
     if (config.endCard.entranceAnimation) {
-      const enterTargets = [icon, logo, messageText];
+      const enterTargets = [title, icon, logo, messageText, ...(installCopy ? [installCopy] : [])];
       enterTargets.forEach((target, i) => {
         target.setAlpha(0);
+        target.setScale(0.92);
         this.tweens.add({
           targets: target,
           alpha: 1,
+          scale: 1,
           duration: 380,
-          delay: i * 90,
-          ease: 'Sine.easeOut',
+          delay: i * 85,
+          ease: 'Back.easeOut',
         });
       });
     }
@@ -841,6 +1156,7 @@ export class GameScene extends Phaser.Scene {
   private handleEndCardClick(config: GameConfig): void {
     this.playSfx(config, config.audio.sfx.ctaClick);
     this.triggerEffect('cta-click');
+    this.pulseCtaTapFeedback(config, this.endCardObjects);
     this.endCardState = recordEndCardClick(this.endCardState);
     this.storeOpenState = this.storeOpenService.openStore('end-card');
     this.publishSnapshot(config);
@@ -864,9 +1180,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     const displaySeconds = getTimerDisplaySeconds(this.timerState);
+    const juice = getCommercialJuice(config);
+    const warningColor =
+      juice?.timerWarningPolish.enabled && displaySeconds <= 2
+        ? juice.timerWarningPolish.dangerColor
+        : juice?.timerWarningPolish.enabled
+          ? juice.timerWarningPolish.warningColor
+          : '#ff5d73';
     this.timerText
       .setText(`Time ${displaySeconds}`)
-      .setColor(this.timerState.warningActive ? '#ff5d73' : '#ffffff');
+      .setColor(this.timerState.warningActive ? warningColor : '#ffffff')
+      .setStroke(
+        this.timerState.warningActive && juice?.timerWarningPolish.enabled ? '#4b0d1a' : '#1a2442',
+        this.timerState.warningActive && juice?.timerWarningPolish.enabled ? 11 : 8
+      );
     if (!this.timerWarningLoopTween) {
       this.timerText.setScale(
         this.timerState.warningActive && config.effects.timerWarningPulse.enabled
@@ -992,11 +1319,38 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({
       targets: ring,
       alpha: { from: 0.45, to: 1 },
-      scale: { from: 0.94, to: 1.06 },
+      scale: { from: 0.94, to: getCommercialJuice(config)?.idleHintV2.enabled ? getCommercialJuice(config)!.idleHintV2.targetPulseScale : 1.06 },
       duration: 520,
       yoyo: true,
       repeat: -1,
     });
+
+    const juice = getCommercialJuice(config);
+    if (juice?.idleHintV2.enabled) {
+      const trail = this.add
+        .ellipse(
+          target.screenX + 34,
+          target.screenY + 42,
+          target.width * 0.76,
+          target.height * 0.42,
+          colorFromHex(juice.idleHintV2.trailColor),
+          0.18 * juice.intensity
+        )
+        .setAngle(-24)
+        .setDepth(TUTORIAL_DEPTH + 19)
+        .setName('build29-idle-guidance-trail');
+      this.idleObjects.push(trail);
+      this.tweens.add({
+        targets: trail,
+        x: target.screenX - 12,
+        y: target.screenY - 10,
+        alpha: { from: 0.08, to: 0.28 },
+        duration: 720,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
 
     if (config.tutorial.handEnabled) {
       const hand = this.add
@@ -1125,6 +1479,62 @@ export class GameScene extends Phaser.Scene {
           onComplete: () => { if (g.active) g.destroy(); },
         });
       }
+    }
+  }
+
+  private showMatchReward(config: GameConfig, group: MatchGroup): void {
+    const juice = getCommercialJuice(config);
+    if (!juice?.matchReward.enabled) return;
+    const trayLayout = calculateTrayLayout(this.trayState, config.trayLayout);
+    const targets = group.sourceTileIds
+      .map(sourceTileId => trayLayout.tiles.find(tile => tile.sourceTileId === sourceTileId))
+      .filter((tile): tile is NonNullable<typeof tile> => Boolean(tile));
+    if (targets.length === 0) return;
+
+    const centerX = targets.reduce((sum, tile) => sum + tile.screenX, 0) / targets.length;
+    const centerY = targets.reduce((sum, tile) => sum + tile.screenY, 0) / targets.length - 112;
+    const rewardText = juice.matchReward.texts[Math.min(this.matchStreak - 1, juice.matchReward.texts.length - 1)] ?? 'Nice!';
+    const text = this.add
+      .text(centerX, centerY, rewardText, {
+        color: '#ffffff',
+        fontSize: `${juice.matchReward.fontSize}px`,
+        fontFamily: 'Arial, sans-serif',
+        fontStyle: 'bold',
+        stroke: '#111827',
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5)
+      .setDepth(TRAY_DEPTH + 70)
+      .setName('build29-match-reward-text');
+
+    this.tweens.add({
+      targets: text,
+      y: centerY - 54,
+      alpha: 0,
+      scale: { from: 0.85, to: 1.16 },
+      duration: juice.matchReward.durationMs,
+      ease: 'Cubic.easeOut',
+      onComplete: () => { if (text.active) text.destroy(); },
+    });
+
+    const color = colorFromHex(config.effects.matchSparkle.color);
+    for (let i = 0; i < juice.matchReward.burstCount; i += 1) {
+      const angle = (i / juice.matchReward.burstCount) * Math.PI * 2;
+      const burst = this.add
+        .rectangle(centerX, centerY + 28, 10, 22, color, 0.78)
+        .setAngle(Phaser.Math.RadToDeg(angle))
+        .setDepth(TRAY_DEPTH + 66)
+        .setName('build29-match-reward-burst');
+      this.tweens.add({
+        targets: burst,
+        x: centerX + Math.cos(angle) * 95,
+        y: centerY + 28 + Math.sin(angle) * 72,
+        alpha: 0,
+        scale: 0.4,
+        duration: juice.matchReward.durationMs * 0.82,
+        ease: 'Cubic.easeOut',
+        onComplete: () => { if (burst.active) burst.destroy(); },
+      });
     }
   }
 
@@ -1392,3 +1802,6 @@ function colorFromHex(value: string): number {
   return Phaser.Display.Color.HexStringToColor(value).color;
 }
 
+function getCommercialJuice(config: GameConfig): CommercialJuiceConfig | undefined {
+  return config.commercialJuice?.enabled ? config.commercialJuice : undefined;
+}
