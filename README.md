@@ -51,6 +51,9 @@ npm run wowwi:project -- TilePyramid_PL01 test
 npm run wowwi:project -- TilePyramid_PL01 export
 npm run wowwi:project -- TilePyramid_PL01 package-candidate
 npm run wowwi:project -- TilePyramid_PL01 package-delivery
+npm run wowwi:audit-assets -- --project TilePyramid_PL01 --dry-run
+npm run wowwi:audit-assets -- --project TilePyramid_PL01
+npm run wowwi:validate-asset-audit -- --project TilePyramid_PL01
 npm test                                        # registry, project-creation, live-preview, and integration tests
 ```
 
@@ -58,6 +61,8 @@ See [docs/WOWWI_TOOL_FOUNDATION.md](docs/WOWWI_TOOL_FOUNDATION.md) and
 [docs/PROJECT_REGISTRY.md](docs/PROJECT_REGISTRY.md) for details.
 See [docs/NEW_PROJECT_PIPELINE.md](docs/NEW_PROJECT_PIPELINE.md) for the BUILD-23
 project skeleton generator.
+See [docs/ASSET_INTAKE_ANALYZER.md](docs/ASSET_INTAKE_ANALYZER.md) for the
+BUILD-24 asset audit commands.
 
 ## Preview site
 
@@ -177,7 +182,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-20**: Creative polish pass (CTA pulse, end card, tile lift, sparkle, timer, tutorial, tray)
 - **BUILD-21**: Polished post-BUILD-20 candidate re-upload package
 - **BUILD-22**: Polished Unity/AppLovin manual network QA lock
-- **BUILD-23**: New playable project creation pipeline ← current
+- **BUILD-23**: New playable project creation pipeline
+- **BUILD-24**: Asset intake analyzer foundation ← current
 
 ## Documentation index
 
@@ -206,3 +212,6 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/NEW_PROJECT_PIPELINE.md` | BUILD-23 new playable project creation command |
 | `docs/PLAYABLE_PROJECT_TEMPLATE.md` | Reusable skeleton template reference |
 | `docs/BUILD_23_REPORT.md` | BUILD-23 implementation report |
+| `docs/ASSET_INTAKE_ANALYZER.md` | BUILD-24 asset audit command guide |
+| `docs/ASSET_AUDIT_REPORT_FORMAT.md` | Generated asset audit JSON and Markdown format |
+| `docs/BUILD_24_REPORT.md` | BUILD-24 implementation report |

@@ -5,6 +5,8 @@
   "scripts": {
     "wowwi:list": "node tooling/commands/list-projects.mjs",
     "wowwi:create-project": "node tooling/commands/create-project.mjs",
+    "wowwi:audit-assets": "node tooling/commands/audit-assets.mjs",
+    "wowwi:validate-asset-audit": "node tooling/commands/validate-asset-audit.mjs",
     "wowwi:validate": "node tooling/commands/validate-projects.mjs",
     "wowwi:project": "node tooling/commands/project-command.mjs",
     "test": "node --test tooling/tests/*.test.mjs",

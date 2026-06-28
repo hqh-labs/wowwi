@@ -111,6 +111,17 @@ Use the generated docs to plan:
 Add real npm workflows only when the implementation exists. Do not add fake export
 or package scripts.
 
+Before implementation begins, run the BUILD-24 asset intake analyzer:
+
+```bash
+npm run wowwi:audit-assets -- --project SamplePlayable_PL01 --dry-run
+npm run wowwi:audit-assets -- --project SamplePlayable_PL01
+npm run wowwi:validate-asset-audit -- --project SamplePlayable_PL01
+```
+
+The analyzer writes the project's `docs/ASSET_AUDIT.md` and
+`docs/asset-audit.json` reports without modifying source assets.
+
 ## Difference From Copying TilePyramid
 
 This pipeline starts with blank intake/planning files. It does not copy

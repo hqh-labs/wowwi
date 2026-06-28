@@ -86,11 +86,11 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-23** - New Playable Project Creation Pipeline.
-BUILD-23 adds a root-level project skeleton generator, reusable template files,
-development-project registry validation, safe asset-intake folders, and tests for
-new project creation. It must not change TilePyramid_PL01 gameplay/export logic or
-modify raw/extracted client assets.
+**BUILD-24** - Asset Intake Analyzer Foundation.
+BUILD-24 adds root-level commands for scanning registered project intake folders,
+writing asset audit reports, validating audit output, and testing the analyzer. It
+must not change TilePyramid_PL01 gameplay/export logic or modify raw/extracted
+client assets.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API

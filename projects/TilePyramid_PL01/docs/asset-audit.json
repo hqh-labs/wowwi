@@ -1,0 +1,316 @@
+{
+  "projectId": "TilePyramid_PL01",
+  "displayName": "Tile Pyramid — Match Quest",
+  "generatedAt": "2026-06-28T12:43:54.512Z",
+  "scannedFolders": [
+    {
+      "label": "input/raw-assets",
+      "path": "projects/TilePyramid_PL01/input/raw-assets",
+      "source": "project",
+      "exists": false,
+      "fileCount": 0,
+      "totalBytes": 0
+    },
+    {
+      "label": "input/extracted-assets",
+      "path": "projects/TilePyramid_PL01/input/extracted-assets",
+      "source": "project",
+      "exists": false,
+      "fileCount": 0,
+      "totalBytes": 0
+    },
+    {
+      "label": "input/references",
+      "path": "projects/TilePyramid_PL01/input/references",
+      "source": "project",
+      "exists": false,
+      "fileCount": 0,
+      "totalBytes": 0
+    },
+    {
+      "label": "input/brief",
+      "path": "projects/TilePyramid_PL01/input/brief",
+      "source": "project",
+      "exists": false,
+      "fileCount": 0,
+      "totalBytes": 0
+    },
+    {
+      "label": "project-input/raw-assets",
+      "path": "project-input/raw-assets",
+      "source": "legacy",
+      "exists": true,
+      "fileCount": 1,
+      "totalBytes": 35008730
+    },
+    {
+      "label": "project-input/extracted-assets",
+      "path": "project-input/extracted-assets",
+      "source": "legacy",
+      "exists": true,
+      "fileCount": 100,
+      "totalBytes": 35511715
+    },
+    {
+      "label": "project-input/references",
+      "path": "project-input/references",
+      "source": "legacy",
+      "exists": true,
+      "fileCount": 0,
+      "totalBytes": 0
+    }
+  ],
+  "totals": {
+    "fileCount": 101,
+    "totalBytes": 70520445
+  },
+  "categories": {
+    "archive": {
+      "count": 2,
+      "bytes": 35420468
+    },
+    "image": {
+      "count": 54,
+      "bytes": 24800229
+    },
+    "font": {
+      "count": 1,
+      "bytes": 111704
+    },
+    "data": {
+      "count": 2,
+      "bytes": 3340
+    },
+    "audio": {
+      "count": 42,
+      "bytes": 10184704
+    }
+  },
+  "extensions": {
+    ".zip": {
+      "count": 1,
+      "bytes": 35008730
+    },
+    ".png": {
+      "count": 54,
+      "bytes": 24800229
+    },
+    ".ttf": {
+      "count": 1,
+      "bytes": 111704
+    },
+    ".json": {
+      "count": 2,
+      "bytes": 3340
+    },
+    ".mp3": {
+      "count": 39,
+      "bytes": 9381988
+    },
+    ".wav": {
+      "count": 3,
+      "bytes": 802716
+    },
+    ".gz": {
+      "count": 1,
+      "bytes": 411738
+    }
+  },
+  "largestFiles": [
+    {
+      "name": "TilePyramid_PL01_assets.zip.zip",
+      "path": "project-input/raw-assets/TilePyramid_PL01_assets.zip.zip",
+      "folder": "project-input/raw-assets",
+      "extension": ".zip",
+      "category": "archive",
+      "sizeBytes": 35008730
+    },
+    {
+      "name": "BGM_GamePlay.mp3",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/SFX_BGM/BGM/BGM_GamePlay.mp3",
+      "folder": "project-input/extracted-assets",
+      "extension": ".mp3",
+      "category": "audio",
+      "sizeBytes": 5239736
+    },
+    {
+      "name": "BGM_Home.mp3",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/SFX_BGM/BGM/BGM_Home.mp3",
+      "folder": "project-input/extracted-assets",
+      "extension": ".mp3",
+      "category": "audio",
+      "sizeBytes": 3393638
+    },
+    {
+      "name": "1768985619153.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/CTA button/1768985619153.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 2129154,
+      "image": {
+        "width": 1536,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_10.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_10.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1622330,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_11.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_11.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1592953,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_9.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_9.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1530900,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_15.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_15.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1507176,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_14.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_14.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1490408,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    },
+    {
+      "name": "Background_7.png",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_7.png",
+      "folder": "project-input/extracted-assets",
+      "extension": ".png",
+      "category": "image",
+      "sizeBytes": 1478322,
+      "image": {
+        "width": 1024,
+        "height": 1024,
+        "format": "png"
+      }
+    }
+  ],
+  "archives": [
+    {
+      "name": "TilePyramid_PL01_assets.zip.zip",
+      "path": "project-input/raw-assets/TilePyramid_PL01_assets.zip.zip",
+      "folder": "project-input/raw-assets",
+      "extension": ".zip",
+      "category": "archive",
+      "sizeBytes": 35008730
+    },
+    {
+      "name": "ShatterFallEffect_TilePyramid.unitypackage.gz",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/VFX_TileBreak/ShatterFallEffect_TilePyramid.unitypackage.gz",
+      "folder": "project-input/extracted-assets",
+      "extension": ".gz",
+      "category": "archive",
+      "sizeBytes": 411738
+    }
+  ],
+  "jsonFiles": [
+    {
+      "name": "Level_19.json",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Level Design/Level_19.json",
+      "folder": "project-input/extracted-assets",
+      "extension": ".json",
+      "category": "data",
+      "sizeBytes": 1694,
+      "json": {
+        "valid": true,
+        "topLevelType": "object"
+      }
+    },
+    {
+      "name": "Level_21.json",
+      "path": "project-input/extracted-assets/TilePyramid_TrueGameplay/Level Design/Level_21.json",
+      "folder": "project-input/extracted-assets",
+      "extension": ".json",
+      "category": "data",
+      "sizeBytes": 1646,
+      "json": {
+        "valid": true,
+        "topLevelType": "object"
+      }
+    }
+  ],
+  "duplicateNames": [],
+  "warnings": [
+    "Missing intake folder: input/raw-assets",
+    "Missing intake folder: input/extracted-assets",
+    "Missing intake folder: input/references",
+    "Missing intake folder: input/brief",
+    "Empty intake folder: project-input/references",
+    "Very large source file: project-input/raw-assets/TilePyramid_PL01_assets.zip.zip (35008730 bytes)",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_1.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_10.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_11.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_12.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_13.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_14.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_15.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_3.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_4.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_5.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_6.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_7.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_8.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/Background/Background_9.png",
+    "Large PNG should be optimized before runtime use: project-input/extracted-assets/TilePyramid_TrueGameplay/CTA button/1768985619153.png",
+    "Large audio file may need runtime optimization: project-input/extracted-assets/TilePyramid_TrueGameplay/SFX_BGM/BGM/BGM_GamePlay.mp3",
+    "Large audio file may need runtime optimization: project-input/extracted-assets/TilePyramid_TrueGameplay/SFX_BGM/BGM/BGM_Home.mp3",
+    "Total source asset size is high; runtime copies will need optimization."
+  ],
+  "recommendations": [
+    "Keep raw and extracted client assets immutable.",
+    "Create runtime copies before optimizing, resizing, or converting assets.",
+    "Document source ownership, intended use, and checksums in ASSET_INTAKE.md.",
+    "Optimize images and audio before adding them to runtime bundles.",
+    "If an archive is the only source, extract it outside the raw folder and document the extracted contents.",
+    "Record logo, icon, CTA, store URL, and target-network notes in the project brief."
+  ],
+  "rawAssetsModified": false
+}

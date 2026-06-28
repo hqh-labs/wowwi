@@ -127,3 +127,19 @@ Development skeletons must include:
 - `input/brief/`
 - `src/`
 - `tests/`
+
+## BUILD-24 asset audit reports
+
+Registered projects can be scanned with:
+
+```sh
+npm run wowwi:audit-assets -- --project <ProjectID> --dry-run
+npm run wowwi:audit-assets -- --project <ProjectID>
+npm run wowwi:validate-asset-audit -- --project <ProjectID>
+```
+
+The audit is project-scoped and writes reports under
+`projects/<ProjectID>/docs/`. It does not modify registry entries or source
+assets. Future registry metadata can reference the generated
+`docs/asset-audit.json` file, but BUILD-24 intentionally keeps registry mutation
+out of scope.
