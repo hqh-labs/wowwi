@@ -63,27 +63,35 @@ Generated exports, upload candidates, and delivery HTML were scanned for:
 
 Result: no matches.
 
+## BUILD-22 Manual Upload Result
+
+The polished candidate passed manual re-upload QA after BUILD-21 package
+generation.
+
+- Unity Ads: PASS - passed current Unity upload/testing.
+- AppLovin: PASS - passed current AppLovin upload/testing.
+- Locked evidence: `docs/POLISHED_NETWORK_QA_LOCK.md`
+
 ## Expected Upload Result
 
 The expected result is that both networks accept the refreshed polished candidate for
-preview/review, but final network approval is not guaranteed forever. Do not mark this
-candidate as passed until manual Unity and AppLovin upload testing is completed.
+preview/review, but final network approval is not guaranteed forever. BUILD-22 records
+that manual Unity and AppLovin upload testing passed for the polished candidate listed
+above.
 
 ## Manual Unity Upload Result
 
-- Date:
-- Uploaded by:
-- File SHA256:
-- Result:
-- Notes:
+- Date: 2026-06-28
+- File SHA256: `2e792f126dbef7455d4a066b5e153b30de9012351b57748fbaf9a806ff56e669`
+- Result: PASS - passed current Unity upload/testing.
+- Notes: Point-in-time manual QA lock only; not guaranteed forever.
 
 ## Manual AppLovin Upload Result
 
-- Date:
-- Uploaded by:
-- File SHA256:
-- Result:
-- Notes:
+- Date: 2026-06-28
+- File SHA256: `e656722608c8066adc66c45e676c7d3f58c769886f8195c01d287574ee485b87`
+- Result: PASS - passed current AppLovin upload/testing.
+- Notes: Point-in-time manual QA lock only; not guaranteed forever.
 
 ## Known Limitations
 

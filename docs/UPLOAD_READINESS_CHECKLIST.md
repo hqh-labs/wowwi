@@ -25,10 +25,18 @@ Project: TilePyramid_PL01
 - Landscape side background areas do not trigger gameplay or store-open.
 - Formal solvability is explicitly recorded as `NOT YET PROVEN`.
 
-## Still requires manual network upload testing
+## Polished manual network upload testing
 
-- Upload Unity HTML to the Unity Ads playable review flow.
-- Upload AppLovin HTML to the AppLovin playable review flow.
+- BUILD-22: polished Unity candidate passed current Unity upload/testing.
+- BUILD-22: polished AppLovin candidate passed current AppLovin upload/testing.
+- Locked evidence is recorded in `docs/POLISHED_NETWORK_QA_LOCK.md`.
+
+## Recheck before future network delivery
+
+- Upload Unity HTML to the Unity Ads playable review flow if any source, config,
+  export, package, or asset changes occur after BUILD-22.
+- Upload AppLovin HTML to the AppLovin playable review flow if any source, config,
+  export, package, or asset changes occur after BUILD-22.
 - Confirm final parser acceptance, preview rendering, and click-through behavior
   inside each network's current review tooling.
 - Confirm the host close button remains accessible in each network preview.
@@ -93,6 +101,15 @@ Project: TilePyramid_PL01
 - window.top not present in either export: confirmed by validator and PowerShell scan.
 - Formal solvability remains NOT YET PROVEN.
 - Final approval not guaranteed by local validation.
+
+## Polished network QA lock (BUILD-22)
+
+- Unity Ads: PASS - passed current Unity upload/testing for the polished candidate.
+- AppLovin: PASS - passed current AppLovin upload/testing for the polished candidate.
+- Unity SHA256: `2e792f126dbef7455d4a066b5e153b30de9012351b57748fbaf9a806ff56e669`
+- AppLovin SHA256: `e656722608c8066adc66c45e676c7d3f58c769886f8195c01d287574ee485b87`
+- Final network approval is not guaranteed forever.
+- Formal solvability remains NOT YET PROVEN.
 
 ## Final sign-off items
 

@@ -96,9 +96,45 @@ test('BUILD-21 report doc exists', async () => {
   assert.ok(text.includes('BUILD-21'), 'BUILD_21_REPORT must identify BUILD-21');
 });
 
+test('BUILD-22 report doc exists', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/BUILD_22_REPORT.md'), 'utf8');
+  assert.ok(text.includes('BUILD-22'), 'BUILD_22_REPORT must identify BUILD-22');
+});
+
 test('polished candidate re-upload doc exists', async () => {
   const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_CANDIDATE_REUPLOAD.md'), 'utf8');
   assert.ok(text.includes('Polished Candidate Re-upload'));
+});
+
+test('polished network QA lock doc exists', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_NETWORK_QA_LOCK.md'), 'utf8');
+  assert.ok(text.includes('Polished Network QA Lock'));
+});
+
+test('polished network QA lock records Unity PASS', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_NETWORK_QA_LOCK.md'), 'utf8');
+  assert.ok(text.includes('Unity Ads: PASS'), 'QA lock doc must record Unity PASS');
+});
+
+test('polished network QA lock records AppLovin PASS', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_NETWORK_QA_LOCK.md'), 'utf8');
+  assert.ok(text.includes('AppLovin: PASS'), 'QA lock doc must record AppLovin PASS');
+});
+
+test('polished network QA lock records Unity SHA256', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_NETWORK_QA_LOCK.md'), 'utf8');
+  assert.ok(
+    text.includes('2e792f126dbef7455d4a066b5e153b30de9012351b57748fbaf9a806ff56e669'),
+    'QA lock doc must record Unity SHA256'
+  );
+});
+
+test('polished network QA lock records AppLovin SHA256', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_NETWORK_QA_LOCK.md'), 'utf8');
+  assert.ok(
+    text.includes('e656722608c8066adc66c45e676c7d3f58c769886f8195c01d287574ee485b87'),
+    'QA lock doc must record AppLovin SHA256'
+  );
 });
 
 test('creative QA checklist doc exists', async () => {
@@ -143,7 +179,20 @@ test('TilePyramid polished candidate registry metadata is valid', async () => {
   const project = registry.projects.find(p => p.projectId === 'TilePyramid_PL01');
   assert.strictEqual(project.creativePolishStatus, 'polished-candidate');
   assert.strictEqual(project.polishedCandidateBuild, 'BUILD-20');
-  assert.strictEqual(project.polishedCandidateReuploadStatus, 'pending-manual-upload');
+  assert.strictEqual(project.polishedCandidateReuploadStatus, 'passed-manual-upload-testing');
+  assert.strictEqual(project.polishedUnityUploadStatus, 'passed-current-upload-testing');
+  assert.strictEqual(project.polishedAppLovinUploadStatus, 'passed-current-upload-testing');
+  assert.strictEqual(project.polishedNetworkQaLockedAt, '2026-06-28');
+  assert.strictEqual(project.polishedUnitySizeBytes, 1998718);
+  assert.strictEqual(project.polishedAppLovinSizeBytes, 1998737);
+  assert.strictEqual(
+    project.polishedUnitySha256,
+    '2e792f126dbef7455d4a066b5e153b30de9012351b57748fbaf9a806ff56e669'
+  );
+  assert.strictEqual(
+    project.polishedAppLovinSha256,
+    'e656722608c8066adc66c45e676c7d3f58c769886f8195c01d287574ee485b87'
+  );
 });
 
 // ── schema validator unit tests ───────────────────────────────────────────────

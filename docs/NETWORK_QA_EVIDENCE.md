@@ -10,6 +10,9 @@ Both Unity Ads and AppLovin upload/testing passed after the BUILD-12 `window.top
 removal fix. This document records the evidence, known limitations, and exact
 wording that is appropriate for each claim.
 
+BUILD-22 additionally records that the polished post-BUILD-20 candidate generated
+in BUILD-21 passed current manual Unity and AppLovin re-upload testing.
+
 ## Approved Claim Wording
 
 Use these phrases:
@@ -61,6 +64,20 @@ review after BUILD-12 regeneration.
 
 Current delivery checksums are recorded in `delivery/latest/checksums.sha256`
 and `delivery/latest/delivery-manifest.json` at generation time.
+
+## Polished Candidate Manual Re-upload QA (BUILD-22)
+
+| Field | Unity | AppLovin |
+|-------|-------|----------|
+| Status | PASS - passed current Unity upload/testing | PASS - passed current AppLovin upload/testing |
+| Candidate path | `projects/TilePyramid_PL01/upload-candidates/latest/unity/TilePyramid_PL01_unity.html` | `projects/TilePyramid_PL01/upload-candidates/latest/applovin/TilePyramid_PL01_applovin.html` |
+| Size (bytes) | 1,998,718 | 1,998,737 |
+| SHA256 | `2e792f126dbef7455d4a066b5e153b30de9012351b57748fbaf9a806ff56e669` | `e656722608c8066adc66c45e676c7d3f58c769886f8195c01d287574ee485b87` |
+| Formal solvability | NOT YET PROVEN | NOT YET PROVEN |
+
+The polished candidate passed manual re-upload QA. This is a current upload/testing
+result only; it does not guarantee permanent approval or future network policy
+compatibility.
 
 ## Store URLs Configured
 
@@ -132,5 +149,5 @@ verified by an exhaustive solver.
 
 ## Final Approval Disclaimer
 
-Local BUILD-13 delivery packaging and validation do not guarantee final Unity Ads
-or AppLovin approval.
+Local delivery packaging, validation, and BUILD-22 manual upload/testing evidence
+do not guarantee final Unity Ads or AppLovin approval forever.
