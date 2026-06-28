@@ -138,6 +138,35 @@ ${cards}
   return page('Projects', body);
 }
 
+// ─── development project detail page ─────────────────────────────────────────
+
+function buildDevelopmentProjectPage(project) {
+  const rows = [
+    ['Project ID', `<span class="mono">${esc(project.projectId)}</span>`],
+    ['Display name', esc(project.displayName)],
+    ['Status', statusBadge(project.status)],
+    ['Folder', `<span class="mono">${esc(project.folder)}</span>`],
+  ];
+  if (project.notes) {
+    rows.push(['Notes', esc(project.notes)]);
+  }
+  const tableRows = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+
+  const body = `
+<nav><a href="../../index.html">← All Projects</a></nav>
+
+<h2>${esc(project.displayName)}</h2>
+
+<div class="notice">This project is in <strong>development / intake</strong> mode. No playable export is available yet.</div>
+
+<table>
+  <thead><tr><th>Field</th><th>Value</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+`;
+  return page(project.displayName, body, '');
+}
+
 // ─── project detail page ──────────────────────────────────────────────────────
 
 function buildProjectPage(project, manifest) {
@@ -253,6 +282,7 @@ async function main() {
   await mkdir(DIST, { recursive: true });
 
   const previewableProjects = projects.filter(project => project.status === 'delivery-locked');
+  const developmentProjects = projects.filter(project => project.status === 'development');
 
   // Per-project: load manifest, copy delivery HTMLs, build detail page
   const previewData = {
@@ -322,13 +352,28 @@ async function main() {
     });
   }
 
+  // Development projects: generate "not playable yet" detail pages only
+  for (const project of developmentProjects) {
+    const projectDist = path.join(DIST, 'projects', project.projectId);
+    await mkdir(projectDist, { recursive: true });
+    const detailHtml = buildDevelopmentProjectPage(project);
+    await writeFile(path.join(projectDist, 'index.html'), detailHtml, 'utf8');
+    console.log(`Generated (dev)      → dist/projects/${project.projectId}/index.html`);
+    previewData.projects.push({
+      projectId: project.projectId,
+      displayName: project.displayName,
+      status: project.status,
+      folder: project.folder,
+    });
+  }
+
   // Write preview data JSON
   const previewDataPath = path.join(DIST, 'preview-data.json');
   await writeFile(previewDataPath, JSON.stringify(previewData, null, 2), 'utf8');
   console.log('Generated            → dist/preview-data.json');
 
-  // Build home page
-  const homeHtml = buildHomePage(previewableProjects, previewData);
+  // Build home page listing all registered projects
+  const homeHtml = buildHomePage(projects, previewData);
   await writeFile(path.join(DIST, 'index.html'), homeHtml, 'utf8');
   console.log('Generated            → dist/index.html');
 

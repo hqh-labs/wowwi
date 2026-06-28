@@ -4,7 +4,22 @@
       "PowerShell(Set-Location \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\"; git status --short; $u = Get-Item \"apps/internal-preview/dist/projects/TilePyramid_PL01/unity.html\"; $a = Get-Item \"apps/internal-preview/dist/projects/TilePyramid_PL01/applovin.html\"; Write-Host \"Unity preview: $\\($u.Length\\) bytes\"; Write-Host \"AppLovin preview: $\\($a.Length\\) bytes\")",
       "PowerShell(Set-Location \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\"; node --test --test-reporter=spec apps/internal-preview/tests/vercel-build.test.mjs 2>&1 | Select-String -Pattern \"\\(✔|✖|tests|pass|fail\\)\" | Where-Object { $_ -notmatch \"registry.test.mjs\" } | Select-Object -First 40)",
       "PowerShell(node --test \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\tests\\\\asset-audit.test.mjs\" 2>&1)",
-      "Read(//c/Users/HUY/Documents/GitHub/wowwi/projects/TilePyramid_PL01/**)"
+      "Read(//c/Users/HUY/Documents/GitHub/wowwi/projects/TilePyramid_PL01/**)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" check-ignore -v \"projects/SecondPlayable_PL01/input/raw-assets/.gitkeep\" \"projects/SecondPlayable_PL01/input/extracted-assets/.gitkeep\" \"projects/SecondPlayable_PL01/input/references/.gitkeep\" \"projects/SecondPlayable_PL01/input/brief/.gitkeep\" 2>&1)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" check-ignore -v \"projects/SecondPlayable_PL01/input/raw-assets/client_assets.zip\" \"projects/SecondPlayable_PL01/input/raw-assets/logo.png\" \"projects/SecondPlayable_PL01/input/brief/brief.pdf\" 2>&1)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" log --oneline -5)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" log --oneline main -5 2>&1)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" status --short --untracked-files=all 2>&1)",
+      "PowerShell(head -60)",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" ls-files \"projects/SecondPlayable_PL01\")",
+      "PowerShell(git -C \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\" ls-files \"tooling/project-registry/projects.json\" \"tooling/tests/\")",
+      "PowerShell(node \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\commands\\\\create-project.mjs\" SecondPlayable_PL01 \"Second Playable Intake\" 2>&1)",
+      "PowerShell(node \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\commands\\\\validate-projects.mjs\" 2>&1)",
+      "PowerShell(node \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\apps\\\\internal-preview\\\\scripts\\\\build-preview.mjs\" 2>&1)",
+      "PowerShell(node --test \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\tests\\\\registry.test.mjs\" 2>&1)",
+      "PowerShell(node --test \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\tests\\\\create-project.test.mjs\" 2>&1)",
+      "PowerShell(node \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\commands\\\\audit-assets.mjs\" --project SecondPlayable_PL01 --dry-run 2>&1)",
+      "PowerShell(node --test \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\\\\tooling\\\\tests\\\\second-project.test.mjs\" 2>&1)"
     ]
   }
 }

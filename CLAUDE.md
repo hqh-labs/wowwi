@@ -86,12 +86,13 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-24** - Asset Intake Analyzer Foundation.
-BUILD-24 adds root-level commands for scanning registered project intake folders,
-writing asset audit reports, validating audit output, and testing the analyzer. It
-must not change TilePyramid_PL01 gameplay/export logic or modify raw/extracted
-client assets.
+**BUILD-26** - Hotfix: Git-tracked intake directories for development projects.
+BUILD-25 registered SecondPlayable_PL01 and created its project skeleton.
+BUILD-26 adds `.gitkeep` placeholder files to every intake folder so that
+`wowwi:validate` passes on a fresh Vercel clone.  It also updates `.gitignore`
+with negation patterns and updates the project creation template so future
+projects are correct by default.
 
-Login/auth, cloud database, user accounts, billing, upload automation, visual
-editor, new gameplay, new project creation UI, level solver, network API
-integrations, and the actual Vercel deployment remain out of scope.
+TilePyramid_PL01 gameplay, export logic, and raw/extracted client assets must
+not be modified.  Do not commit, push, deploy to Vercel, or install global
+software.

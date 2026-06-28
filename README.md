@@ -26,7 +26,8 @@ wowwi/
 │   ├── extracted-assets/        Extracted raw files (gitignored, read-only)
 │   └── references/              Reference screenshots, PDFs, briefs
 ├── projects/
-│   └── TilePyramid_PL01/        The playable ad project
+│   ├── TilePyramid_PL01/        The playable ad project (delivery-locked)
+│   └── SecondPlayable_PL01/     Second project (development / intake)
 ├── scripts/                     Dev and export scripts
 ├── tests/                       Automated tests
 └── dist/                        Build outputs (gitignored)
@@ -63,6 +64,8 @@ See [docs/NEW_PROJECT_PIPELINE.md](docs/NEW_PROJECT_PIPELINE.md) for the BUILD-2
 project skeleton generator.
 See [docs/ASSET_INTAKE_ANALYZER.md](docs/ASSET_INTAKE_ANALYZER.md) for the
 BUILD-24 asset audit commands.
+See [docs/SECOND_PLAYABLE_INTAKE.md](docs/SECOND_PLAYABLE_INTAKE.md) for the
+BUILD-25/26 second project intake guide.
 
 ## Preview site
 

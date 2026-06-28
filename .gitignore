@@ -1,9 +1,22 @@
 # ─── Raw client inputs (immutable; tracked by SHA-256 checksum in docs) ───────
 project-input/raw-assets/
 project-input/extracted-assets/
-projects/*/input/raw-assets/
-projects/*/input/extracted-assets/
-projects/*/input/references/
+
+# Ignore all content inside per-project intake folders (using /* so the
+# directory itself is not ignored — that lets git track .gitkeep placeholders
+# inside them after negation below).
+projects/*/input/raw-assets/*
+projects/*/input/extracted-assets/*
+projects/*/input/references/*
+projects/*/input/brief/*
+
+# Allow .gitkeep placeholders so Git tracks the intake directories after a
+# fresh clone. Real client assets (ZIPs, PSDs, PNGs, audio, etc.) remain
+# ignored because they do not match .gitkeep.
+!projects/*/input/raw-assets/.gitkeep
+!projects/*/input/extracted-assets/.gitkeep
+!projects/*/input/references/.gitkeep
+!projects/*/input/brief/.gitkeep
 
 # ─── ZIP archives ─────────────────────────────────────────────────────────────
 *.zip
