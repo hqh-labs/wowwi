@@ -15,6 +15,7 @@
     "vercel:validate-preview": "node apps/internal-preview/scripts/validate-preview.mjs",
     "vercel:generate-delivery": "node apps/internal-preview/scripts/generate-preview-delivery.mjs",
     "vercel:preflight": "node apps/internal-preview/scripts/vercel-preflight.mjs",
-    "vercel:test": "node --test apps/internal-preview/tests/vercel-build.test.mjs"
+    "vercel:test": "node --test apps/internal-preview/tests/vercel-build.test.mjs",
+    "live-preview:test": "node --test tooling/tests/live-preview.test.mjs"
   }
 }

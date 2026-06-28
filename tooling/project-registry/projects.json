@@ -47,7 +47,16 @@
         "Network webviews may differ from Chromium file:// QA.",
         "Formal solvability remains NOT YET PROVEN."
       ],
-      "notes": "Passed current Unity and AppLovin upload/testing after BUILD-12 window.top fix. Delivery candidate locked in BUILD-13."
+      "notes": "Passed current Unity and AppLovin upload/testing after BUILD-12 window.top fix. Delivery candidate locked in BUILD-13.",
+      "livePreviewUrl": "https://wowwi.vercel.app/projects/TilePyramid_PL01",
+      "livePreviewStatus": "verified",
+      "livePreviewLastVerifiedAt": "2026-06-28",
+      "livePreviewPages": {
+        "home": "https://wowwi.vercel.app/",
+        "detail": "https://wowwi.vercel.app/projects/TilePyramid_PL01",
+        "unity": "https://wowwi.vercel.app/projects/TilePyramid_PL01/unity",
+        "applovin": "https://wowwi.vercel.app/projects/TilePyramid_PL01/applovin"
+      }
     }
   ]
 }

@@ -62,7 +62,7 @@ See [docs/WOWWI_TOOL_FOUNDATION.md](docs/WOWWI_TOOL_FOUNDATION.md) and
 npm run preview:build       # generate static preview site
 npm run preview:validate    # validate the generated site
 npm run preview:serve       # serve at http://localhost:4174
-npm run preview:test        # run 16 preview tests
+npm run preview:test        # run 24 preview tests
 ```
 
 See [docs/INTERNAL_PREVIEW_SITE.md](docs/INTERNAL_PREVIEW_SITE.md) for details.
@@ -73,7 +73,8 @@ See [docs/INTERNAL_PREVIEW_SITE.md](docs/INTERNAL_PREVIEW_SITE.md) for details.
 npm run vercel:build-preview  # full pipeline: delivery → preview → validate
 npm run vercel:validate-preview
 npm run vercel:preflight      # registry + preview tests + vercel build + validate
-npm run vercel:test           # run 14 Vercel deployment tests
+npm run vercel:test           # run 17 Vercel deployment tests
+npm run live-preview:test     # run 8 live preview QA tests
 ```
 
 See [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) and
@@ -168,7 +169,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-15**: Internal preview site foundation
 - **BUILD-16**: Vercel deployment configuration and deploy prep
 - **BUILD-17**: Playwright-free Vercel build pipeline fix
-- **BUILD-18**: Vercel preview routing fix (project-scoped link paths) ← current
+- **BUILD-18**: Vercel preview routing fix (project-scoped link paths)
+- **BUILD-19**: Live preview QA lock (`https://wowwi.vercel.app`) ← current
 
 ## Documentation index
 

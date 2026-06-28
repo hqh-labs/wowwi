@@ -86,15 +86,14 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-18** — Vercel preview routing fix (project-scoped preview link paths).
-BUILD-18 fixes a live Vercel 404 on Unity/AppLovin preview buttons. Root cause:
-detail page URLs become `/projects/TilePyramid_PL01` (no trailing slash) due to
-`cleanUrls:true` + `trailingSlash:false` in `vercel.json`. Relative `unity.html`
-resolves to `/projects/unity.html` → cleanUrls → `/projects/unity` → 404. Fix:
-preview links now use absolute paths `/projects/TilePyramid_PL01/unity.html` and
-`/projects/TilePyramid_PL01/applovin.html`. Validator hardened to reject missing
-project-ID in preview link hrefs. 24 preview tests + 17 vercel tests. No gameplay
-or export changes. No actual Vercel deployment performed.
+**BUILD-19** — Live preview QA lock (`https://wowwi.vercel.app`).
+BUILD-19 locks the live Vercel internal preview as a verified milestone. Adds
+`docs/LIVE_PREVIEW_QA.md` (home/detail/Unity/AppLovin QA pass record),
+`docs/INTERNAL_PREVIEW_ACCESS_NOTES.md` (no-auth status + recommended controls),
+8 static local tests for docs and registry metadata. Registry extended with
+`livePreviewUrl`, `livePreviewStatus`, `livePreviewLastVerifiedAt`, and
+`livePreviewPages`. No gameplay, export, or Vercel config changes. No actual
+Vercel deployment performed from Claude.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API
