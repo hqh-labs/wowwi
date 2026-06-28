@@ -1,6 +1,6 @@
 {
   "name": "wowwi",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "scripts": {
     "wowwi:list": "node tooling/commands/list-projects.mjs",
@@ -10,6 +10,10 @@
     "preview:build": "node apps/internal-preview/scripts/build-preview.mjs",
     "preview:validate": "node apps/internal-preview/scripts/validate-preview.mjs",
     "preview:serve": "node apps/internal-preview/scripts/serve-preview.mjs",
-    "preview:test": "node --test apps/internal-preview/tests/preview-build.test.mjs"
+    "preview:test": "node --test apps/internal-preview/tests/preview-build.test.mjs",
+    "vercel:build-preview": "node apps/internal-preview/scripts/vercel-build.mjs",
+    "vercel:validate-preview": "node apps/internal-preview/scripts/validate-preview.mjs",
+    "vercel:preflight": "node apps/internal-preview/scripts/vercel-preflight.mjs",
+    "vercel:test": "node --test apps/internal-preview/tests/vercel-build.test.mjs"
   }
 }

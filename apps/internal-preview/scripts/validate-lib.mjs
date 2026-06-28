@@ -87,5 +87,55 @@ export async function validatePreviewDist(distPath) {
     }
   }
 
+  // Forbidden directories that must never appear in dist
+  const forbiddenDirs = [
+    'project-input/raw-assets',
+    'project-input/extracted-assets',
+    'projects/TilePyramid_PL01/src',
+    'node_modules',
+  ];
+  for (const rel of forbiddenDirs) {
+    if (await exists(path.join(distPath, rel))) {
+      errors.push(`Forbidden path found in dist: ${rel}`);
+    }
+  }
+
   return { pass: errors.length === 0, errors };
+}
+
+/**
+ * Validates the Vercel config (vercel.json) at repoRoot.
+ * @param {string} repoRoot
+ * @returns {{ pass: boolean, errors: string[], config: object|null }}
+ */
+export async function validateVercelConfig(repoRoot) {
+  const errors = [];
+  const configPath = path.join(repoRoot, 'vercel.json');
+  const configExists = await exists(configPath);
+  if (!configExists) {
+    return { pass: false, errors: ['vercel.json not found at repo root'], config: null };
+  }
+
+  let config = null;
+  try {
+    config = JSON.parse(await readFile(configPath, 'utf8'));
+  } catch {
+    return { pass: false, errors: ['vercel.json is not valid JSON'], config: null };
+  }
+
+  if (!config.buildCommand) {
+    errors.push('vercel.json missing buildCommand');
+  } else if (!config.buildCommand.includes('vercel:build-preview')) {
+    errors.push(`vercel.json buildCommand must include vercel:build-preview, got: ${config.buildCommand}`);
+  }
+
+  if (!config.outputDirectory) {
+    errors.push('vercel.json missing outputDirectory');
+  } else if (config.outputDirectory !== 'apps/internal-preview/dist') {
+    errors.push(
+      `vercel.json outputDirectory must be apps/internal-preview/dist, got: ${config.outputDirectory}`
+    );
+  }
+
+  return { pass: errors.length === 0, errors, config };
 }

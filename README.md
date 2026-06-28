@@ -67,6 +67,18 @@ npm run preview:test        # run 16 preview tests
 
 See [docs/INTERNAL_PREVIEW_SITE.md](docs/INTERNAL_PREVIEW_SITE.md) for details.
 
+## Vercel deployment
+
+```sh
+npm run vercel:build-preview  # full pipeline: delivery → preview → validate
+npm run vercel:validate-preview
+npm run vercel:preflight      # registry + preview tests + vercel build + validate
+npm run vercel:test           # run 14 Vercel deployment tests
+```
+
+See [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) and
+[docs/VERCEL_PREVIEW_CHECKLIST.md](docs/VERCEL_PREVIEW_CHECKLIST.md) for details.
+
 ---
 
 ## Quick start — TilePyramid_PL01
@@ -153,7 +165,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-12**: Network compliance hardening — window.top removed, Unity re-upload
 - **BUILD-13**: Delivery candidate lock, network QA evidence, final handoff package
 - **BUILD-14**: Project registry and local tool foundation
-- **BUILD-15**: Internal preview site foundation ← current
+- **BUILD-15**: Internal preview site foundation
+- **BUILD-16**: Vercel deployment configuration and deploy prep ← current
 
 ## Documentation index
 
@@ -172,4 +185,6 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/WOWWI_TOOL_FOUNDATION.md` | Root tooling layer: registry, commands, tests |
 | `docs/PROJECT_REGISTRY.md` | Registry schema and current project list |
 | `docs/INTERNAL_PREVIEW_SITE.md` | Preview site: build, serve, validate, test |
-| `docs/VERCEL_PREVIEW_PREP.md` | What is ready and not ready for Vercel deployment |
+| `docs/VERCEL_PREVIEW_PREP.md` | Vercel readiness status (updated BUILD-16) |
+| `docs/VERCEL_DEPLOYMENT.md` | Full Vercel deployment guide and manual UI steps |
+| `docs/VERCEL_PREVIEW_CHECKLIST.md` | Pre-deploy and post-deploy verification checklist |

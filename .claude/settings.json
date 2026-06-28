@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Set-Location \"C:\\\\Users\\\\HUY\\\\Documents\\\\GitHub\\\\wowwi\"; git status --short; $u = Get-Item \"apps/internal-preview/dist/projects/TilePyramid_PL01/unity.html\"; $a = Get-Item \"apps/internal-preview/dist/projects/TilePyramid_PL01/applovin.html\"; Write-Host \"Unity preview: $\\($u.Length\\) bytes\"; Write-Host \"AppLovin preview: $\\($a.Length\\) bytes\")"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run vercel:build-preview",
+  "outputDirectory": "apps/internal-preview/dist",
+  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install && npx playwright install chromium",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false
+}

@@ -86,14 +86,14 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-15** — Internal preview site foundation.
-BUILD-15 adds a local static internal preview site (`apps/internal-preview/`).
-It reads the project registry and delivery manifests, copies delivery HTML into a
-static dist folder, and generates project pages showing metadata, checksums, QA
-evidence, store URLs, and known limitations. Commands: `preview:build`,
-`preview:validate`, `preview:serve`, `preview:test`. 16 tests using `node:test`.
-Vercel deployment docs are included but no actual deployment is done.
+**BUILD-16** — Vercel deployment configuration and internal preview deploy prep.
+BUILD-16 adds `vercel.json`, the `vercel:build-preview` command (5-step pipeline:
+registry validate → delivery generation → delivery validate → preview build →
+preview validate), `vercel:preflight`, `vercel:validate-preview`, `vercel:test`
+(14 tests), and deployment documentation. The Vercel build generates TilePyramid
+delivery HTML during the build itself (no pre-committed files needed). No actual
+Vercel deployment is performed.
 
-Web dashboard, login/auth, cloud database, user accounts, billing, upload
-automation, visual editor, new gameplay, new project creation UI, level solver,
-network API integrations, and actual Vercel deployment remain out of scope.
+Login/auth, cloud database, user accounts, billing, upload automation, visual
+editor, new gameplay, new project creation UI, level solver, network API
+integrations, and the actual Vercel deployment remain out of scope.

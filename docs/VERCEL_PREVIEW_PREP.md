@@ -1,16 +1,22 @@
 # Vercel Preview Preparation
 
+> **BUILD-16 UPDATE:** The Vercel configuration (`vercel.json`) has been created
+> and all remaining blockers have been addressed. See
+> `docs/VERCEL_DEPLOYMENT.md` for the full deployment guide and
+> `docs/VERCEL_PREVIEW_CHECKLIST.md` for the step-by-step checklist.
+
 This document describes what is and is not ready for a future Vercel deployment of
 the Wowwi internal preview site. Actual deployment is NOT part of BUILD-15.
 
-## Build command
+## Build command (BUILD-16 — updated)
 
 ```sh
-npm run preview:build
+npm run vercel:build-preview
 ```
 
-This generates `apps/internal-preview/dist/` containing static HTML, CSS (inline),
-JS (inline), and JSON. No server-side runtime is needed.
+This runs the full pipeline: registry validation → delivery generation →
+delivery validation → preview build → preview validation. The output is
+`apps/internal-preview/dist/`.
 
 ## Deploy folder
 
@@ -53,48 +59,26 @@ for review, so they are safe to share with authorized internal reviewers.
 source files. These are immutable client materials and are intentionally excluded
 from version control and any public or semi-public hosting.
 
-## Vercel configuration (not yet created)
+## Vercel configuration — BUILD-16 (COMPLETE)
 
-A future `vercel.json` would look like:
+`vercel.json` exists at the repo root:
 
 ```json
 {
+  "buildCommand": "npm run vercel:build-preview",
   "outputDirectory": "apps/internal-preview/dist",
-  "buildCommand": "npm run preview:build",
-  "installCommand": "echo 'no install needed'",
-  "framework": null
+  "installCommand": "npm install && cd projects/TilePyramid_PL01 && npm install && npx playwright install chromium",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false
 }
 ```
 
-Or via the Vercel dashboard: set root to the repo root, build command to
-`npm run preview:build`, output directory to `apps/internal-preview/dist`.
+The build command generates TilePyramid delivery HTML during the Vercel build
+itself — no pre-committed delivery files are needed. The Playwright Chromium
+browser is installed by the `installCommand`.
 
-## Remaining work before real deployment
-
-1. **Delivery files must exist before build.** The Vercel build environment starts
-   clean. Either:
-   - Commit delivery HTML files to a separate branch/storage location, OR
-   - Add a pre-build step that runs `package:delivery` (requires full Node + npm
-     + Playwright in the build environment — non-trivial)
-   - Simplest near-term option: copy delivery HTMLs to a committed
-     `apps/internal-preview/public/deliveries/` folder, gitignored from raw assets
-     but committed for the preview. This needs a policy decision.
-
-2. **Access control.** The current preview is unauthenticated. For an internal
-   site with delivery HTML inside, add Vercel password protection or team
-   authentication before deploying.
-
-3. **Preview:build in CI.** Once delivery files are available in CI, add a
-   GitHub Actions workflow that runs `npm run preview:build && npm run preview:validate`
-   on PRs to the preview branch.
-
-4. **Domain/URL.** Choose whether to use a Vercel-provided URL or a custom domain.
-
-5. **Environment.** No environment variables are needed for the current static
-   preview. If future builds add API calls or analytics, create `.env.local` files
-   as documented in the `.gitignore` section.
-
-## Status summary
+## Status summary — updated BUILD-16
 
 | Item | Status |
 |---|---|
@@ -105,7 +89,9 @@ Or via the Vercel dashboard: set root to the repo root, build command to
 | Delivery HTML included in preview output | DONE |
 | Raw/extracted assets excluded | DONE |
 | preview:validate confirms no forbidden content | DONE |
-| vercel.json created | NOT YET |
+| vercel.json created | DONE (BUILD-16) |
+| Delivery generated during build | DONE (BUILD-16) |
+| Local Vercel-like build verified | DONE (BUILD-16) |
 | Authentication | NOT YET |
-| CI workflow | NOT YET |
-| Delivery HTML available in CI build environment | NOT YET — main blocker |
+| CI/GitHub Actions workflow | NOT YET |
+| Actual Vercel deployment | NOT YET |
