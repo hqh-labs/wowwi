@@ -56,6 +56,17 @@ npm test                                        # 15 registry + integration test
 See [docs/WOWWI_TOOL_FOUNDATION.md](docs/WOWWI_TOOL_FOUNDATION.md) and
 [docs/PROJECT_REGISTRY.md](docs/PROJECT_REGISTRY.md) for details.
 
+## Preview site
+
+```sh
+npm run preview:build       # generate static preview site
+npm run preview:validate    # validate the generated site
+npm run preview:serve       # serve at http://localhost:4174
+npm run preview:test        # run 16 preview tests
+```
+
+See [docs/INTERNAL_PREVIEW_SITE.md](docs/INTERNAL_PREVIEW_SITE.md) for details.
+
 ---
 
 ## Quick start — TilePyramid_PL01
@@ -141,7 +152,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-11**: Upload candidate package and store URL wiring
 - **BUILD-12**: Network compliance hardening — window.top removed, Unity re-upload
 - **BUILD-13**: Delivery candidate lock, network QA evidence, final handoff package
-- **BUILD-14**: Project registry and local tool foundation ← current
+- **BUILD-14**: Project registry and local tool foundation
+- **BUILD-15**: Internal preview site foundation ← current
 
 ## Documentation index
 
@@ -159,3 +171,5 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/RELEASE_NOTES_TILEPYRAMID_PL01.md` | Full build history and technical spec |
 | `docs/WOWWI_TOOL_FOUNDATION.md` | Root tooling layer: registry, commands, tests |
 | `docs/PROJECT_REGISTRY.md` | Registry schema and current project list |
+| `docs/INTERNAL_PREVIEW_SITE.md` | Preview site: build, serve, validate, test |
+| `docs/VERCEL_PREVIEW_PREP.md` | What is ready and not ready for Vercel deployment |

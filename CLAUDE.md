@@ -86,15 +86,14 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-14** — Project registry and local tool foundation.
-BUILD-14 turns the repository from a single-project folder into a reusable local
-playable production tool. It adds a root `package.json`, a `tooling/` directory
-with project-registry, commands, utils, and tests, a project registry JSON with
-TilePyramid_PL01 as the first registered project (status: `delivery-locked`),
-schema validation, CLI commands (`wowwi:list`, `wowwi:validate`, `wowwi:project`),
-15 registry and CLI tests using Node's built-in `node:test`, and supporting
-documentation.
+**BUILD-15** — Internal preview site foundation.
+BUILD-15 adds a local static internal preview site (`apps/internal-preview/`).
+It reads the project registry and delivery manifests, copies delivery HTML into a
+static dist folder, and generates project pages showing metadata, checksums, QA
+evidence, store URLs, and known limitations. Commands: `preview:build`,
+`preview:validate`, `preview:serve`, `preview:test`. 16 tests using `node:test`.
+Vercel deployment docs are included but no actual deployment is done.
 
-Web dashboard, Vercel deployment, user accounts, cloud storage, upload automation,
-billing, visual editor, new gameplay, new project creation UI, level solver, and
-network API integrations remain out of scope.
+Web dashboard, login/auth, cloud database, user accounts, billing, upload
+automation, visual editor, new gameplay, new project creation UI, level solver,
+network API integrations, and actual Vercel deployment remain out of scope.
