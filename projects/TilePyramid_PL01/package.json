@@ -6,12 +6,17 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "export": "node scripts/export/export-all.mjs",
+    "export:unity": "node scripts/export/export-unity.mjs",
+    "export:applovin": "node scripts/export/export-applovin.mjs",
+    "export:all": "node scripts/export/export-all.mjs",
+    "validate:exports": "node scripts/export/validate-exports.mjs",
     "optimize:assets": "node scripts/optimize-assets.mjs",
     "measure:size": "node scripts/measure-size.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:smoke": "npm run build && playwright test"
+    "test:smoke": "npm run export:all && npm run build && playwright test"
   },
   "dependencies": {
     "phaser": "3.87.0"

@@ -55,8 +55,8 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (164 tests)
-npm run test:smoke    # browser smoke tests (12 tests) - requires Chromium, builds first
+npm run test          # unit tests (179 tests)
+npm run test:smoke    # browser smoke tests, including exported HTML - requires Chromium
 ```
 
 **Optimize and measure production assets:**
@@ -64,6 +64,19 @@ npm run test:smoke    # browser smoke tests (12 tests) - requires Chromium, buil
 npm run optimize:assets
 npm run measure:size
 ```
+
+**Export playable HTML files:**
+```
+npm run export          # exports Unity and AppLovin
+npm run export:unity    # Unity only
+npm run export:applovin # AppLovin only
+npm run validate:exports
+```
+
+Generated exports are written under `projects/TilePyramid_PL01/exports/latest/`
+and are ignored by git by default. Export validation loads those files in
+Chromium and verifies they render, not only that they are statically
+self-contained.
 
 To install the Playwright browser (first-time only):
 ```
@@ -89,7 +102,7 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-06**: CTA, end card, and store-open abstraction
 - **BUILD-07**: Asset optimization and production size control
 - **BUILD-08**: Basic audio and visual feedback effects
-- **BUILD-09**: Unity Ads adapter and export
+- **BUILD-09**: Export foundation, single-file build, Unity and AppLovin adapters
 - **BUILD-10**: Visual editor (config-driven, reads same JSON as playable)
 
 ## Documentation index

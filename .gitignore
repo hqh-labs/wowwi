@@ -18,6 +18,7 @@ dist/
 build/
 out/
 .output/
+projects/TilePyramid_PL01/exports/
 
 # ─── Cache folders ────────────────────────────────────────────────────────────
 .cache/

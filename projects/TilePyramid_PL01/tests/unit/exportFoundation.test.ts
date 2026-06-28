@@ -1,0 +1,177 @@
+// @ts-nocheck
+import { describe, expect, it } from 'vitest';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {
+  getExportProfile,
+  listExportProfiles,
+} from '../../scripts/export/profiles/profiles.mjs';
+import {
+  inlineSingleFileHtml,
+} from '../../scripts/export/inliner/single-file-inliner.mjs';
+import {
+  hasExternalHttpAssetReference,
+  hasLocalRuntimeAssetReference,
+  validateExportHtml,
+} from '../../scripts/export/validators/export-validator.mjs';
+import { createNetworkExportMetadata } from '../../scripts/export/adapters/network-adapters.mjs';
+
+describe('Build-09 export profiles', () => {
+  it('loads Unity profile', () => {
+    const profile = getExportProfile('unity-2026-06');
+    expect(profile.network).toBe('unity');
+    expect(profile.targetMaxBytes).toBe(5 * 1024 * 1024);
+  });
+
+  it('loads AppLovin profile', () => {
+    const profile = getExportProfile('applovin-2026-06');
+    expect(profile.network).toBe('applovin');
+    expect(profile.externalHttpResourcesAllowed).toBe(false);
+  });
+
+  it('rejects an invalid profile', () => {
+    expect(() => getExportProfile('missing-profile')).toThrow(/Unknown export profile/);
+  });
+
+  it('batch profile list includes both networks', () => {
+    expect(listExportProfiles().map(profile => profile.network).sort()).toEqual(['applovin', 'unity']);
+  });
+});
+
+describe('Build-09 single-file inliner', () => {
+  it('removes Vite JS file references', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('unity-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-27T00:00:00.000Z' });
+    expect(result.html).not.toContain('./assets/index-test.js');
+    expect(result.html).toContain('console.log("inline app");');
+    await fixture.dispose();
+  });
+
+  it('inlines runtime images', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('unity-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-27T00:00:00.000Z' });
+    expect(result.html).toContain('data:image/webp;base64,');
+    expect(result.inlinedAssets.some(asset => asset.type === 'image')).toBe(true);
+    await fixture.dispose();
+  });
+
+  it('inlines runtime audio', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('applovin-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-27T00:00:00.000Z' });
+    expect(result.html).toContain('data:audio/mpeg;base64,');
+    expect(result.inlinedAssets.some(asset => asset.type === 'audio')).toBe(true);
+    await fixture.dispose();
+  });
+
+  it('injects the store-open bridge', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('unity-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-27T00:00:00.000Z' });
+    expect(result.html).toContain('__PLAYABLE_STORE_OPEN__');
+    expect(result.html).toContain('__PLAYABLE_NETWORK__');
+    await fixture.dispose();
+  });
+});
+
+describe('Build-09 export validation', () => {
+  it('rejects external HTTP/HTTPS asset references', () => {
+    const html = '<html><head><script src="https://cdn.example.com/app.js"></script></head></html>';
+    expect(hasExternalHttpAssetReference(html)).toBe(true);
+    const result = validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' });
+    expect(result.status).toBe('FAIL');
+  });
+
+  it('rejects local asset references in exported HTML', () => {
+    const html = '<html><head><script src="./assets/index.js"></script></head></html>';
+    expect(hasLocalRuntimeAssetReference(html)).toBe(true);
+    const result = validateExportHtml({ html, profile: getExportProfile('applovin-2026-06'), filePath: 'x.html' });
+    expect(result.errors.join('\n')).toMatch(/local runtime/);
+  });
+
+  it('accepts permitted MRAID bootstrap only when profile allows it', () => {
+    const html = validHtmlForProfile('unity-2026-06').replace('</head>', '<script src="mraid.js"></script></head>');
+    expect(validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' }).status).toBe('PASS');
+    expect(validateExportHtml({ html, profile: getExportProfile('applovin-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+  });
+
+  it('Unity export report includes target max bytes and actual bytes', () => {
+    const profile = getExportProfile('unity-2026-06');
+    const validation = validateExportHtml({ html: validHtmlForProfile(profile.id), profile, filePath: 'unity.html' });
+    const report = createNetworkExportMetadata(profile, validation, []);
+    expect(report.targetMaxBytes).toBe(profile.targetMaxBytes);
+    expect(report.actualBytes).toBeGreaterThan(0);
+  });
+
+  it('AppLovin export report includes target max bytes and actual bytes', () => {
+    const profile = getExportProfile('applovin-2026-06');
+    const validation = validateExportHtml({ html: validHtmlForProfile(profile.id), profile, filePath: 'applovin.html' });
+    const report = createNetworkExportMetadata(profile, validation, []);
+    expect(report.targetMaxBytes).toBe(profile.targetMaxBytes);
+    expect(report.actualBytes).toBeGreaterThan(0);
+  });
+
+  it('accepts output under the profile target size', () => {
+    const profile = getExportProfile('applovin-2026-06');
+    const result = validateExportHtml({ html: validHtmlForProfile(profile.id), profile, filePath: 'x.html' });
+    expect(result.checks.underTargetMaxBytes).toBe(true);
+  });
+
+  it('keeps formal solvability NOT YET PROVEN in report', () => {
+    const profile = getExportProfile('unity-2026-06');
+    const validation = validateExportHtml({ html: validHtmlForProfile(profile.id), profile, filePath: 'unity.html' });
+    const report = createNetworkExportMetadata(profile, validation, []);
+    expect(report.formalSolvability).toBe('NOT YET PROVEN');
+  });
+});
+
+async function createInlinerFixture() {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'tilepyramid-export-'));
+  const distDir = path.join(root, 'dist');
+  const publicDir = path.join(root, 'public');
+  await mkdir(path.join(distDir, 'assets'), { recursive: true });
+  await mkdir(path.join(publicDir, 'config'), { recursive: true });
+  await mkdir(path.join(publicDir, 'assets/images'), { recursive: true });
+  await mkdir(path.join(publicDir, 'assets/audio'), { recursive: true });
+  await mkdir(path.join(publicDir, 'assets/levels'), { recursive: true });
+
+  await writeFile(
+    path.join(distDir, 'index.html'),
+    '<html><head><script type="module" src="./assets/index-test.js"></script><script>window.__GAME_CONFIG__={};window.__ASSET_MANIFEST__={};</script></head><body></body></html>'
+  );
+  await writeFile(path.join(distDir, 'assets/index-test.js'), 'console.log("inline app");');
+  await writeFile(path.join(publicDir, 'config/game.config.json'), JSON.stringify({
+    app: {
+      storeOpenMode: 'record-only',
+      safeDevelopmentNavigation: true,
+    },
+  }));
+  await writeFile(path.join(publicDir, 'config/asset-manifest.json'), JSON.stringify({
+    version: '1',
+    assets: [
+      { id: 'Background_1', type: 'image', path: './assets/images/bg.webp', source: 'fixture' },
+      { id: 'Sfx_Click', type: 'audio', path: './assets/audio/click.mp3', source: 'fixture' },
+      { id: 'Level_21', type: 'json', path: './assets/levels/Level_21.json', source: 'fixture' },
+    ],
+  }));
+  await writeFile(path.join(publicDir, 'assets/images/bg.webp'), Buffer.from([1, 2, 3]));
+  await writeFile(path.join(publicDir, 'assets/audio/click.mp3'), Buffer.from([4, 5, 6]));
+  await writeFile(path.join(publicDir, 'assets/levels/Level_21.json'), '{"layers":[]}');
+
+  return {
+    distDir,
+    publicDir,
+    dispose: () => rm(root, { recursive: true, force: true }),
+  };
+}
+
+function validHtmlForProfile(profileId: string) {
+  return `<html><head>
+    <meta name="playable-orientation-policy" content="portrait-gameplay-centered-in-landscape">
+    <meta name="playable-timer-first-interaction" content="true">
+    <script>window.__PLAYABLE_NETWORK__={profileId:"${profileId}",formalSolvability:"NOT YET PROVEN"};window.__PLAYABLE_STORE_OPEN__=function(){return {handled:true,method:"mraid"};};</script>
+  </head><body>NOT YET PROVEN</body></html>`;
+}

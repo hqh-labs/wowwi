@@ -58,7 +58,12 @@ export class StoreOpenService {
     };
 
     if (this.config.mode === 'navigate' && !this.config.safeDevelopmentNavigation) {
-      this.navigator.open(url);
+      const bridge = window.__PLAYABLE_STORE_OPEN__;
+      if (bridge) {
+        bridge({ source, url, network: window.__PLAYABLE_NETWORK__?.network });
+      } else {
+        this.navigator.open(url);
+      }
     }
 
     return this.getSnapshot();

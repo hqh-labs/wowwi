@@ -191,6 +191,30 @@ export interface AssetManifestData {
   assets: AssetEntry[];
 }
 
+export interface PlayableNetworkRuntime {
+  profileId: string;
+  network: 'unity' | 'applovin';
+  generatedAt: string;
+  targetMaxBytes: number;
+  orientationPolicy: string;
+  timerFirstInteraction: boolean;
+  formalSolvability: 'NOT YET PROVEN';
+}
+
+export interface PlayableStoreOpenPayload {
+  source: 'gameplay-cta' | 'end-card' | 'unknown';
+  url: string;
+  network?: string;
+}
+
+export interface PlayableStoreOpenResult {
+  handled: boolean;
+  method: 'mraid' | 'window-open' | 'location' | 'record-only' | 'none';
+  error?: string;
+}
+
+export type PlayableStoreOpenBridge = (payload: PlayableStoreOpenPayload) => PlayableStoreOpenResult;
+
 declare global {
   interface Window {
     __GAME_CONFIG__: GameConfig;
@@ -201,6 +225,9 @@ declare global {
     __TILEPYRAMID_BUILD05__?: Readonly<Build05Snapshot>;
     __TILEPYRAMID_BUILD06__?: Readonly<Build06Snapshot>;
     __TILEPYRAMID_BUILD08__?: Readonly<Build08Snapshot>;
+    __TILEPYRAMID_BUILD09__?: Readonly<Build08Snapshot>;
+    __PLAYABLE_NETWORK__?: PlayableNetworkRuntime;
+    __PLAYABLE_STORE_OPEN__?: PlayableStoreOpenBridge;
   }
 }
 

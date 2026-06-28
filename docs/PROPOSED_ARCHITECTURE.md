@@ -1,7 +1,7 @@
 ﻿# PROPOSED_ARCHITECTURE.md
 
 Project: TilePyramid_PL01
-Status: Proposed architecture with BUILD-01 through BUILD-08 implementation notes.
+Status: Proposed architecture with BUILD-01 through BUILD-09 implementation notes.
 
 ---
 
@@ -74,7 +74,13 @@ projects/TilePyramid_PL01/
 ├── scripts/
 │   ├── asset-plan.mjs
 │   ├── optimize-assets.mjs
-│   └── measure-size.mjs
+│   ├── measure-size.mjs
+│   └── export/
+│       ├── profiles/
+│       ├── adapters/
+│       ├── bridge/
+│       ├── inliner/
+│       └── validators/
 └── dist/                         ← Build output (gitignored)
 ```
 
@@ -407,6 +413,49 @@ BUILD-06 established interface:
 
 No Unity Ads or AppLovin SDK call exists in BUILD-06.
 
+BUILD-09 implementation note:
+- `StoreOpenService` remains network-agnostic.
+- In normal development, `record-only` behavior is unchanged.
+- Exported HTML injects `window.__PLAYABLE_NETWORK__` and
+  `window.__PLAYABLE_STORE_OPEN__`.
+- When export config sets `storeOpenMode: "navigate"` and
+  `safeDevelopmentNavigation: false`, the service delegates to the injected
+  bridge if present; otherwise it falls back to the existing navigator.
+- The bridge safely checks `window.mraid.open` first, then falls back to browser
+  navigation behavior.
+
+### Export profile system (`scripts/export/profiles`)
+
+BUILD-09 established interface:
+- Profiles are versioned assumptions, currently `unity-2026-06` and
+  `applovin-2026-06`.
+- Profiles define network name, single-file output type, target max bytes,
+  MRAID assumptions, orientation policy, timer-first-interaction requirement,
+  and store-open bridge behavior.
+- Profiles explicitly do not guarantee final network approval; they must be
+  re-verified before real client delivery.
+
+### Single-file export pipeline (`scripts/export`)
+
+BUILD-09 established interface:
+- `npm run export` / `npm run export:all` builds with `vite --mode export`,
+  inlines JS, rewrites manifest asset paths to data URLs, injects network
+  metadata and store-open bridge, validates each output, and writes reports.
+- `npm run export:unity` and `npm run export:applovin` generate one network.
+- `npm run validate:exports` revalidates the latest generated outputs.
+- Output files are generated under `exports/latest/` and ignored by git.
+
+### Export validator (`scripts/export/validators`)
+
+BUILD-09 established interface:
+- Validates single HTML output existence, byte size, target max bytes,
+  forbidden HTTP/HTTPS asset references, forbidden local `assets/`, `config/`,
+  or `dist/` runtime references, profile metadata, store-open bridge presence,
+  MRAID requirement state, orientation metadata, timer-first-interaction
+  metadata, and `Formal solvability: NOT YET PROVEN` metadata.
+- Validation reports warnings separately from failures and never claims final
+  network approval.
+
 ### End-card system (`EndCardSystem.ts`)
 
 Responsibilities:
@@ -456,15 +505,18 @@ Validators check:
 - Timer > 0.
 - Board is solvable (when full tile-assigner is implemented).
 
-### Batch export coordinator (`scripts/export.ts`)
+### Batch export coordinator (`scripts/export/`)
 
-A single CLI script that:
-1. Validates config and assets.
-2. Runs the production build.
-3. Packages output for Unity Ads (ZIP, inject Unity SDK adapter).
-4. Packages output for AppLovin (ZIP, inject AppLovin adapter).
+A local export script group that:
+1. Runs the canonical Vite production build in export mode.
+2. Reads `dist/index.html` and generated Vite assets.
+3. Inlines JS and runtime manifest assets into a single HTML file per profile.
+4. Injects profile metadata and the network-aware store-open bridge.
+5. Validates Unity Ads and AppLovin outputs.
+6. Writes export manifests and JSON reports.
 
-Usage: `npm run export` → produces two ZIP files in `dist/`.
+Usage: `npm run export` produces Unity and AppLovin single-file HTML outputs
+under `projects/TilePyramid_PL01/exports/latest/`.
 
 ---
 

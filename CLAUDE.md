@@ -86,8 +86,8 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-08** - Basic audio and visual feedback effects.
-BUILD-08 adds config-driven SFX, mobile audio unlock after first valid gameplay
-tap, lightweight feedback tweens, audio/effect diagnostics, and runtime audio
-size measurement. Unity/AppLovin exporters, MRAID integration, network
-packaging, final particle polish, and visual editor remain out of scope.
+**BUILD-09** - Export foundation, single-file build, Unity adapter, and AppLovin adapter.
+BUILD-09 adds versioned export profiles, single-file HTML inlining, Unity and
+AppLovin export adapters, export validation reports, and a minimal
+network-aware store-open bridge. Final ad-network approval, upload automation,
+real network API integration, and visual editor remain out of scope.

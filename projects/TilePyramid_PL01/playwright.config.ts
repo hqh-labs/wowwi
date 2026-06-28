@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/smoke',
   timeout: 30_000,
+  workers: 1,
   webServer: {
     command: 'npm run preview',
     port: 4173,

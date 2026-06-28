@@ -1110,6 +1110,7 @@ export class GameScene extends Phaser.Scene {
     window.__TILEPYRAMID_BUILD05__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD06__ = Object.freeze(this.snapshot);
     window.__TILEPYRAMID_BUILD08__ = Object.freeze(this.snapshot);
+    window.__TILEPYRAMID_BUILD09__ = Object.freeze(this.snapshot);
   }
 
   shutdown(): void {
