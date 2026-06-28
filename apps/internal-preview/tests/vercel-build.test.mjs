@@ -1,11 +1,12 @@
 /**
- * BUILD-17 Vercel deployment tests — 15 tests
+ * BUILD-17/18 Vercel deployment tests — 17 tests
  *
  * Validates that:
  *   - vercel.json has no Playwright in installCommand
  *   - vercel-build.mjs does not call package:candidate, package:delivery,
  *     test:exports, test:smoke, or reference playwright
  *   - Vercel-safe build produces correct output (no browser required)
+ *   - Preview links use project-scoped absolute paths (BUILD-18 routing fix)
  *   - Local full QA workflows still pass independently
  *
  * Runner: node:test (no extra dependencies)
@@ -218,4 +219,38 @@ test('15. Local full QA: validate:delivery still passes', { timeout: 30_000 }, a
     25_000
   );
   assert.strictEqual(code, 0, 'validate:delivery must pass (delivery package still intact)');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tests 16–17: BUILD-18 routing fix — detail page preview link paths
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('16. Vercel build detail page uses correct Unity preview path (project-scoped)', async () => {
+  const html = await readFile(
+    path.join(DIST, 'projects/TilePyramid_PL01/index.html'),
+    'utf8'
+  );
+  assert.ok(
+    html.includes('/projects/TilePyramid_PL01/unity.html'),
+    'Unity preview link must be /projects/TilePyramid_PL01/unity.html — bare /projects/unity causes 404 on Vercel'
+  );
+  assert.ok(
+    !html.includes('href="/projects/unity"') && !html.includes("href='/projects/unity'"),
+    'Detail page must not contain broken /projects/unity href'
+  );
+});
+
+test('17. Vercel build detail page uses correct AppLovin preview path (project-scoped)', async () => {
+  const html = await readFile(
+    path.join(DIST, 'projects/TilePyramid_PL01/index.html'),
+    'utf8'
+  );
+  assert.ok(
+    html.includes('/projects/TilePyramid_PL01/applovin.html'),
+    'AppLovin preview link must be /projects/TilePyramid_PL01/applovin.html — bare /projects/applovin causes 404 on Vercel'
+  );
+  assert.ok(
+    !html.includes('href="/projects/applovin"') && !html.includes("href='/projects/applovin'"),
+    'Detail page must not contain broken /projects/applovin href'
+  );
 });

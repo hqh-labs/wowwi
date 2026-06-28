@@ -87,6 +87,35 @@ export async function validatePreviewDist(distPath) {
     }
   }
 
+  // Validate preview link hrefs in the TilePyramid detail page.
+  // Links must include the project ID so they resolve correctly on Vercel
+  // (cleanUrls:true + trailingSlash:false makes relative paths resolve from the
+  // wrong base — /projects/<id>/unity.html is required, not unity.html).
+  if (tpPageExists) {
+    const pageHtml = await readText(path.join(distPath, 'projects/TilePyramid_PL01/index.html'));
+    if (pageHtml) {
+      if (/href="\/projects\/unity(?:\.html)?"/.test(pageHtml)) {
+        errors.push(
+          'TilePyramid detail page Unity link is /projects/unity — missing project ID (Vercel routing bug)'
+        );
+      }
+      if (/href="\/projects\/applovin(?:\.html)?"/.test(pageHtml)) {
+        errors.push(
+          'TilePyramid detail page AppLovin link is /projects/applovin — missing project ID (Vercel routing bug)'
+        );
+      }
+      // Verify each preview-link href target exists in dist
+      for (const [, href] of pageHtml.matchAll(/class="preview-link"[^>]*href="([^"]+)"/g)) {
+        const target = href.startsWith('/')
+          ? path.join(distPath, href.slice(1))
+          : path.join(distPath, 'projects/TilePyramid_PL01', href);
+        if (!await exists(target)) {
+          errors.push(`Preview link target missing from dist: ${href}`);
+        }
+      }
+    }
+  }
+
   // Forbidden directories that must never appear in dist
   const forbiddenDirs = [
     'project-input/raw-assets',

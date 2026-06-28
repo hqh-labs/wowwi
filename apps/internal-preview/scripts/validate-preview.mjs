@@ -12,7 +12,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = path.join(HERE, '..');
 const DIST = path.join(APP_ROOT, 'dist');
 
-console.log('\nWowwi Preview Validator — BUILD-15');
+console.log('\nWowwi Preview Validator — BUILD-18');
 console.log('─'.repeat(50));
 
 const result = await validatePreviewDist(DIST);
@@ -31,6 +31,9 @@ const checks = [
   'dist does not contain project-input',
   'Unity preview HTML has no forbidden window.top',
   'AppLovin preview HTML has no forbidden window.top',
+  'detail page Unity link is not missing project ID',
+  'detail page AppLovin link is not missing project ID',
+  'preview link targets exist in dist',
 ];
 
 for (const check of checks) {

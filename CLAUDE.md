@@ -86,16 +86,15 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-17** — Vercel build Playwright fix (Playwright-free Vercel pipeline).
-BUILD-17 fixes the Vercel build failure caused by missing Playwright system
-libraries (`libnspr4.so`). The new Vercel-safe export path (`export:all:static`,
-`validate:exports:static`) runs Vite build + static HTML validation only — never
-importing `export-visual-validator.mjs` or `@playwright/test`. The
-`vercel:build-preview` pipeline no longer calls `package:candidate`,
-`package:delivery`, `test:exports`, or `test:smoke`. The Vercel `installCommand`
-no longer includes `playwright`. Preview delivery is written to `delivery/preview/`
-(never touching `delivery/latest/`). 15 vercel tests. No actual Vercel deployment
-is performed.
+**BUILD-18** — Vercel preview routing fix (project-scoped preview link paths).
+BUILD-18 fixes a live Vercel 404 on Unity/AppLovin preview buttons. Root cause:
+detail page URLs become `/projects/TilePyramid_PL01` (no trailing slash) due to
+`cleanUrls:true` + `trailingSlash:false` in `vercel.json`. Relative `unity.html`
+resolves to `/projects/unity.html` → cleanUrls → `/projects/unity` → 404. Fix:
+preview links now use absolute paths `/projects/TilePyramid_PL01/unity.html` and
+`/projects/TilePyramid_PL01/applovin.html`. Validator hardened to reject missing
+project-ID in preview link hrefs. 24 preview tests + 17 vercel tests. No gameplay
+or export changes. No actual Vercel deployment performed.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API

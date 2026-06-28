@@ -184,8 +184,12 @@ function buildProjectPage(project, manifest) {
 
   const tableRows = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
-  const unityPreviewPath = `unity.html`;
-  const applovinPreviewPath = `applovin.html`;
+  // Absolute paths are required for Vercel compatibility.
+  // With cleanUrls:true + trailingSlash:false the detail page is served at
+  // /projects/TilePyramid_PL01 (no trailing slash). A relative "unity.html"
+  // from that URL resolves to /projects/unity.html → cleanUrls → /projects/unity → 404.
+  const unityPreviewPath = `/projects/${project.projectId}/unity.html`;
+  const applovinPreviewPath = `/projects/${project.projectId}/applovin.html`;
 
   const body = `
 <nav><a href="../../index.html">← All Projects</a></nav>

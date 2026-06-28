@@ -1,5 +1,5 @@
 /**
- * BUILD-15 preview site tests — 16 tests total
+ * BUILD-15/18 preview site tests — 24 tests total
  * Runner: node:test (no extra dependencies)
  */
 
@@ -254,6 +254,127 @@ test('15. Existing Wowwi registry tests still pass', { timeout: 60_000 }, async 
     );
   });
   assert.strictEqual(code, 0, 'Registry test suite must pass');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUILD-18: Preview routing fix — link path correctness (tests 17–24)
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('17. Detail page contains unity.html in preview link href', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  assert.ok(html.includes('unity.html'), 'Detail page must contain unity.html in a link href');
+});
+
+test('18. Detail page contains applovin.html in preview link href', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  assert.ok(html.includes('applovin.html'), 'Detail page must contain applovin.html in a link href');
+});
+
+test('19. Unity preview link resolves to dist/projects/TilePyramid_PL01/unity.html', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  // The link must include the project ID so it resolves correctly on Vercel
+  assert.ok(
+    html.includes('/projects/TilePyramid_PL01/unity.html'),
+    'Unity preview link must be /projects/TilePyramid_PL01/unity.html (project-scoped absolute path)'
+  );
+  const targetExists = await exists(path.join(DIST, 'projects/TilePyramid_PL01/unity.html'));
+  assert.ok(targetExists, 'Link target dist/projects/TilePyramid_PL01/unity.html must exist');
+});
+
+test('20. AppLovin preview link resolves to dist/projects/TilePyramid_PL01/applovin.html', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  assert.ok(
+    html.includes('/projects/TilePyramid_PL01/applovin.html'),
+    'AppLovin preview link must be /projects/TilePyramid_PL01/applovin.html (project-scoped absolute path)'
+  );
+  const targetExists = await exists(path.join(DIST, 'projects/TilePyramid_PL01/applovin.html'));
+  assert.ok(targetExists, 'Link target dist/projects/TilePyramid_PL01/applovin.html must exist');
+});
+
+test('21. Detail page does not contain /projects/unity (broken Vercel path)', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  assert.ok(
+    !html.includes('href="/projects/unity"') && !html.includes("href='/projects/unity'"),
+    'Detail page must not contain /projects/unity — that path is missing the project ID and 404s on Vercel'
+  );
+});
+
+test('22. Detail page does not contain /projects/applovin (broken Vercel path)', async () => {
+  const html = await readFile(path.join(DIST, 'projects/TilePyramid_PL01/index.html'), 'utf8');
+  assert.ok(
+    !html.includes('href="/projects/applovin"') && !html.includes("href='/projects/applovin'"),
+    'Detail page must not contain /projects/applovin — that path is missing the project ID and 404s on Vercel'
+  );
+});
+
+test('23. Preview validator rejects broken Unity preview link (missing project ID)', async () => {
+  const tmpDist = path.join(APP_ROOT, 'dist-test-23');
+  await mkdir(path.join(tmpDist, 'projects/TilePyramid_PL01'), { recursive: true });
+  await writeFile(path.join(tmpDist, 'index.html'), '<html>ok</html>', 'utf8');
+  await writeFile(path.join(tmpDist, 'preview-data.json'), JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    projects: [{
+      projectId: 'TilePyramid_PL01',
+      displayName: 'Test',
+      status: 'delivery-locked',
+      formalSolvability: 'NOT YET PROVEN',
+      storeUrls: { androidUrl: 'https://example.com', iosUrl: 'https://example.com' },
+      deliveryChecksums: { unity: 'abc', applovin: 'def' },
+    }],
+  }), 'utf8');
+  // Detail page with broken href — /projects/unity instead of /projects/TilePyramid_PL01/unity.html
+  await writeFile(
+    path.join(tmpDist, 'projects/TilePyramid_PL01/index.html'),
+    '<html><a class="preview-link" href="/projects/unity">Unity</a>' +
+    '<a class="preview-link" href="/projects/TilePyramid_PL01/applovin.html">AppLovin</a></html>',
+    'utf8'
+  );
+  await writeFile(path.join(tmpDist, 'projects/TilePyramid_PL01/unity.html'), '<html>ok</html>', 'utf8');
+  await writeFile(path.join(tmpDist, 'projects/TilePyramid_PL01/applovin.html'), '<html>ok</html>', 'utf8');
+
+  const { validatePreviewDist } = await import('../scripts/validate-lib.mjs');
+  const result = await validatePreviewDist(tmpDist);
+  await rm(tmpDist, { recursive: true, force: true });
+
+  assert.ok(
+    result.errors.some(e => e.toLowerCase().includes('unity') && e.toLowerCase().includes('project')),
+    `Expected error about broken Unity link. Got: ${result.errors.join(', ')}`
+  );
+});
+
+test('24. Preview validator rejects broken AppLovin preview link (missing project ID)', async () => {
+  const tmpDist = path.join(APP_ROOT, 'dist-test-24');
+  await mkdir(path.join(tmpDist, 'projects/TilePyramid_PL01'), { recursive: true });
+  await writeFile(path.join(tmpDist, 'index.html'), '<html>ok</html>', 'utf8');
+  await writeFile(path.join(tmpDist, 'preview-data.json'), JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    projects: [{
+      projectId: 'TilePyramid_PL01',
+      displayName: 'Test',
+      status: 'delivery-locked',
+      formalSolvability: 'NOT YET PROVEN',
+      storeUrls: { androidUrl: 'https://example.com', iosUrl: 'https://example.com' },
+      deliveryChecksums: { unity: 'abc', applovin: 'def' },
+    }],
+  }), 'utf8');
+  // Detail page with broken href — /projects/applovin instead of /projects/TilePyramid_PL01/applovin.html
+  await writeFile(
+    path.join(tmpDist, 'projects/TilePyramid_PL01/index.html'),
+    '<html><a class="preview-link" href="/projects/TilePyramid_PL01/unity.html">Unity</a>' +
+    '<a class="preview-link" href="/projects/applovin">AppLovin</a></html>',
+    'utf8'
+  );
+  await writeFile(path.join(tmpDist, 'projects/TilePyramid_PL01/unity.html'), '<html>ok</html>', 'utf8');
+  await writeFile(path.join(tmpDist, 'projects/TilePyramid_PL01/applovin.html'), '<html>ok</html>', 'utf8');
+
+  const { validatePreviewDist } = await import('../scripts/validate-lib.mjs');
+  const result = await validatePreviewDist(tmpDist);
+  await rm(tmpDist, { recursive: true, force: true });
+
+  assert.ok(
+    result.errors.some(e => e.toLowerCase().includes('applovin') && e.toLowerCase().includes('project')),
+    `Expected error about broken AppLovin link. Got: ${result.errors.join(', ')}`
+  );
 });
 
 test('16. Existing TilePyramid delivery workflow still passes', { timeout: 120_000 }, async () => {

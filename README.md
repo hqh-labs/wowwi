@@ -167,7 +167,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-14**: Project registry and local tool foundation
 - **BUILD-15**: Internal preview site foundation
 - **BUILD-16**: Vercel deployment configuration and deploy prep
-- **BUILD-17**: Playwright-free Vercel build pipeline fix ← current
+- **BUILD-17**: Playwright-free Vercel build pipeline fix
+- **BUILD-18**: Vercel preview routing fix (project-scoped link paths) ← current
 
 ## Documentation index
 
