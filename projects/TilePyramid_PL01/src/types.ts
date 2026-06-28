@@ -69,7 +69,25 @@ export interface EffectsConfig {
   matchResolve: MatchResolveEffectConfig;
   trayFullWarning: TrayFullEffectConfig;
   timerWarningPulse: EffectScaleConfig;
+  timerWarningContinuousPulse: boolean;
   outcomePulse: EffectScaleConfig;
+  ctaPulse: EffectScaleConfig;
+  matchSparkle: MatchSparkleConfig;
+  boardEntrance: BoardEntranceConfig;
+}
+
+export interface MatchSparkleConfig {
+  enabled: boolean;
+  count: number;
+  radius: number;
+  durationMs: number;
+  color: string;
+}
+
+export interface BoardEntranceConfig {
+  enabled: boolean;
+  durationMs: number;
+  staggerMs: number;
 }
 
 export interface EffectScaleConfig {
@@ -129,6 +147,9 @@ export interface EndCardConfig {
   titleText: string;
   winMessage: string;
   failMessage: string;
+  winMessageColor: string;
+  failMessageColor: string;
+  entranceAnimation: boolean;
   fullScreenClick: boolean;
   ctaText: string;
 }
@@ -257,6 +278,7 @@ declare global {
     __TILEPYRAMID_BUILD06__?: Readonly<Build06Snapshot>;
     __TILEPYRAMID_BUILD08__?: Readonly<Build08Snapshot>;
     __TILEPYRAMID_BUILD09__?: Readonly<Build08Snapshot>;
+    __TILEPYRAMID_BUILD20__?: Readonly<Build08Snapshot>;
     __PLAYABLE_NETWORK__?: PlayableNetworkRuntime;
     __PLAYABLE_STORE_OPEN__?: PlayableStoreOpenBridge;
     __PLAYABLE_STORE_OPEN_DIAGNOSTICS__?: PlayableStoreOpenDiagnostics;
@@ -348,6 +370,8 @@ export interface Build06Snapshot extends Build05Snapshot {
 }
 
 export interface Build08Snapshot extends Build06Snapshot {
+  buildId: string;
+  buildLabel: string;
   audioEnabled: boolean;
   audioUnlocked: boolean;
   audioMuted: boolean;

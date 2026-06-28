@@ -99,7 +99,7 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (220 tests)
+npm run test          # unit tests (235 tests)
 npm run test:smoke    # browser smoke tests, including exported HTML - requires Chromium
 npm run test:exports  # exported Unity/AppLovin HTML smoke tests only
 ```
@@ -170,7 +170,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-16**: Vercel deployment configuration and deploy prep
 - **BUILD-17**: Playwright-free Vercel build pipeline fix
 - **BUILD-18**: Vercel preview routing fix (project-scoped link paths)
-- **BUILD-19**: Live preview QA lock (`https://wowwi.vercel.app`) ← current
+- **BUILD-19**: Live preview QA lock (`https://wowwi.vercel.app`)
+- **BUILD-20**: Creative polish pass (CTA pulse, end card, tile lift, sparkle, timer, tutorial, tray) ← current
 
 ## Documentation index
 
@@ -192,3 +193,7 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/VERCEL_PREVIEW_PREP.md` | Vercel readiness status (updated BUILD-16) |
 | `docs/VERCEL_DEPLOYMENT.md` | Full Vercel deployment guide and manual UI steps |
 | `docs/VERCEL_PREVIEW_CHECKLIST.md` | Pre-deploy and post-deploy verification checklist |
+| `docs/LIVE_PREVIEW_QA.md` | BUILD-19 live preview QA record |
+| `docs/INTERNAL_PREVIEW_ACCESS_NOTES.md` | Preview access status and security notes |
+| `docs/BUILD_20_REPORT.md` | BUILD-20 creative polish change report |
+| `docs/CREATIVE_POLISH_NOTES.md` | Per-area design rationale for BUILD-20 polish |

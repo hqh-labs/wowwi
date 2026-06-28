@@ -354,7 +354,7 @@ function validateEndCardConfig(value: unknown): void {
     throw new ConfigValidationError('Config.endCard must be an object');
   }
   const endCard = value as Record<string, unknown>;
-  for (const field of ['enabled', 'showOnWin', 'showOnFail', 'fullScreenClick']) {
+  for (const field of ['enabled', 'showOnWin', 'showOnFail', 'fullScreenClick', 'entranceAnimation']) {
     if (typeof endCard[field] !== 'boolean') {
       throw new ConfigValidationError(`Config.endCard.${field} must be a boolean`);
     }
@@ -364,6 +364,11 @@ function validateEndCardConfig(value: unknown): void {
       if (typeof endCard[field] !== 'string' || (endCard[field] as string).trim() === '') {
         throw new ConfigValidationError(`Config.endCard.${field} must be a non-empty string when enabled`);
       }
+    }
+  }
+  for (const field of ['winMessageColor', 'failMessageColor']) {
+    if (typeof endCard[field] !== 'string' || (endCard[field] as string).trim() === '') {
+      throw new ConfigValidationError(`Config.endCard.${field} must be a non-empty string`);
     }
   }
 }
@@ -431,7 +436,51 @@ function validateEffectsConfig(value: unknown): void {
   validateMatchResolveEffect(effects['matchResolve']);
   validateTrayFullEffect(effects['trayFullWarning']);
   validateScaleEffect(effects['timerWarningPulse'], 'Config.effects.timerWarningPulse');
+  if (typeof effects['timerWarningContinuousPulse'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.timerWarningContinuousPulse must be a boolean');
+  }
   validateScaleEffect(effects['outcomePulse'], 'Config.effects.outcomePulse');
+  validateScaleEffect(effects['ctaPulse'], 'Config.effects.ctaPulse');
+  validateMatchSparkleConfig(effects['matchSparkle']);
+  validateBoardEntranceConfig(effects['boardEntrance']);
+}
+
+function validateMatchSparkleConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects.matchSparkle must be an object');
+  }
+  const cfg = value as Record<string, unknown>;
+  if (typeof cfg['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.matchSparkle.enabled must be a boolean');
+  }
+  if (!Number.isInteger(cfg['count']) || (cfg['count'] as number) <= 0) {
+    throw new ConfigValidationError('Config.effects.matchSparkle.count must be a positive integer');
+  }
+  if (!isPositiveFiniteNumber(cfg['radius'])) {
+    throw new ConfigValidationError('Config.effects.matchSparkle.radius must be a positive finite number');
+  }
+  if (!isNonNegativeFiniteNumber(cfg['durationMs'])) {
+    throw new ConfigValidationError('Config.effects.matchSparkle.durationMs must be a non-negative finite number');
+  }
+  if (typeof cfg['color'] !== 'string' || (cfg['color'] as string).trim() === '') {
+    throw new ConfigValidationError('Config.effects.matchSparkle.color must be a non-empty string');
+  }
+}
+
+function validateBoardEntranceConfig(value: unknown): void {
+  if (typeof value !== 'object' || value === null) {
+    throw new ConfigValidationError('Config.effects.boardEntrance must be an object');
+  }
+  const cfg = value as Record<string, unknown>;
+  if (typeof cfg['enabled'] !== 'boolean') {
+    throw new ConfigValidationError('Config.effects.boardEntrance.enabled must be a boolean');
+  }
+  if (!isNonNegativeFiniteNumber(cfg['durationMs'])) {
+    throw new ConfigValidationError('Config.effects.boardEntrance.durationMs must be a non-negative finite number');
+  }
+  if (!isNonNegativeFiniteNumber(cfg['staggerMs'])) {
+    throw new ConfigValidationError('Config.effects.boardEntrance.staggerMs must be a non-negative finite number');
+  }
 }
 
 function validateScaleEffect(value: unknown, label: string): void {

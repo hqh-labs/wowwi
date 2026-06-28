@@ -86,14 +86,14 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-19** — Live preview QA lock (`https://wowwi.vercel.app`).
-BUILD-19 locks the live Vercel internal preview as a verified milestone. Adds
-`docs/LIVE_PREVIEW_QA.md` (home/detail/Unity/AppLovin QA pass record),
-`docs/INTERNAL_PREVIEW_ACCESS_NOTES.md` (no-auth status + recommended controls),
-8 static local tests for docs and registry metadata. Registry extended with
-`livePreviewUrl`, `livePreviewStatus`, `livePreviewLastVerifiedAt`, and
-`livePreviewPages`. No gameplay, export, or Vercel config changes. No actual
-Vercel deployment performed from Claude.
+**BUILD-20** — Creative Polish Pass for TilePyramid_PL01.
+BUILD-20 improves visual quality and ad-readiness across 8 areas: CTA pulse animation,
+end-card win/fail color coding + entrance animation, tile lift glow effect, match-three
+sparkle burst, blocked-tap tint+shake combo, timer warning continuous pulse loop, tutorial
+rounded highlight rings with outer glow halo, board staggered entrance animation, and tray
+rounded-rect frame via Phaser Graphics. All parameters config-driven via 7 new config fields.
+15 new unit tests. Core gameplay rules unchanged. Export compatibility maintained.
+No actual Vercel deployment performed from Claude.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API

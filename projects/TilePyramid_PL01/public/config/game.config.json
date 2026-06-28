@@ -61,7 +61,7 @@
       "L2:-0.5:2.5",
       "L2:0.5:2.5"
     ],
-    "dimOpacity": 0.5,
+    "dimOpacity": 0.6,
     "handEnabled": true,
     "handAssetId": "Pointer_Hand",
     "handPathMode": "loop-preview-tiles"
@@ -87,12 +87,12 @@
     "enabled": true,
     "text": "PLAY NOW",
     "position": { "x": 540, "y": 1775 },
-    "size": { "width": 420, "height": 112 },
-    "fontSize": 42,
+    "size": { "width": 460, "height": 116 },
+    "fontSize": 46,
     "textColor": "#ffffff",
     "backgroundColor": "#ff3f6e",
     "borderColor": "#fff4a8",
-    "cornerRadius": 28,
+    "cornerRadius": 32,
     "visibleDuringGameplay": true
   },
   "endCard": {
@@ -102,6 +102,9 @@
     "titleText": "Pyramid Quest",
     "winMessage": "Level Complete!",
     "failMessage": "Try Again!",
+    "winMessageColor": "#ffd447",
+    "failMessageColor": "#ff7a5c",
+    "entranceAnimation": true,
     "fullScreenClick": true,
     "ctaText": "PLAY NOW"
   },
@@ -129,14 +132,14 @@
     "enabled": true,
     "tileSelectPop": {
       "enabled": true,
-      "scale": 1.08,
-      "durationMs": 90
+      "scale": 1.14,
+      "durationMs": 80
     },
     "blockedShake": {
       "enabled": true,
-      "distance": 10,
-      "durationMs": 48,
-      "repeats": 2,
+      "distance": 12,
+      "durationMs": 44,
+      "repeats": 3,
       "tint": "#ff5d73"
     },
     "matchResolve": {
@@ -151,13 +154,31 @@
     },
     "timerWarningPulse": {
       "enabled": true,
-      "scale": 1.06,
-      "durationMs": 240
+      "scale": 1.12,
+      "durationMs": 300
     },
+    "timerWarningContinuousPulse": true,
     "outcomePulse": {
       "enabled": true,
-      "scale": 1.015,
-      "durationMs": 420
+      "scale": 1.02,
+      "durationMs": 480
+    },
+    "ctaPulse": {
+      "enabled": true,
+      "scale": 1.05,
+      "durationMs": 700
+    },
+    "matchSparkle": {
+      "enabled": true,
+      "count": 6,
+      "radius": 54,
+      "durationMs": 380,
+      "color": "#ffd447"
+    },
+    "boardEntrance": {
+      "enabled": true,
+      "durationMs": 260,
+      "staggerMs": 12
     }
   },
   "debugAudioEffects": true

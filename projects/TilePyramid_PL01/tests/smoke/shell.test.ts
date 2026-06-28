@@ -211,6 +211,22 @@ test.describe('Build-08 audio and effects smoke tests', () => {
     expect(solvability).toBe('NOT YET PROVEN');
   });
 
+  test('runtime diagnostics identify BUILD-20 creative polish while preserving legacy snapshot', async ({ page }) => {
+    await page.goto('/');
+    await waitForRuntime(page);
+
+    const diagnostics = await page.evaluate(() => ({
+      legacyBuildLabel: window.__TILEPYRAMID_BUILD08__?.buildLabel,
+      currentBuildLabel: window.__TILEPYRAMID_BUILD20__?.buildLabel,
+      currentBuildId: window.__TILEPYRAMID_BUILD20__?.buildId,
+      remainingBoardCount: window.__TILEPYRAMID_BUILD20__?.remainingBoardCount,
+    }));
+    expect(diagnostics.currentBuildId).toBe('BUILD-20');
+    expect(diagnostics.currentBuildLabel).toBe('BUILD-20 creative-polish');
+    expect(diagnostics.legacyBuildLabel).toBe('BUILD-20 creative-polish');
+    expect(diagnostics.remainingBoardCount).toBe(72);
+  });
+
   test('landscape still keeps portrait gameplay centered', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await page.goto('/');
