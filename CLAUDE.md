@@ -86,8 +86,9 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-09** - Export foundation, single-file build, Unity adapter, and AppLovin adapter.
-BUILD-09 adds versioned export profiles, single-file HTML inlining, Unity and
-AppLovin export adapters, export validation reports, and a minimal
-network-aware store-open bridge. Final ad-network approval, upload automation,
-real network API integration, and visual editor remain out of scope.
+**BUILD-10** - Network compliance hardening and final export QA.
+BUILD-10 hardens Unity/AppLovin export profiles, static validation, visual
+Chromium export QA, MRAID/store-open bridge diagnostics, upload-readiness
+documentation, and generated export reports. Final ad-network approval, upload
+automation, real network API integration, formal level solving, and visual
+editor remain out of scope.

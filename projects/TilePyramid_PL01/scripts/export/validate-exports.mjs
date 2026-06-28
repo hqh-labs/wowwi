@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getExportProfile } from './profiles/profiles.mjs';
+import { getExportProfile, listExportProfiles } from './profiles/profiles.mjs';
 import { validateExportFile } from './validators/export-validator.mjs';
 import { validateExportVisualFile } from './validators/export-visual-validator.mjs';
 
@@ -10,8 +10,16 @@ const manifestPath = path.join(root, 'exports/latest/export-manifest.json');
 
 try {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const missingProfiles = listExportProfiles().filter(
+    profile => !manifest.networks?.some(item => item.profileId === profile.id)
+  );
+  if (missingProfiles.length > 0) {
+    throw new Error(`Export manifest is missing profiles: ${missingProfiles.map(profile => profile.id).join(', ')}`);
+  }
   const validations = [];
-  for (const item of manifest.networks) {
+  for (const expectedProfile of listExportProfiles()) {
+    const item = manifest.networks.find(candidate => candidate.profileId === expectedProfile.id);
+    if (!item) throw new Error(`Export manifest is missing ${expectedProfile.id}.`);
     const profile = getExportProfile(item.profileId);
     const outputPath = path.join(root, item.outputPath);
     const staticValidation = await validateExportFile({
@@ -34,7 +42,13 @@ try {
   }
   const report = {
     generatedAt: new Date().toISOString(),
+    projectId: 'TilePyramid_PL01',
+    manifestGeneratedAt: manifest.generatedAt,
+    gitBranch: manifest.gitBranch ?? null,
     status: validations.every(validation => validation.status === 'PASS') ? 'PASS' : 'FAIL',
+    finalApprovalGuaranteed: false,
+    finalApprovalDisclaimer: 'Local BUILD-10 validation does not guarantee final Unity Ads or AppLovin approval.',
+    formalSolvability: 'NOT YET PROVEN',
     validations,
   };
   await writeFile(path.join(root, 'exports/latest/export-validation-report.json'), JSON.stringify(report, null, 2));

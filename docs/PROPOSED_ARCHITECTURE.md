@@ -424,6 +424,15 @@ BUILD-09 implementation note:
 - The bridge safely checks `window.mraid.open` first, then falls back to browser
   navigation behavior.
 
+BUILD-10 implementation note:
+- Exported HTML also injects `window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__`.
+- The injected bridge safely detects `window.mraid`, reads `mraid.getState()`
+  defensively, listens for `ready` when available, times out to fallback instead
+  of hanging, and records the method used as `mraid.open`, `window.open`,
+  `location.href`, `record-only`, or `failed`.
+- Automated export QA sets `window.__PLAYABLE_QA_MODE__ = true` before page load
+  so store-open clicks are recorded without navigating away.
+
 ### Export profile system (`scripts/export/profiles`)
 
 BUILD-09 established interface:
@@ -455,6 +464,13 @@ BUILD-09 established interface:
   metadata, and `Formal solvability: NOT YET PROVEN` metadata.
 - Validation reports warnings separately from failures and never claims final
   network approval.
+
+BUILD-10 implementation note:
+- Validation requires both network outputs, rejects source map references,
+  un-inlined JS/CSS references, and unresolved placeholders, and verifies
+  store-open diagnostics, host close-button safe-zone metadata, visual boot,
+  portrait/landscape checks, QA-mode store-open behavior, and final approval
+  disclaimer metadata in generated reports.
 
 ### End-card system (`EndCardSystem.ts`)
 

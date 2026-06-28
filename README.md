@@ -55,8 +55,9 @@ Open the URL printed in the terminal (usually `http://localhost:5173`).
 
 **Run the test suite:**
 ```
-npm run test          # unit tests (179 tests)
+npm run test          # unit tests (184 tests)
 npm run test:smoke    # browser smoke tests, including exported HTML - requires Chromium
+npm run test:exports  # exported Unity/AppLovin HTML smoke tests only
 ```
 
 **Optimize and measure production assets:**
@@ -71,6 +72,7 @@ npm run export          # exports Unity and AppLovin
 npm run export:unity    # Unity only
 npm run export:applovin # AppLovin only
 npm run validate:exports
+npm run test:exports    # export + run exported HTML smoke tests
 ```
 
 Generated exports are written under `projects/TilePyramid_PL01/exports/latest/`
@@ -103,7 +105,7 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-07**: Asset optimization and production size control
 - **BUILD-08**: Basic audio and visual feedback effects
 - **BUILD-09**: Export foundation, single-file build, Unity and AppLovin adapters
-- **BUILD-10**: Visual editor (config-driven, reads same JSON as playable)
+- **BUILD-10**: Network compliance hardening and final export QA
 
 ## Documentation index
 

@@ -13,9 +13,13 @@ import {
 import {
   hasExternalHttpAssetReference,
   hasLocalRuntimeAssetReference,
+  hasSourceMapReference,
+  hasUninlinedJsOrCssReference,
+  hasUnresolvedPlaceholder,
   validateExportHtml,
 } from '../../scripts/export/validators/export-validator.mjs';
 import { createNetworkExportMetadata } from '../../scripts/export/adapters/network-adapters.mjs';
+import { createStoreOpenBridgeScript } from '../../scripts/export/bridge/store-open-bridge.mjs';
 
 describe('Build-09 export profiles', () => {
   it('loads Unity profile', () => {
@@ -36,6 +40,14 @@ describe('Build-09 export profiles', () => {
 
   it('batch profile list includes both networks', () => {
     expect(listExportProfiles().map(profile => profile.network).sort()).toEqual(['applovin', 'unity']);
+  });
+
+  it('records BUILD-10 compliance metadata in profiles', () => {
+    const profile = getExportProfile('unity-2026-06');
+    expect(profile.requiresNoExternalResources).toBe(true);
+    expect(profile.networkProvidedMraid).toBe(true);
+    expect(profile.hostCloseButtonSafeZone.corner).toBe('top-right');
+    expect(profile.finalApprovalDisclaimer).toMatch(/does not guarantee final Unity Ads approval/);
   });
 });
 
@@ -75,6 +87,16 @@ describe('Build-09 single-file inliner', () => {
     expect(result.html).toContain('__PLAYABLE_NETWORK__');
     await fixture.dispose();
   });
+
+  it('injects hardened bridge diagnostics and QA mode handling', () => {
+    const script = createStoreOpenBridgeScript(getExportProfile('unity-2026-06'), '2026-06-28T00:00:00.000Z');
+    expect(script).toContain('__PLAYABLE_STORE_OPEN_DIAGNOSTICS__');
+    expect(script).toContain('__PLAYABLE_QA_MODE__');
+    expect(script).toContain('getState');
+    expect(script).toContain("addEventListener('ready'");
+    expect(script).toContain('mraid.open');
+    expect(script).toContain('record-only');
+  });
 });
 
 describe('Build-09 export validation', () => {
@@ -94,7 +116,25 @@ describe('Build-09 export validation', () => {
 
   it('accepts permitted MRAID bootstrap only when profile allows it', () => {
     const html = validHtmlForProfile('unity-2026-06').replace('</head>', '<script src="mraid.js"></script></head>');
-    expect(validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' }).status).toBe('PASS');
+    expect(validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+    expect(validateExportHtml({ html, profile: getExportProfile('applovin-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+  });
+
+  it('rejects source map references', () => {
+    const html = `${validHtmlForProfile('unity-2026-06')}<!--# sourceMappingURL=app.js.map -->`;
+    expect(hasSourceMapReference(html)).toBe(true);
+    expect(validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+  });
+
+  it('rejects un-inlined JS and CSS references', () => {
+    const html = validHtmlForProfile('unity-2026-06').replace('</head>', '<link rel="stylesheet" href="style.css"></head>');
+    expect(hasUninlinedJsOrCssReference(html)).toBe(true);
+    expect(validateExportHtml({ html, profile: getExportProfile('unity-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
+  });
+
+  it('rejects unresolved export placeholders', () => {
+    const html = `${validHtmlForProfile('applovin-2026-06')}{{STORE_URL}}`;
+    expect(hasUnresolvedPlaceholder(html)).toBe(true);
     expect(validateExportHtml({ html, profile: getExportProfile('applovin-2026-06'), filePath: 'x.html' }).status).toBe('FAIL');
   });
 
@@ -169,9 +209,10 @@ async function createInlinerFixture() {
 }
 
 function validHtmlForProfile(profileId: string) {
+  const profile = getExportProfile(profileId);
   return `<html><head>
     <meta name="playable-orientation-policy" content="portrait-gameplay-centered-in-landscape">
     <meta name="playable-timer-first-interaction" content="true">
-    <script>window.__PLAYABLE_NETWORK__={profileId:"${profileId}",formalSolvability:"NOT YET PROVEN"};window.__PLAYABLE_STORE_OPEN__=function(){return {handled:true,method:"mraid"};};</script>
+    <script>window.__PLAYABLE_NETWORK__={profileId:"${profileId}",formalSolvability:"NOT YET PROVEN",networkProvidedMraid:${profile.networkProvidedMraid},hostCloseButtonSafeZone:{corner:"top-right"},safeAreaPolicy:"${profile.safeAreaPolicy}",domOverlayPolicy:"${profile.domOverlayPolicy}",finalApprovalDisclaimer:"${profile.finalApprovalDisclaimer}"};window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__={};window.__PLAYABLE_STORE_OPEN__=function(){return {handled:true,method:"mraid.open"};};</script>
   </head><body>NOT YET PROVEN</body></html>`;
 }

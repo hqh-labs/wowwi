@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:smoke": "npm run export:all && npm run build && playwright test"
+    "test:smoke": "npm run export:all && npm run build && playwright test",
+    "test:exports": "npm run export:all && playwright test tests/smoke/exported.test.ts"
   },
   "dependencies": {
     "phaser": "3.87.0"

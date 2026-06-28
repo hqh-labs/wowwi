@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -25,10 +26,26 @@ declare global {
   }
 }
 
-test.describe('Build-09 exported HTML smoke tests', () => {
+test.describe('Build-10 exported HTML compliance smoke tests', () => {
   test.describe.configure({ mode: 'serial', timeout: 80_000 });
 
   for (const exported of EXPORTS) {
+    test(`${exported.network} export file exists, is under limit, and has no local references`, async () => {
+      const filePath = path.resolve(exported.file);
+      const [stats, html] = await Promise.all([stat(filePath), readFile(filePath, 'utf8')]);
+      expect(stats.size).toBeGreaterThan(1_000_000);
+      expect(stats.size).toBeLessThanOrEqual(5 * 1024 * 1024);
+      expect(html).toContain('__PLAYABLE_NETWORK__');
+      expect(html).toContain('__PLAYABLE_STORE_OPEN__');
+      expect(html).toContain('__PLAYABLE_STORE_OPEN_DIAGNOSTICS__');
+      expect(html).toContain('NOT YET PROVEN');
+      expect(html).not.toMatch(/(?:src|href)=["']https?:\/\//i);
+      expect(html).not.toMatch(/(?:src|href)=["'][^"']*(?:assets\/|config\/|dist\/)/i);
+      expect(html).not.toMatch(/sourceMappingURL\s*=|(?:src|href)=["'][^"']+\.map(?:[?#][^"']*)?["']/i);
+      expect(html).not.toMatch(/<script\b[^>]*\bsrc=["'][^"']+\.(?:m?js|css)/i);
+      expect(html).not.toMatch(/<link\b[^>]*\brel=["']stylesheet["'][^>]*\bhref=["'][^"']+\.css/i);
+    });
+
     test(`${exported.network} export boots visually from file URL`, async ({ page }) => {
       const diagnostics = await loadExport(page, exported.file);
       expect(diagnostics.pageErrors).toEqual([]);
@@ -38,48 +55,73 @@ test.describe('Build-09 exported HTML smoke tests', () => {
       expect(diagnostics.snapshot?.formalSolvability).toBe('NOT YET PROVEN');
       expect(diagnostics.network?.network).toBe(exported.network);
       expect(diagnostics.bridgeType).toBe('function');
+      expect(diagnostics.bridgeDiagnostics?.network).toBe(exported.network);
       expect(diagnostics.backgroundImage).toContain('blob:');
       expect(diagnostics.canvasVisible).toBe(true);
       expect(diagnostics.visuallyNonBlank).toBe(true);
+      expect(diagnostics.audioEnabled).toBe(true);
     });
 
-    test(`${exported.network} export CTA records store-open without crashing`, async ({ page }) => {
+    test(`${exported.network} export CTA records store-open safely without mutating gameplay`, async ({ page }) => {
       await loadExport(page, exported.file);
-      await page.evaluate(() => {
-        window.__PLAYABLE_STORE_OPEN__ = payload => {
-          window.__EXPORT_TEST_STORE_OPEN__ = {
-            count: (window.__EXPORT_TEST_STORE_OPEN__?.count ?? 0) + 1,
-            payload,
-          };
-          return { handled: true, method: 'record-only' };
-        };
-      });
+      const before = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__);
 
       await clickDesignPoint(page, 540, 1775);
       await page.waitForFunction(() => window.__TILEPYRAMID_BUILD09__?.storeOpenCallCount === 1);
       const result = await page.evaluate(() => ({
         storeOpenCallCount: window.__TILEPYRAMID_BUILD09__?.storeOpenCallCount,
-        bridgeCallCount: window.__EXPORT_TEST_STORE_OPEN__?.count ?? 0,
-        source: window.__EXPORT_TEST_STORE_OPEN__?.payload?.source,
+        source: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.source,
+        method: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.methodUsed,
+        remainingBoardCount: window.__TILEPYRAMID_BUILD09__?.remainingBoardCount,
+        trayCount: window.__TILEPYRAMID_BUILD09__?.trayCount,
+        timerStarted: window.__TILEPYRAMID_BUILD09__?.timerStarted,
+        tutorialDismissed: window.__TILEPYRAMID_BUILD09__?.tutorialDismissed,
       }));
       expect(result.storeOpenCallCount).toBe(1);
-      expect(result.bridgeCallCount).toBe(1);
       expect(result.source).toBe('gameplay-cta');
+      expect(result.method).toBe('record-only');
+      expect(result.remainingBoardCount).toBe(before?.remainingBoardCount);
+      expect(result.trayCount).toBe(before?.trayCount);
+      expect(result.timerStarted).toBe(false);
+      expect(result.tutorialDismissed).toBe(false);
+    });
+
+    test(`${exported.network} export valid and blocked tile interactions preserve timer/tutorial rules`, async ({ page }) => {
+      await loadExport(page, exported.file);
+      const blockedTile = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__?.tiles.find(tile => !tile.selectable)?.id);
+      expect(blockedTile).toBeDefined();
+      if (blockedTile) await clickTileById(page, blockedTile);
+      await page.waitForTimeout(300);
+      let snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__);
+      expect(snapshot?.timerStarted).toBe(false);
+      expect(snapshot?.tutorialDismissed).toBe(false);
+
+      await clickTileById(page, PREVIEW_IDS[0]);
+      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD09__?.timerStarted === true);
+      snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__);
+      expect(snapshot?.timerStarted).toBe(true);
+      expect(snapshot?.tutorialDismissed).toBe(true);
+      expect(snapshot?.audioEnabled).toBe(true);
+    });
+
+    test(`${exported.network} export match-three still clears preview tiles`, async ({ page }) => {
+      await loadExport(page, exported.file);
+      for (const tileId of PREVIEW_IDS) {
+        await clickTileById(page, tileId);
+        await page.waitForTimeout(550);
+      }
+      await page.waitForFunction(
+        () => window.__TILEPYRAMID_BUILD09__?.remainingBoardCount === 69 && window.__TILEPYRAMID_BUILD09__?.trayCount === 0,
+        null,
+        { timeout: 5_000 }
+      );
+      const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__);
+      expect(snapshot?.lastMatchedTileType).toBe(1);
     });
 
     test(`${exported.network} export landscape keeps portrait gameplay centered and side areas inert`, async ({ page }) => {
       await page.setViewportSize({ width: 844, height: 390 });
       await loadExport(page, exported.file);
-      await page.evaluate(() => {
-        window.__PLAYABLE_STORE_OPEN__ = payload => {
-          window.__EXPORT_TEST_STORE_OPEN__ = {
-            count: (window.__EXPORT_TEST_STORE_OPEN__?.count ?? 0) + 1,
-            payload,
-          };
-          return { handled: true, method: 'record-only' };
-        };
-      });
-
       const box = await page.locator('canvas').first().boundingBox();
       expect(box).not.toBeNull();
       if (!box) return;
@@ -97,30 +139,40 @@ test.describe('Build-09 exported HTML smoke tests', () => {
         trayCount: window.__TILEPYRAMID_BUILD09__?.trayCount,
         timerStarted: window.__TILEPYRAMID_BUILD09__?.timerStarted,
         storeOpenCallCount: window.__TILEPYRAMID_BUILD09__?.storeOpenCallCount,
-        bridgeCallCount: window.__EXPORT_TEST_STORE_OPEN__?.count ?? 0,
+        bridgeMethod: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.methodUsed,
       }));
       expect(snapshot.remainingBoardCount).toBe(72);
       expect(snapshot.trayCount).toBe(0);
       expect(snapshot.timerStarted).toBe(false);
       expect(snapshot.storeOpenCallCount).toBe(0);
-      expect(snapshot.bridgeCallCount).toBe(0);
+      expect(snapshot.bridgeMethod).toBeNull();
+    });
+
+    test(`${exported.network} export fail end-card records store-open safely`, async ({ page }) => {
+      await loadExport(page, exported.file);
+      await clickTileById(page, PREVIEW_IDS[0]);
+      await page.waitForFunction(
+        () => window.__TILEPYRAMID_BUILD09__?.gameState === 'failed' && window.__TILEPYRAMID_BUILD09__?.endCardVisible === true,
+        null,
+        { timeout: 40_000 }
+      );
+
+      await clickDesignPoint(page, 540, 960);
+      await page.waitForFunction(() => window.__TILEPYRAMID_BUILD09__?.endCardClickCount === 1);
+      const snapshot = await page.evaluate(() => ({
+        timerStarted: window.__TILEPYRAMID_BUILD09__?.timerStarted,
+        timerExpired: window.__TILEPYRAMID_BUILD09__?.timerExpired,
+        endCardReason: window.__TILEPYRAMID_BUILD09__?.endCardReason,
+        source: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.source,
+        method: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.methodUsed,
+      }));
+      expect(snapshot.timerStarted).toBe(true);
+      expect(snapshot.timerExpired).toBe(true);
+      expect(snapshot.endCardReason).toBe('fail');
+      expect(snapshot.source).toBe('end-card');
+      expect(snapshot.method).toBe('record-only');
     });
   }
-
-  test('Unity export fail path shows end card after timer expiry', async ({ page }) => {
-    await loadExport(page, EXPORTS[0].file);
-    await clickTileById(page, PREVIEW_IDS[0]);
-    await page.waitForFunction(
-      () => window.__TILEPYRAMID_BUILD09__?.gameState === 'failed' && window.__TILEPYRAMID_BUILD09__?.endCardVisible === true,
-      null,
-      { timeout: 40_000 }
-    );
-
-    const snapshot = await page.evaluate(() => window.__TILEPYRAMID_BUILD09__);
-    expect(snapshot?.timerStarted).toBe(true);
-    expect(snapshot?.timerExpired).toBe(true);
-    expect(snapshot?.endCardReason).toBe('fail');
-  });
 });
 
 async function loadExport(page: Page, relativePath: string) {
@@ -128,6 +180,9 @@ async function loadExport(page: Page, relativePath: string) {
   const failedRequests: string[] = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   page.on('requestfailed', request => failedRequests.push(request.url()));
+  await page.addInitScript(() => {
+    window.__PLAYABLE_QA_MODE__ = true;
+  });
 
   await page.goto(pathToFileURL(path.resolve(relativePath)).href);
   await page.waitForSelector('canvas', { timeout: 20_000 });
@@ -144,9 +199,11 @@ async function loadExport(page: Page, relativePath: string) {
       snapshot: window.__TILEPYRAMID_BUILD09__,
       network: window.__PLAYABLE_NETWORK__,
       bridgeType: typeof window.__PLAYABLE_STORE_OPEN__,
+      bridgeDiagnostics: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__,
       backgroundImage: background ? getComputedStyle(background).backgroundImage : '',
       canvasVisible: Boolean(box && box.width > 0 && box.height > 0),
       nonBlankCanvas: canvas ? canvasHasNonBlankPixels(canvas) : false,
+      audioEnabled: window.__TILEPYRAMID_BUILD09__?.audioEnabled ?? false,
     };
 
     function canvasHasNonBlankPixels(canvas: HTMLCanvasElement): boolean {

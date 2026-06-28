@@ -198,6 +198,13 @@ export interface PlayableNetworkRuntime {
   targetMaxBytes: number;
   orientationPolicy: string;
   timerFirstInteraction: boolean;
+  mraidRequired: boolean;
+  networkProvidedMraid: boolean;
+  requiresNoExternalResources: boolean;
+  hostCloseButtonSafeZone: { corner: 'top-right'; width: number; height: number };
+  safeAreaPolicy: string;
+  domOverlayPolicy: string;
+  finalApprovalDisclaimer: string;
   formalSolvability: 'NOT YET PROVEN';
 }
 
@@ -209,11 +216,20 @@ export interface PlayableStoreOpenPayload {
 
 export interface PlayableStoreOpenResult {
   handled: boolean;
-  method: 'mraid' | 'window-open' | 'location' | 'record-only' | 'none';
+  method: 'mraid.open' | 'window.open' | 'location.href' | 'record-only' | 'failed';
   error?: string;
 }
 
 export type PlayableStoreOpenBridge = (payload: PlayableStoreOpenPayload) => PlayableStoreOpenResult;
+
+export interface PlayableStoreOpenDiagnostics {
+  network: 'unity' | 'applovin';
+  source: PlayableStoreOpenPayload['source'] | null;
+  attemptedUrl: string | null;
+  methodUsed: PlayableStoreOpenResult['method'] | null;
+  errorCount: number;
+  lastErrorMessage: string | null;
+}
 
 declare global {
   interface Window {
@@ -228,6 +244,8 @@ declare global {
     __TILEPYRAMID_BUILD09__?: Readonly<Build08Snapshot>;
     __PLAYABLE_NETWORK__?: PlayableNetworkRuntime;
     __PLAYABLE_STORE_OPEN__?: PlayableStoreOpenBridge;
+    __PLAYABLE_STORE_OPEN_DIAGNOSTICS__?: PlayableStoreOpenDiagnostics;
+    __PLAYABLE_QA_MODE__?: boolean;
   }
 }
 
