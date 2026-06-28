@@ -1,3 +1,5 @@
+export type BuildMode = 'development' | 'review' | 'commercial';
+
 export interface GameConfig {
   projectId: string;
   designWidth: number;
@@ -7,6 +9,7 @@ export interface GameConfig {
   viewportAspect: string;
   portraitPolicy: 'fill';
   landscapePolicy: 'letterbox';
+  buildMode?: BuildMode;
   debugOverlay: boolean;
   levelId: string;
   assignmentSeed: number;
@@ -267,6 +270,12 @@ export interface PlayableStoreOpenDiagnostics {
   selectedFallbackUrl?: string;
 }
 
+export interface PlayableBootPolicy {
+  network: string;
+  viewabilityGate: boolean;
+  onReady(fn: () => void): void;
+}
+
 declare global {
   interface Window {
     __GAME_CONFIG__: GameConfig;
@@ -283,6 +292,7 @@ declare global {
     __PLAYABLE_STORE_OPEN__?: PlayableStoreOpenBridge;
     __PLAYABLE_STORE_OPEN_DIAGNOSTICS__?: PlayableStoreOpenDiagnostics;
     __PLAYABLE_QA_MODE__?: boolean;
+    __PLAYABLE_BOOT_POLICY__?: PlayableBootPolicy;
   }
 }
 

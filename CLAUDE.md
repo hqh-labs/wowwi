@@ -86,12 +86,11 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-27** - Partner reference commercial audit.
-BUILD-27 inspects the partner AppLovin playable reference and produces:
-a partner audit, commercial gap analysis, commercial upgrade spec (BUILD-28
-through BUILD-33), parametric template spec, and commercial-ready criteria.
-No code was changed. No partner code was copied. No gameplay was modified.
+**BUILD-28** - Debug-free commercial export + mode separation + safe network boot policy.
+BUILD-28 adds a first-class `buildMode` concept (`development` / `review` / `commercial`),
+forces all debug flags to `false` in commercial exports, adds AppLovin viewability-gated
+boot policy, and adds commercial export validation.
 
-TilePyramid_PL01 gameplay, export logic, and raw/extracted client assets must
-not be modified.  Do not commit, push, deploy to Vercel, or install global
-software.
+TilePyramid_PL01 gameplay rules are unchanged. Do not commit, push, deploy to Vercel,
+or install global software. See `docs/TILEPYRAMID_COMMERCIAL_MODE_LOCK.md` for the
+full mode design and QA checklist.

@@ -1,6 +1,16 @@
-import type { GameConfig } from '../types';
+import type { BuildMode, GameConfig } from '../types';
 
-export type { GameConfig };
+export type { BuildMode, GameConfig };
+
+const VALID_BUILD_MODES: BuildMode[] = ['development', 'review', 'commercial'];
+
+export function isCommercialMode(config: GameConfig): boolean {
+  return config.buildMode === 'commercial';
+}
+
+export function isDebugAllowed(config: GameConfig): boolean {
+  return config.buildMode !== 'commercial' && config.buildMode !== 'review';
+}
 
 const REQUIRED_FIELDS: (keyof GameConfig)[] = [
   'projectId',
@@ -79,6 +89,9 @@ export function validateConfig(data: unknown): GameConfig {
   }
   if (typeof obj['debugOverlay'] !== 'boolean') {
     throw new ConfigValidationError('Config.debugOverlay must be a boolean');
+  }
+  if (obj['buildMode'] !== undefined && !VALID_BUILD_MODES.includes(obj['buildMode'] as BuildMode)) {
+    throw new ConfigValidationError(`Config.buildMode must be one of: ${VALID_BUILD_MODES.join(', ')}`);
   }
   if (typeof obj['levelId'] !== 'string' || obj['levelId'].trim() === '') {
     throw new ConfigValidationError('Config.levelId must be a non-empty string');

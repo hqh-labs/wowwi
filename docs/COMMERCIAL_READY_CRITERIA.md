@@ -75,7 +75,7 @@ Run this checklist before issuing a commercial delivery package.
 | 4.3 | CTA text is brand-appropriate and localized | WARN — "PLAY NOW" is generic |
 | 4.4 | CTA tap triggers correct store URL for platform | PASS |
 | 4.5 | CTA tap uses `mraid.open()` in AppLovin context | PASS |
-| 4.6 | CTA is hidden in review mode | **FAIL** — no review mode |
+| 4.6 | CTA is hidden in review mode | WARN — review mode exists (BUILD-28) but CTA hide not yet wired |
 | 4.7 | CTA size meets tap-target minimum (44 px minimum) | PASS |
 | 4.8 | No accidental CTA trigger during gameplay | PASS (positioned below tray) |
 
@@ -128,17 +128,17 @@ Run this checklist before issuing a commercial delivery package.
 
 | # | Criterion | TilePyramid v1 Status |
 |---|---|---|
-| 8.1 | `debugOverlay` is `false` in commercial export | **FAIL** |
-| 8.2 | `debugBlockedState` is `false` in commercial export | **FAIL** |
-| 8.3 | `debugMatchReadyMarker` is `false` in commercial export | **FAIL** |
-| 8.4 | `debugOutcomeLabel` is `false` in commercial export | **FAIL** |
-| 8.5 | `debugTimerTutorialIdle` is `false` in commercial export | **FAIL** |
-| 8.6 | `debugCtaEndCardStore` is `false` in commercial export | **FAIL** |
-| 8.7 | `debugAudioEffects` is `false` in commercial export | **FAIL** |
-| 8.8 | `timer.debugVisible` is `false` in commercial export | **FAIL** |
-| 8.9 | Export validator checks for absence of debug markers | **FAIL** — not yet implemented |
+| 8.1 | `debugOverlay` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.2 | `debugBlockedState` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.3 | `debugMatchReadyMarker` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.4 | `debugOutcomeLabel` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.5 | `debugTimerTutorialIdle` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.6 | `debugCtaEndCardStore` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.7 | `debugAudioEffects` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.8 | `timer.debugVisible` is `false` in commercial export | **PASS** ← BUILD-28 |
+| 8.9 | Export validator checks for absence of debug markers | **PASS** ← BUILD-28 |
 
-**These 9 failures in section 8 are the single most important blocker for commercial delivery.**
+**All section 8 criteria now pass. BUILD-28 resolved the critical debug-overlay production blocker.**
 
 ---
 
@@ -174,7 +174,7 @@ Run this checklist before issuing a commercial delivery package.
 | 11.1 | All unit tests pass | PASS (235 tests) |
 | 11.2 | Smoke tests pass (Playwright) | PASS |
 | 11.3 | Export validation passes | PASS |
-| 11.4 | Commercial export validated (zero debug markers) | **FAIL** — mode not yet implemented |
+| 11.4 | Commercial export validated (zero debug markers) | **PASS** ← BUILD-28 |
 | 11.5 | Network QA evidence locked (SHA256 + upload result) | PASS (BUILD-22) |
 | 11.6 | Formal solvability proven | FAIL (`NOT YET PROVEN`) |
 
@@ -192,17 +192,19 @@ Any commercial delivery must include a written disclaimer covering:
 
 ---
 
-## Commercial Gate Summary (TilePyramid v1 — BUILD-22 baseline)
+## Commercial Gate Summary (TilePyramid v1 — BUILD-28 status)
 
 | Gate | Status | Blocking? |
 |---|---|---|
-| Debug flags cleared | **8 FAILs** | YES — BUILD-28 required |
+| Debug flags cleared | **PASS** ← BUILD-28 | — |
 | Network upload passed | PASS | — |
 | Size within budget | PASS | — |
 | Parameter injection | **7 FAILs** | YES — BUILD-31 required |
 | End card quality | WARN | No (acceptable for v1) |
 | QA evidence locked | PASS | — |
-| Review mode | **FAIL** | YES — BUILD-28 required |
+| Review mode / mode separation | **PASS** ← BUILD-28 | — |
+| Formal solvability | NOT YET PROVEN | Separate track |
 
-**TilePyramid_PL01 is NOT commercially deliverable at BUILD-22. BUILD-28 is required
-at minimum before any commercial delivery.**
+**TilePyramid_PL01 commercial mode hygiene passes after BUILD-28. It is NOT yet
+commercially deliverable for template/reskin use cases — BUILD-31 (parameter injection)
+is required before store URLs can be changed without re-export.**

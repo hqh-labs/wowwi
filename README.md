@@ -189,7 +189,8 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-24**: Asset intake analyzer foundation
 - **BUILD-25**: Second project intake (SecondPlayable_PL01 skeleton + registry)
 - **BUILD-26**: Hotfix — git-tracked intake directories (`.gitkeep` + `.gitignore`)
-- **BUILD-27**: Partner reference commercial audit ← current
+- **BUILD-27**: Partner reference commercial audit
+- **BUILD-28**: Debug-free commercial export, mode separation, AppLovin viewability boot policy ← current
 
 ## Documentation index
 

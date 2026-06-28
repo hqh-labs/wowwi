@@ -1,5 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { createBootPolicyScript } from '../bridge/boot-policy-bridge.mjs';
 import { createStoreOpenBridgeScript } from '../bridge/store-open-bridge.mjs';
 
 const MIME_TYPES = new Map([
@@ -75,6 +76,18 @@ export async function createInlinedManifest(manifest, publicDir) {
 export function createExportConfig(config) {
   return {
     ...config,
+    buildMode: 'commercial',
+    debugOverlay: false,
+    debugBlockedState: false,
+    debugMatchReadyMarker: false,
+    debugOutcomeLabel: false,
+    debugTimerTutorialIdle: false,
+    debugCtaEndCardStore: false,
+    debugAudioEffects: false,
+    timer: {
+      ...config.timer,
+      debugVisible: false,
+    },
     app: {
       ...config.app,
       storeOpenMode: 'navigate',
@@ -120,7 +133,8 @@ async function inlineStylesheetLinks(html, distDir) {
 }
 
 function replaceInjectedConfig(html, config, manifest, profile, generatedAt) {
-  const injected = `<script>window.__GAME_CONFIG__=${JSON.stringify(config)};window.__ASSET_MANIFEST__=${JSON.stringify(
+  const bootPolicyScript = createBootPolicyScript(profile);
+  const injected = `${bootPolicyScript}<script>window.__GAME_CONFIG__=${JSON.stringify(config)};window.__ASSET_MANIFEST__=${JSON.stringify(
     manifest
   )};preparePlayableManifestBlobs();function preparePlayableManifestBlobs(){var manifest=window.__ASSET_MANIFEST__;if(!manifest||!Array.isArray(manifest.assets)||!window.URL||!window.Blob||!window.atob)return;for(var i=0;i<manifest.assets.length;i++){var asset=manifest.assets[i];if(!asset||typeof asset.path!=="string"||asset.path.indexOf("data:")!==0)continue;asset.path=dataUrlToBlobUrl(asset.path);}function dataUrlToBlobUrl(dataUrl){var comma=dataUrl.indexOf(",");var meta=dataUrl.slice(5,comma);var mime=meta.split(";")[0]||"application/octet-stream";var encoded=dataUrl.slice(comma+1);var binary=meta.indexOf(";base64")>=0?atob(encoded):decodeURIComponent(encoded);var length=binary.length;var bytes=new Uint8Array(length);for(var j=0;j<length;j++)bytes[j]=binary.charCodeAt(j);return URL.createObjectURL(new Blob([bytes],{type:mime}));}}</script>\n${createStoreOpenBridgeScript(profile, generatedAt, config.app)}`;
 

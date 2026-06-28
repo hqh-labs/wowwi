@@ -70,6 +70,7 @@ import {
   type TrayState,
 } from '../gameplay/tray/TraySystem';
 import { resolveAsset } from '../manifest/AssetManifest';
+import { isDebugAllowed } from '../config/ConfigLoader';
 import { classifyOrientation, OrientationController } from '../orientation/OrientationController';
 import type { AssetManifestData, Build08Snapshot, GameConfig, GameOutcomeState } from '../types';
 
@@ -127,7 +128,7 @@ export class GameScene extends Phaser.Scene {
     const config = this.registry.get('gameConfig') as GameConfig;
     const manifest = this.registry.get('assetManifest') as AssetManifestData;
 
-    this.debugEnabled = config.debugOverlay;
+    this.debugEnabled = isDebugAllowed(config) && config.debugOverlay;
 
     const bgAsset = resolveAsset(manifest, config.backgroundId);
     this.orientationController = new OrientationController(bgAsset?.path ?? '', config.backgroundFit);
@@ -529,7 +530,7 @@ export class GameScene extends Phaser.Scene {
       sprite.setData('selectable', tile.selectable);
       sprite.setData('tileTypeId', tile.tileTypeId);
 
-      if (!tile.selectable && config.debugBlockedState) {
+      if (!tile.selectable && isDebugAllowed(config) && config.debugBlockedState) {
         sprite.setTint(0x5a5f75).setAlpha(0.58);
       }
     }
@@ -873,7 +874,7 @@ export class GameScene extends Phaser.Scene {
           : 1
       );
     }
-    this.timerText.setVisible(config.timer.debugVisible || this.gameState === 'playing');
+    this.timerText.setVisible((isDebugAllowed(config) && config.timer.debugVisible) || this.gameState === 'playing');
   }
 
   private renderTutorial(config: GameConfig): void {

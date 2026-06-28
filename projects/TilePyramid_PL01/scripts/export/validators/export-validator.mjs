@@ -61,6 +61,9 @@ export function validateExportHtml({ html, profile, actualBytes = Buffer.byteLen
     errors.push('Profile requires no external resources, but an external reference was found.');
   }
 
+  const commercialErrors = validateCommercialMode(html, profile);
+  errors.push(...commercialErrors);
+
   const hasMraidBootstrap = /<script\b[^>]*\bsrc=["']mraid\.js["'][^>]*><\/script>/i.test(html);
   if (hasMraidBootstrap && !profile.mraidBootstrapAllowed) {
     errors.push('mraid.js bootstrap reference is not allowed for this profile.');
@@ -75,6 +78,8 @@ export function validateExportHtml({ html, profile, actualBytes = Buffer.byteLen
   if (profile.finalApprovalGuaranteed === false) {
     warnings.push('Final ad-network approval is not guaranteed by BUILD-10 validation.');
   }
+
+  const commercialModeChecks = getCommercialModeChecks(html, profile);
 
   return {
     profileId: profile.id,
@@ -106,7 +111,53 @@ export function validateExportHtml({ html, profile, actualBytes = Buffer.byteLen
       finalApprovalDisclaimerPresent: html.includes(profile.finalApprovalDisclaimer),
       hostCloseButtonSafeZonePresent: html.includes('hostCloseButtonSafeZone'),
       domOverlayPolicyPresent: html.includes(profile.domOverlayPolicy),
+      ...commercialModeChecks,
     },
+  };
+}
+
+const DEBUG_FLAG_PATTERNS = [
+  { key: 'debugOverlay', pattern: /"debugOverlay"\s*:\s*true/ },
+  { key: 'debugBlockedState', pattern: /"debugBlockedState"\s*:\s*true/ },
+  { key: 'debugMatchReadyMarker', pattern: /"debugMatchReadyMarker"\s*:\s*true/ },
+  { key: 'debugOutcomeLabel', pattern: /"debugOutcomeLabel"\s*:\s*true/ },
+  { key: 'debugTimerTutorialIdle', pattern: /"debugTimerTutorialIdle"\s*:\s*true/ },
+  { key: 'debugCtaEndCardStore', pattern: /"debugCtaEndCardStore"\s*:\s*true/ },
+  { key: 'debugAudioEffects', pattern: /"debugAudioEffects"\s*:\s*true/ },
+  { key: 'timer.debugVisible', pattern: /"debugVisible"\s*:\s*true/ },
+];
+
+export function validateCommercialMode(html, profile) {
+  if (profile.buildMode !== 'commercial') return [];
+  const errors = [];
+
+  if (!html.includes('"buildMode":"commercial"')) {
+    errors.push('Commercial export: buildMode is not "commercial" in exported config.');
+  }
+  if (html.includes('"buildMode":"development"')) {
+    errors.push('Commercial export: buildMode is "development" — development mode leaked into commercial export.');
+  }
+
+  for (const { key, pattern } of DEBUG_FLAG_PATTERNS) {
+    if (pattern.test(html)) {
+      errors.push(`Commercial export: debug flag "${key}" is true — debug must be disabled in commercial mode.`);
+    }
+  }
+
+  return errors;
+}
+
+export function getCommercialModeChecks(html, profile) {
+  if (profile.buildMode !== 'commercial') return { commercialModeNotApplicable: true };
+  const hasCommercialBuildMode = html.includes('"buildMode":"commercial"');
+  const hasNoDevBuildMode = !html.includes('"buildMode":"development"');
+  const debugFlagResults = Object.fromEntries(
+    DEBUG_FLAG_PATTERNS.map(({ key, pattern }) => [key, !pattern.test(html)])
+  );
+  return {
+    commercialBuildModePresent: hasCommercialBuildMode,
+    noDevBuildModeInCommercialExport: hasNoDevBuildMode,
+    commercialDebugFlags: debugFlagResults,
   };
 }
 

@@ -61,15 +61,16 @@
         "Formal solvability remains NOT YET PROVEN."
       ],
       "technicalVersion": "technical-v1",
-      "commercialUpgradeStatus": "commercial-upgrade-needed",
+      "commercialUpgradeStatus": "commercial-mode-hygiene-pass",
       "commercialUpgradeBlockers": [
-        "Debug flags active in production export",
-        "No export-mode separation (commercial/review/development)",
-        "No viewability-gated engine start",
-        "No runtime parameter injection",
-        "No asset/theme replacement pipeline"
+        "No runtime parameter injection (store URLs not injectable at ad-serve time)",
+        "No asset/theme replacement pipeline",
+        "End card visual composition below commercial standard",
+        "No combo/reward feedback system",
+        "Formal solvability NOT YET PROVEN"
       ],
-      "notes": "BUILD-20 creative polish passed Unity/AppLovin upload testing (BUILD-22). BUILD-27 commercial audit: project is technical-v1 and requires BUILD-28 (debug cleanup + mode separation) before commercial delivery. See docs/COMMERCIAL_READY_CRITERIA.md.",
+      "commercialModeStatus": "BUILD-28: debug-free export, viewability gate, mode separation complete",
+      "notes": "BUILD-20 creative polish passed Unity/AppLovin upload testing (BUILD-22). BUILD-27 commercial audit identified debug flags and mode gaps. BUILD-28: commercial mode export implemented — all debug flags forced off, buildMode:commercial, AppLovin viewability boot policy added. See docs/TILEPYRAMID_COMMERCIAL_MODE_LOCK.md and docs/COMMERCIAL_READY_CRITERIA.md.",
       "livePreviewUrl": "https://wowwi.vercel.app/projects/TilePyramid_PL01",
       "livePreviewStatus": "verified",
       "livePreviewLastVerifiedAt": "2026-06-28",
