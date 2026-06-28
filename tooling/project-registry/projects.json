@@ -1,0 +1,53 @@
+{
+  "registryVersion": "1",
+  "lastUpdated": "2026-06-28",
+  "projects": [
+    {
+      "projectId": "TilePyramid_PL01",
+      "displayName": "Tile Pyramid — Match Quest",
+      "folder": "projects/TilePyramid_PL01",
+      "status": "delivery-locked",
+      "client": "SKL",
+      "gameName": "Tile Pyramid Match Quest",
+      "supportedNetworks": ["unity", "applovin"],
+      "storeUrls": {
+        "androidUrl": "https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games",
+        "iosUrl": "https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033",
+        "fallbackUrl": "https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games"
+      },
+      "defaultNetworkProfiles": {
+        "unity": "unity-2026-06",
+        "applovin": "applovin-2026-06"
+      },
+      "availableWorkflows": [
+        "typecheck",
+        "test",
+        "build",
+        "export:all",
+        "validate:exports",
+        "test:exports",
+        "test:smoke",
+        "measure:size",
+        "package:candidate",
+        "validate:candidate",
+        "package:delivery",
+        "validate:delivery"
+      ],
+      "deliveryCandidateStatus": "locked",
+      "lastKnownUnitySizeBytes": 1993760,
+      "lastKnownAppLovinSizeBytes": 1993779,
+      "networkQaEvidence": {
+        "unity": "PASSED_UPLOAD_TESTING",
+        "applovin": "PASSED_UPLOAD_TESTING"
+      },
+      "formalSolvability": "NOT YET PROVEN",
+      "knownLimitations": [
+        "Final Unity Ads and AppLovin approval is not guaranteed.",
+        "Unity export expects network-provided window.mraid.",
+        "Network webviews may differ from Chromium file:// QA.",
+        "Formal solvability remains NOT YET PROVEN."
+      ],
+      "notes": "Passed current Unity and AppLovin upload/testing after BUILD-12 window.top fix. Delivery candidate locked in BUILD-13."
+    }
+  ]
+}

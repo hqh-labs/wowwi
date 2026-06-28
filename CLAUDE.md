@@ -86,9 +86,15 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-13** - Delivery candidate lock, network QA evidence, and final handoff package.
-BUILD-13 freezes the current playable as a locked delivery candidate. It adds the
-`package:delivery` and `validate:delivery` workflow, delivery documentation,
-network QA evidence records, release notes, and a reproducible final handoff
-package. New gameplay features, board solver, visual editor, cloud deployment, and
-real network API upload automation remain out of scope.
+**BUILD-14** — Project registry and local tool foundation.
+BUILD-14 turns the repository from a single-project folder into a reusable local
+playable production tool. It adds a root `package.json`, a `tooling/` directory
+with project-registry, commands, utils, and tests, a project registry JSON with
+TilePyramid_PL01 as the first registered project (status: `delivery-locked`),
+schema validation, CLI commands (`wowwi:list`, `wowwi:validate`, `wowwi:project`),
+15 registry and CLI tests using Node's built-in `node:test`, and supporting
+documentation.
+
+Web dashboard, Vercel deployment, user accounts, cloud storage, upload automation,
+billing, visual editor, new gameplay, new project creation UI, level solver, and
+network API integrations remain out of scope.

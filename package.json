@@ -1,0 +1,11 @@
+{
+  "name": "wowwi",
+  "version": "0.14.0",
+  "private": true,
+  "scripts": {
+    "wowwi:list": "node tooling/commands/list-projects.mjs",
+    "wowwi:validate": "node tooling/commands/validate-projects.mjs",
+    "wowwi:project": "node tooling/commands/project-command.mjs",
+    "test": "node --test tooling/tests/registry.test.mjs"
+  }
+}
