@@ -89,3 +89,41 @@ Available workflows:
 `typecheck`, `test`, `build`, `export:all`, `validate:exports`, `test:exports`,
 `test:smoke`, `measure:size`, `package:candidate`, `validate:candidate`,
 `package:delivery`, `validate:delivery`
+
+## BUILD-23 development skeleton entries
+
+New projects should be created with:
+
+```sh
+npm run wowwi:create-project -- --id SamplePlayable_PL01 --display-name "Sample Playable" --dry-run
+npm run wowwi:create-project -- --id SamplePlayable_PL01 --display-name "Sample Playable"
+```
+
+The generated registry entry starts as:
+
+- `status: "development"`
+- `supportedNetworks: []`
+- empty `storeUrls` placeholders
+- `availableWorkflows: []`
+- `deliveryCandidateStatus: "not-started"`
+- `formalSolvability: "NOT_APPLICABLE"`
+
+Development projects are valid registry entries, but they are not upload-ready,
+delivery-locked, or previewable. `wowwi:validate` checks the skeleton's intake and
+planning structure instead of requiring delivery package metadata.
+
+Development skeletons must include:
+
+- `README.md`
+- `PROJECT_BRIEF.md`
+- `ASSET_INTAKE.md`
+- `project.config.json`
+- `package.json`
+- `docs/`
+- `input/`
+- `input/raw-assets/`
+- `input/extracted-assets/`
+- `input/references/`
+- `input/brief/`
+- `src/`
+- `tests/`

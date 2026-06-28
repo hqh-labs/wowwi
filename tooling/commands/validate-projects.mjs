@@ -1,6 +1,8 @@
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
+  DEVELOPMENT_REQUIRED_PROJECT_DIRS,
+  DEVELOPMENT_REQUIRED_PROJECT_FILES,
   DELIVERY_LOCKED_REQUIRED_REPO_DOCS,
   DELIVERY_LOCKED_REQUIRED_WORKFLOWS,
   validateProjectFolderExists,
@@ -42,6 +44,30 @@ for (const project of projects) {
     }
   }
 
+  // Development skeleton: intake/planning structure checks only.
+  if (project.status === 'development') {
+    for (const rel of DEVELOPMENT_REQUIRED_PROJECT_FILES) {
+      try {
+        await access(path.join(folderPath, rel));
+      } catch {
+        errors.push(`Development project file missing: ${rel}`);
+      }
+    }
+    for (const rel of DEVELOPMENT_REQUIRED_PROJECT_DIRS) {
+      try {
+        await access(path.join(folderPath, rel));
+      } catch {
+        errors.push(`Development project directory missing: ${rel}`);
+      }
+    }
+    if (project.deliveryCandidateStatus && project.deliveryCandidateStatus !== 'not-started') {
+      errors.push('Development project deliveryCandidateStatus must be not-started');
+    }
+    if (project.formalSolvability !== 'NOT_APPLICABLE' && project.formalSolvability !== 'NOT YET PROVEN') {
+      errors.push('Development project formalSolvability must be NOT_APPLICABLE or NOT YET PROVEN');
+    }
+  }
+
   // Delivery-locked: extra checks
   if (project.status === 'delivery-locked') {
     for (const docRelPath of DELIVERY_LOCKED_REQUIRED_REPO_DOCS) {
@@ -61,14 +87,18 @@ for (const project of projects) {
     }
   }
 
-  // Store URLs are present and non-empty
-  if (project.storeUrls) {
+  // Store URLs are present and non-empty for non-development projects.
+  if (project.status !== 'development' && project.storeUrls) {
     if (!project.storeUrls.androidUrl) errors.push('storeUrls.androidUrl is empty');
     if (!project.storeUrls.iosUrl) errors.push('storeUrls.iosUrl is empty');
   }
 
-  // Supported networks non-empty
-  if (Array.isArray(project.supportedNetworks) && project.supportedNetworks.length === 0) {
+  // Supported networks non-empty for non-development projects.
+  if (
+    project.status !== 'development' &&
+    Array.isArray(project.supportedNetworks) &&
+    project.supportedNetworks.length === 0
+  ) {
     errors.push('supportedNetworks must not be empty');
   }
 

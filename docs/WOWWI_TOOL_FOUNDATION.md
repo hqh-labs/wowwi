@@ -119,3 +119,29 @@ the pattern used in TilePyramid's own package scripts.
 - New gameplay features or board solver
 - User accounts, billing, or authentication
 - New project creation UI
+
+## BUILD-23 extension: project creation pipeline
+
+BUILD-23 adds a root-level project skeleton generator:
+
+```sh
+npm run wowwi:create-project -- --id SamplePlayable_PL01 --display-name "Sample Playable" --dry-run
+npm run wowwi:create-project -- --id SamplePlayable_PL01 --display-name "Sample Playable"
+```
+
+The command uses Node built-ins only. It validates the project ID, renders files
+from `tooling/templates/playable-project/`, creates intake folders, and appends a
+development entry to `tooling/project-registry/projects.json`.
+
+Development skeletons are intake/planning projects. `wowwi:validate` checks their
+README, brief, asset intake doc, config, package file, docs folder, input folders,
+`src/`, and `tests/`. It does not require delivery docs, store URLs, supported
+networks, sizes, checksums, or playable workflows until the project moves beyond
+development status.
+
+The internal preview build skips development projects. A skeleton does not appear
+in the preview site until a later build creates delivery artifacts and promotes
+the project to a previewable status.
+
+`npm test` now runs all root Node test files under `tooling/tests/*.test.mjs`,
+including the project creation tests.

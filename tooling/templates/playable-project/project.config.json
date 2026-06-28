@@ -1,0 +1,17 @@
+{
+  "projectId": "{{PROJECT_ID}}",
+  "displayName": "{{DISPLAY_NAME}}",
+  "client": "{{CLIENT_NAME}}",
+  "gameName": "{{GAME_NAME}}",
+  "status": "development",
+  "deliveryCandidateStatus": "not-started",
+  "formalSolvability": "NOT_APPLICABLE",
+  "supportedNetworks": [],
+  "storeUrls": {
+    "androidUrl": "",
+    "iosUrl": "",
+    "fallbackUrl": ""
+  },
+  "createdAt": "{{DATE}}"
+}
+

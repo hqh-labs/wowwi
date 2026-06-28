@@ -44,17 +44,20 @@ Run from the **repo root** (`wowwi/`):
 
 ```sh
 npm run wowwi:list                              # list all registered projects
+npm run wowwi:create-project -- --id SamplePlayable_PL01 --display-name "Sample Playable" --dry-run
 npm run wowwi:validate                          # validate every project against the schema
 npm run wowwi:project -- TilePyramid_PL01 status
 npm run wowwi:project -- TilePyramid_PL01 test
 npm run wowwi:project -- TilePyramid_PL01 export
 npm run wowwi:project -- TilePyramid_PL01 package-candidate
 npm run wowwi:project -- TilePyramid_PL01 package-delivery
-npm test                                        # 15 registry + integration tests
+npm test                                        # registry, project-creation, live-preview, and integration tests
 ```
 
 See [docs/WOWWI_TOOL_FOUNDATION.md](docs/WOWWI_TOOL_FOUNDATION.md) and
 [docs/PROJECT_REGISTRY.md](docs/PROJECT_REGISTRY.md) for details.
+See [docs/NEW_PROJECT_PIPELINE.md](docs/NEW_PROJECT_PIPELINE.md) for the BUILD-23
+project skeleton generator.
 
 ## Preview site
 
@@ -171,7 +174,10 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-17**: Playwright-free Vercel build pipeline fix
 - **BUILD-18**: Vercel preview routing fix (project-scoped link paths)
 - **BUILD-19**: Live preview QA lock (`https://wowwi.vercel.app`)
-- **BUILD-20**: Creative polish pass (CTA pulse, end card, tile lift, sparkle, timer, tutorial, tray) ← current
+- **BUILD-20**: Creative polish pass (CTA pulse, end card, tile lift, sparkle, timer, tutorial, tray)
+- **BUILD-21**: Polished post-BUILD-20 candidate re-upload package
+- **BUILD-22**: Polished Unity/AppLovin manual network QA lock
+- **BUILD-23**: New playable project creation pipeline ← current
 
 ## Documentation index
 
@@ -197,3 +203,6 @@ npm run preview       # serve the build at http://localhost:4173
 | `docs/INTERNAL_PREVIEW_ACCESS_NOTES.md` | Preview access status and security notes |
 | `docs/BUILD_20_REPORT.md` | BUILD-20 creative polish change report |
 | `docs/CREATIVE_POLISH_NOTES.md` | Per-area design rationale for BUILD-20 polish |
+| `docs/NEW_PROJECT_PIPELINE.md` | BUILD-23 new playable project creation command |
+| `docs/PLAYABLE_PROJECT_TEMPLATE.md` | Reusable skeleton template reference |
+| `docs/BUILD_23_REPORT.md` | BUILD-23 implementation report |

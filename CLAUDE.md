@@ -86,14 +86,11 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-20** — Creative Polish Pass for TilePyramid_PL01.
-BUILD-20 improves visual quality and ad-readiness across 8 areas: CTA pulse animation,
-end-card win/fail color coding + entrance animation, tile lift glow effect, match-three
-sparkle burst, blocked-tap tint+shake combo, timer warning continuous pulse loop, tutorial
-rounded highlight rings with outer glow halo, board staggered entrance animation, and tray
-rounded-rect frame via Phaser Graphics. All parameters config-driven via 7 new config fields.
-15 new unit tests. Core gameplay rules unchanged. Export compatibility maintained.
-No actual Vercel deployment performed from Claude.
+**BUILD-23** - New Playable Project Creation Pipeline.
+BUILD-23 adds a root-level project skeleton generator, reusable template files,
+development-project registry validation, safe asset-intake folders, and tests for
+new project creation. It must not change TilePyramid_PL01 gameplay/export logic or
+modify raw/extracted client assets.
 
 Login/auth, cloud database, user accounts, billing, upload automation, visual
 editor, new gameplay, new project creation UI, level solver, network API

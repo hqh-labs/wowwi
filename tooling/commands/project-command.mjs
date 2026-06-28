@@ -5,7 +5,7 @@ const [, , projectId, command] = process.argv;
 
 if (!projectId || !command) {
   console.error('Usage: wowwi:project <projectId> <command>');
-  console.error('Commands: status, test, export, package-candidate, package-delivery');
+  console.error('Commands: status, validate, test, export, package-candidate, package-delivery');
   process.exit(1);
 }
 
@@ -21,6 +21,9 @@ if (!project) {
 switch (command) {
   case 'status':
     printStatus(project);
+    break;
+  case 'validate':
+    validateProjectSkeleton(project);
     break;
   case 'test':
     await runProjectWorkflow(project, 'test').catch(err => {
@@ -48,7 +51,7 @@ switch (command) {
     break;
   default:
     console.error(`Unknown command: ${command}`);
-    console.error('Available commands: status, test, export, package-candidate, package-delivery');
+    console.error('Available commands: status, validate, test, export, package-candidate, package-delivery');
     process.exit(1);
 }
 
@@ -109,5 +112,18 @@ function printStatus(p) {
     console.log(`\nNotes: ${p.notes}`);
   }
 
+  console.log('');
+}
+
+function validateProjectSkeleton(p) {
+  if (p.status !== 'development') {
+    console.log(`Project ${p.projectId} is ${p.status}; use npm run wowwi:validate for full registry validation.`);
+    return;
+  }
+
+  console.log(`\nProject ${p.projectId} development skeleton validation`);
+  console.log('Status: development');
+  console.log('Expected local checks: README, PROJECT_BRIEF, ASSET_INTAKE, project.config.json, package.json, docs/, input/, src/, tests/.');
+  console.log('Run npm run wowwi:validate for filesystem validation.');
   console.log('');
 }

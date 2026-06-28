@@ -8,6 +8,13 @@ import { REPO_ROOT } from '../utils/registry-loader.mjs';
  */
 export function runProjectWorkflow(project, workflowName) {
   if (!project.availableWorkflows?.includes(workflowName)) {
+    if (project.status === 'development') {
+      return Promise.reject(
+        new Error(
+          `Project ${project.projectId} is in development status and does not yet implement workflow ${workflowName}.`
+        )
+      );
+    }
     return Promise.reject(
       new Error(
         `Workflow '${workflowName}' is not registered for project '${project.projectId}'. ` +

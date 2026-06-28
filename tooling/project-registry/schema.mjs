@@ -2,6 +2,7 @@ import { access } from 'node:fs/promises';
 import path from 'node:path';
 
 export const VALID_STATUSES = ['development', 'candidate', 'delivery-locked', 'archived'];
+export const VALID_FORMAL_SOLVABILITY_STATUSES = ['NOT YET PROVEN', 'NOT_APPLICABLE'];
 
 export const REQUIRED_PROJECT_FIELDS = [
   'projectId',
@@ -21,6 +22,25 @@ export const DELIVERY_LOCKED_REQUIRED_REPO_DOCS = [
 export const DELIVERY_LOCKED_REQUIRED_WORKFLOWS = [
   'package:delivery',
   'validate:delivery',
+];
+
+export const DEVELOPMENT_REQUIRED_PROJECT_FILES = [
+  'README.md',
+  'PROJECT_BRIEF.md',
+  'ASSET_INTAKE.md',
+  'project.config.json',
+  'package.json',
+];
+
+export const DEVELOPMENT_REQUIRED_PROJECT_DIRS = [
+  'docs',
+  'input',
+  'input/raw-assets',
+  'input/extracted-assets',
+  'input/references',
+  'input/brief',
+  'src',
+  'tests',
 ];
 
 /**
@@ -43,14 +63,27 @@ export function validateRegistryEntry(entry) {
   }
 
   if (entry.storeUrls) {
-    if (!entry.storeUrls.androidUrl) errors.push('Missing storeUrls.androidUrl');
-    if (!entry.storeUrls.iosUrl) errors.push('Missing storeUrls.iosUrl');
+    if (entry.status !== 'development') {
+      if (!entry.storeUrls.androidUrl) errors.push('Missing storeUrls.androidUrl');
+      if (!entry.storeUrls.iosUrl) errors.push('Missing storeUrls.iosUrl');
+    }
   }
 
   if (entry.supportedNetworks !== undefined) {
-    if (!Array.isArray(entry.supportedNetworks) || entry.supportedNetworks.length === 0) {
-      errors.push('supportedNetworks must be a non-empty array');
+    if (!Array.isArray(entry.supportedNetworks)) {
+      errors.push('supportedNetworks must be an array');
+    } else if (entry.status !== 'development' && entry.supportedNetworks.length === 0) {
+      errors.push('supportedNetworks must be a non-empty array for non-development projects');
     }
+  }
+
+  if (
+    entry.formalSolvability &&
+    !VALID_FORMAL_SOLVABILITY_STATUSES.includes(entry.formalSolvability)
+  ) {
+    errors.push(
+      `Invalid formalSolvability: "${entry.formalSolvability}". Must be one of: ${VALID_FORMAL_SOLVABILITY_STATUSES.join(', ')}`
+    );
   }
 
   return { valid: errors.length === 0, errors };

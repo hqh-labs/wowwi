@@ -252,6 +252,8 @@ async function main() {
   // Prepare dist
   await mkdir(DIST, { recursive: true });
 
+  const previewableProjects = projects.filter(project => project.status === 'delivery-locked');
+
   // Per-project: load manifest, copy delivery HTMLs, build detail page
   const previewData = {
     generatedAt: new Date().toISOString(),
@@ -259,7 +261,7 @@ async function main() {
     projects: [],
   };
 
-  for (const project of projects) {
+  for (const project of previewableProjects) {
     const projectFolder = path.join(REPO_ROOT, project.folder);
 
     // Prefer Vercel-generated preview delivery; fall back to real delivery package
@@ -326,7 +328,7 @@ async function main() {
   console.log('Generated            → dist/preview-data.json');
 
   // Build home page
-  const homeHtml = buildHomePage(projects, previewData);
+  const homeHtml = buildHomePage(previewableProjects, previewData);
   await writeFile(path.join(DIST, 'index.html'), homeHtml, 'utf8');
   console.log('Generated            → dist/index.html');
 

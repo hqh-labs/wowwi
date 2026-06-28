@@ -1,0 +1,8 @@
+{
+  "name": "{{PROJECT_ID}}",
+  "version": "0.0.0",
+  "private": true,
+  "description": "{{DISPLAY_NAME}} intake skeleton. No playable workflows implemented yet.",
+  "scripts": {}
+}
+
