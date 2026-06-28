@@ -26,7 +26,7 @@ export {
 };
 
 export const DELIVERY_DISCLAIMER =
-  'Local BUILD-13 delivery packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
+  'Local BUILD-21 polished delivery packaging and validation do not guarantee final Unity Ads or AppLovin approval.';
 
 const MAX_DELIVERY_BYTES = 5 * 1024 * 1024;
 

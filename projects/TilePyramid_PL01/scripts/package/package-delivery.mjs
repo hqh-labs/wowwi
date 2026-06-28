@@ -52,25 +52,26 @@ async function main() {
 
   const networkQaEvidence = {
     unity: {
-      status: 'PASSED_UPLOAD_TESTING',
-      fixedIn: 'BUILD-12',
-      fix: 'window.top removal from Phaser input manager and build output sanitization',
+      status: 'PENDING_MANUAL_REUPLOAD',
+      fixedIn: 'BUILD-21',
+      fix: 'post-BUILD-20 polished candidate regenerated for manual Unity re-upload QA',
       disclaimer:
-        'Passed current Unity upload/testing after BUILD-12 window.top fix. Not guaranteed forever.',
+        'Unity must be manually re-uploaded with the BUILD-21 polished candidate before network pass is claimed. Final approval is not guaranteed forever.',
     },
     applovin: {
-      status: 'PASSED_UPLOAD_TESTING',
-      fixedIn: 'BUILD-12',
-      fix: 'window.top removal from Phaser input manager and build output sanitization',
+      status: 'PENDING_MANUAL_REUPLOAD',
+      fixedIn: 'BUILD-21',
+      fix: 'post-BUILD-20 polished candidate regenerated for manual AppLovin re-upload QA',
       disclaimer:
-        'Passed current AppLovin upload/testing after BUILD-12 window.top fix. Not guaranteed forever.',
+        'AppLovin must be manually re-uploaded with the BUILD-21 polished candidate before network pass is claimed. Final approval is not guaranteed forever.',
     },
   };
 
   const manifest = {
     projectId: 'TilePyramid_PL01',
-    build: 'BUILD-13',
-    deliveryType: 'final-candidate-lock',
+    build: 'BUILD-21',
+    deliveryType: 'polished-candidate-reupload',
+    polishedRuntimeBuild: 'BUILD-20',
     generatedAt,
     gitBranch,
     outputRoot: 'delivery/latest',
@@ -287,6 +288,8 @@ gameplay viewport with landscape centering. CTA and fail end card with store-ope
 | BUILD-11 | Upload candidate package and store URL wiring |
 | BUILD-12 | window.top upload fix (Unity rejection resolved) |
 | BUILD-13 | Delivery candidate lock and final handoff package |
+| BUILD-20 | Creative polish pass |
+| BUILD-21 | Polished candidate re-upload QA package |
 
 ## Key Technical Notes
 

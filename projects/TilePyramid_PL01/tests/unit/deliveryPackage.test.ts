@@ -156,8 +156,9 @@ async function createDeliveryFixture(options = {}) {
 
   const manifest = {
     projectId: 'TilePyramid_PL01',
-    build: 'BUILD-13',
-    deliveryType: 'final-candidate-lock',
+    build: 'BUILD-21',
+    deliveryType: 'polished-candidate-reupload',
+    polishedRuntimeBuild: 'BUILD-20',
     storeUrls: {
       androidUrl: ANDROID_STORE_URL,
       iosUrl: IOS_STORE_URL,

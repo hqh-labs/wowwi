@@ -148,7 +148,9 @@ async function createCandidateFixture(options = {}) {
   const applovinSha = options.applovinHtml === false ? 'missing' : await sha256File(applovinPath);
   const manifest = {
     projectId: 'TilePyramid_PL01',
-    build: 'BUILD-12',
+    build: 'BUILD-21',
+    candidateType: 'polished-candidate-reupload',
+    polishedRuntimeBuild: 'BUILD-20',
     storeUrls: {
       androidUrl: ANDROID_STORE_URL,
       iosUrl: IOS_STORE_URL,

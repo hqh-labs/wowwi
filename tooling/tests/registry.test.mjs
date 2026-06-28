@@ -91,6 +91,61 @@ test('TilePyramid_PL01 formal solvability is NOT YET PROVEN', async () => {
   assert.strictEqual(project.formalSolvability, 'NOT YET PROVEN');
 });
 
+test('BUILD-21 report doc exists', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/BUILD_21_REPORT.md'), 'utf8');
+  assert.ok(text.includes('BUILD-21'), 'BUILD_21_REPORT must identify BUILD-21');
+});
+
+test('polished candidate re-upload doc exists', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_CANDIDATE_REUPLOAD.md'), 'utf8');
+  assert.ok(text.includes('Polished Candidate Re-upload'));
+});
+
+test('creative QA checklist doc exists', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/CREATIVE_QA_CHECKLIST.md'), 'utf8');
+  assert.ok(text.includes('Creative QA Checklist'));
+});
+
+test('re-upload doc contains Unity candidate path', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_CANDIDATE_REUPLOAD.md'), 'utf8');
+  assert.ok(
+    text.includes('upload-candidates/latest/unity/TilePyramid_PL01_unity.html'),
+    're-upload doc must contain Unity candidate path'
+  );
+});
+
+test('re-upload doc contains AppLovin candidate path', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_CANDIDATE_REUPLOAD.md'), 'utf8');
+  assert.ok(
+    text.includes('upload-candidates/latest/applovin/TilePyramid_PL01_applovin.html'),
+    're-upload doc must contain AppLovin candidate path'
+  );
+});
+
+test('re-upload doc records formal solvability as NOT YET PROVEN', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/POLISHED_CANDIDATE_REUPLOAD.md'), 'utf8');
+  assert.ok(text.includes('NOT YET PROVEN'));
+});
+
+test('creative checklist contains BUILD-20 debug label check', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/CREATIVE_QA_CHECKLIST.md'), 'utf8');
+  assert.ok(text.includes('BUILD-20 creative-polish'));
+});
+
+test('creative checklist contains Unity and AppLovin exported HTML checks', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'docs/CREATIVE_QA_CHECKLIST.md'), 'utf8');
+  assert.ok(text.includes('exports/latest/unity/TilePyramid_PL01_unity.html'));
+  assert.ok(text.includes('exports/latest/applovin/TilePyramid_PL01_applovin.html'));
+});
+
+test('TilePyramid polished candidate registry metadata is valid', async () => {
+  const registry = await loadRegistry();
+  const project = registry.projects.find(p => p.projectId === 'TilePyramid_PL01');
+  assert.strictEqual(project.creativePolishStatus, 'polished-candidate');
+  assert.strictEqual(project.polishedCandidateBuild, 'BUILD-20');
+  assert.strictEqual(project.polishedCandidateReuploadStatus, 'pending-manual-upload');
+});
+
 // ── schema validator unit tests ───────────────────────────────────────────────
 
 test('registry validator rejects missing project folder', async () => {
