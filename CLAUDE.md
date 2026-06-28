@@ -86,12 +86,11 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-26** - Hotfix: Git-tracked intake directories for development projects.
-BUILD-25 registered SecondPlayable_PL01 and created its project skeleton.
-BUILD-26 adds `.gitkeep` placeholder files to every intake folder so that
-`wowwi:validate` passes on a fresh Vercel clone.  It also updates `.gitignore`
-with negation patterns and updates the project creation template so future
-projects are correct by default.
+**BUILD-27** - Partner reference commercial audit.
+BUILD-27 inspects the partner AppLovin playable reference and produces:
+a partner audit, commercial gap analysis, commercial upgrade spec (BUILD-28
+through BUILD-33), parametric template spec, and commercial-ready criteria.
+No code was changed. No partner code was copied. No gameplay was modified.
 
 TilePyramid_PL01 gameplay, export logic, and raw/extracted client assets must
 not be modified.  Do not commit, push, deploy to Vercel, or install global

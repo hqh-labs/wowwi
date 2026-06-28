@@ -60,7 +60,16 @@
         "Network webviews may differ from Chromium file:// QA.",
         "Formal solvability remains NOT YET PROVEN."
       ],
-      "notes": "BUILD-20 creative polish was packaged in BUILD-21 and passed current manual Unity/AppLovin re-upload testing in BUILD-22. Previous BUILD-12/13 upload evidence remains historical.",
+      "technicalVersion": "technical-v1",
+      "commercialUpgradeStatus": "commercial-upgrade-needed",
+      "commercialUpgradeBlockers": [
+        "Debug flags active in production export",
+        "No export-mode separation (commercial/review/development)",
+        "No viewability-gated engine start",
+        "No runtime parameter injection",
+        "No asset/theme replacement pipeline"
+      ],
+      "notes": "BUILD-20 creative polish passed Unity/AppLovin upload testing (BUILD-22). BUILD-27 commercial audit: project is technical-v1 and requires BUILD-28 (debug cleanup + mode separation) before commercial delivery. See docs/COMMERCIAL_READY_CRITERIA.md.",
       "livePreviewUrl": "https://wowwi.vercel.app/projects/TilePyramid_PL01",
       "livePreviewStatus": "verified",
       "livePreviewLastVerifiedAt": "2026-06-28",

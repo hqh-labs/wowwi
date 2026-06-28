@@ -186,7 +186,10 @@ npm run preview       # serve the build at http://localhost:4173
 - **BUILD-21**: Polished post-BUILD-20 candidate re-upload package
 - **BUILD-22**: Polished Unity/AppLovin manual network QA lock
 - **BUILD-23**: New playable project creation pipeline
-- **BUILD-24**: Asset intake analyzer foundation ← current
+- **BUILD-24**: Asset intake analyzer foundation
+- **BUILD-25**: Second project intake (SecondPlayable_PL01 skeleton + registry)
+- **BUILD-26**: Hotfix — git-tracked intake directories (`.gitkeep` + `.gitignore`)
+- **BUILD-27**: Partner reference commercial audit ← current
 
 ## Documentation index
 

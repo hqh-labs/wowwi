@@ -2,6 +2,9 @@
 project-input/raw-assets/
 project-input/extracted-assets/
 
+# ─── Partner reference playables (local-only, must not be committed) ──────────
+project-input/references/partner-playables/*.html
+
 # Ignore all content inside per-project intake folders (using /* so the
 # directory itself is not ignored — that lets git track .gitkeep placeholders
 # inside them after negation below).
