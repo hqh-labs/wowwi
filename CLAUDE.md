@@ -86,9 +86,10 @@ These rules apply to every build phase, every session, every agent.
 
 ## Current build phase
 
-**BUILD-10** - Network compliance hardening and final export QA.
-BUILD-10 hardens Unity/AppLovin export profiles, static validation, visual
-Chromium export QA, MRAID/store-open bridge diagnostics, upload-readiness
-documentation, and generated export reports. Final ad-network approval, upload
-automation, real network API integration, formal level solving, and visual
-editor remain out of scope.
+**BUILD-11** - Upload candidate package and store URL wiring.
+BUILD-11 wires real Google Play/App Store URLs through config, store-open
+selection, export metadata, and candidate manifests. It adds upload-candidate
+package generation, SHA256 checksums, candidate validation, QA summaries, and
+network-specific upload notes. Final ad-network approval, upload automation,
+real network API integration, formal level solving, and visual editor remain out
+of scope.

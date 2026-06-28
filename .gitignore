@@ -19,6 +19,7 @@ build/
 out/
 .output/
 projects/TilePyramid_PL01/exports/
+projects/TilePyramid_PL01/upload-candidates/
 
 # ─── Cache folders ────────────────────────────────────────────────────────────
 .cache/

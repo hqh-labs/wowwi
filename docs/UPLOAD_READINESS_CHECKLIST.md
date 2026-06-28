@@ -5,6 +5,10 @@ Project: TilePyramid_PL01
 ## Passed locally
 
 - Unity and AppLovin single-file HTML exports generate successfully.
+- Upload candidate package generation passes.
+- Candidate SHA256 checksums validate.
+- Real Google Play and App Store URLs are wired into config, exports, and package
+  metadata.
 - Both exports are under the 5 MB profile target.
 - All runtime resources are embedded.
 - No external HTTP/HTTPS asset references are present.
@@ -33,7 +37,7 @@ Project: TilePyramid_PL01
 
 ## Unity-specific checklist
 
-- Use `exports/latest/unity/TilePyramid_PL01_unity.html`.
+- Use `upload-candidates/latest/unity/TilePyramid_PL01_unity.html`.
 - Confirm Unity provides `window.mraid`.
 - Confirm `mraid.open(url)` is available or Unity fallback behavior is accepted.
 - Confirm no separate `mraid.js` bootstrap file is required for this upload path.
@@ -42,7 +46,7 @@ Project: TilePyramid_PL01
 
 ## AppLovin-specific checklist
 
-- Use `exports/latest/applovin/TilePyramid_PL01_applovin.html`.
+- Use `upload-candidates/latest/applovin/TilePyramid_PL01_applovin.html`.
 - Confirm AppLovin accepts a single self-contained HTML file below 5 MB.
 - Confirm no external bootstrap script is required.
 - Confirm store-open fallback behavior is accepted in AppLovin preview.
@@ -75,7 +79,10 @@ Project: TilePyramid_PL01
 - Latest `npm run validate:exports` passes.
 - Latest `npm run test:exports` passes.
 - Latest `npm run test:smoke` passes.
+- Latest `npm run package:candidate` passes.
+- Latest `npm run validate:candidate` passes.
 - Export sizes are recorded in the delivery notes.
+- Candidate `checksums.sha256` is recorded.
 - Unity manual upload result is recorded.
 - AppLovin manual upload result is recorded.
 - Client confirms final destination URL/store behavior.

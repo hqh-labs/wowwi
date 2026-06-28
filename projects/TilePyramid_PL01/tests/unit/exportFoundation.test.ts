@@ -21,6 +21,9 @@ import {
 import { createNetworkExportMetadata } from '../../scripts/export/adapters/network-adapters.mjs';
 import { createStoreOpenBridgeScript } from '../../scripts/export/bridge/store-open-bridge.mjs';
 
+const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games';
+const IOS_URL = 'https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033';
+
 describe('Build-09 export profiles', () => {
   it('loads Unity profile', () => {
     const profile = getExportProfile('unity-2026-06');
@@ -97,6 +100,16 @@ describe('Build-09 single-file inliner', () => {
     expect(script).toContain('mraid.open');
     expect(script).toContain('record-only');
   });
+
+  it('injects configured store URLs into export metadata', async () => {
+    const fixture = await createInlinerFixture();
+    const profile = getExportProfile('applovin-2026-06');
+    const result = await inlineSingleFileHtml({ ...fixture, profile, generatedAt: '2026-06-28T00:00:00.000Z' });
+    expect(result.html).toContain(ANDROID_URL);
+    expect(result.html).toContain(IOS_URL);
+    expect(result.exportConfig.app.androidUrl).toBe(ANDROID_URL);
+    await fixture.dispose();
+  });
 });
 
 describe('Build-09 export validation', () => {
@@ -166,6 +179,18 @@ describe('Build-09 export validation', () => {
     const report = createNetworkExportMetadata(profile, validation, []);
     expect(report.formalSolvability).toBe('NOT YET PROVEN');
   });
+
+  it('export metadata includes both store URLs', () => {
+    const profile = getExportProfile('unity-2026-06');
+    const validation = validateExportHtml({ html: validHtmlForProfile(profile.id), profile, filePath: 'unity.html' });
+    const report = createNetworkExportMetadata(profile, validation, [], {
+      androidUrl: ANDROID_URL,
+      iosUrl: IOS_URL,
+      fallbackUrl: ANDROID_URL,
+    });
+    expect(report.storeUrls.androidUrl).toBe(ANDROID_URL);
+    expect(report.storeUrls.iosUrl).toBe(IOS_URL);
+  });
 });
 
 async function createInlinerFixture() {
@@ -187,6 +212,9 @@ async function createInlinerFixture() {
     app: {
       storeOpenMode: 'record-only',
       safeDevelopmentNavigation: true,
+      fallbackUrl: ANDROID_URL,
+      androidUrl: ANDROID_URL,
+      iosUrl: IOS_URL,
     },
   }));
   await writeFile(path.join(publicDir, 'config/asset-manifest.json'), JSON.stringify({

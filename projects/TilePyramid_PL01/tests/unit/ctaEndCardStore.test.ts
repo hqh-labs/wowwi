@@ -1,17 +1,27 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { createCtaState, recordCtaClick } from '../../src/gameplay/cta/CtaSystem';
 import {
   createEndCardState,
   recordEndCardClick,
   updateEndCardForOutcome,
 } from '../../src/gameplay/endcard/EndCardSystem';
-import { StoreOpenService, chooseStoreUrl } from '../../src/gameplay/store/StoreOpenService';
+import {
+  StoreOpenService,
+  chooseStoreUrl,
+  detectStorePlatform,
+  selectStoreUrl,
+} from '../../src/gameplay/store/StoreOpenService';
 import type { Build06Snapshot } from '../../src/types';
 
+const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games';
+const IOS_URL = 'https://apps.apple.com/us/app/tile-pyramid-match-quest/id6755671033';
+const config = JSON.parse(readFileSync(new URL('../../public/config/game.config.json', import.meta.url), 'utf8'));
+
 const storeConfig = {
-  fallbackUrl: 'https://example.com/fallback',
-  androidUrl: 'https://example.com/android',
-  iosUrl: 'https://example.com/ios',
+  fallbackUrl: ANDROID_URL,
+  androidUrl: ANDROID_URL,
+  iosUrl: IOS_URL,
   mode: 'record-only' as const,
   safeDevelopmentNavigation: true,
 };
@@ -23,14 +33,44 @@ describe('Build-06 store-open service', () => {
     expect(service.getSnapshot().callCount).toBe(1);
   });
 
-  it('chooses configured fallback URL', () => {
-    expect(chooseStoreUrl(storeConfig)).toBe('https://example.com/fallback');
+  it('chooses deterministic configured fallback URL for unknown platforms', () => {
+    expect(chooseStoreUrl(storeConfig, 'Mozilla/5.0 desktop')).toBe(ANDROID_URL);
   });
 
   it('records call source', () => {
     const service = new StoreOpenService(storeConfig);
     service.openStore('end-card');
     expect(service.getSnapshot().lastSource).toBe('end-card');
+  });
+});
+
+describe('Build-11 store URL wiring', () => {
+  it('Android store URL config matches the provided Google Play URL', () => {
+    expect(config.app.androidUrl).toBe(ANDROID_URL);
+  });
+
+  it('iOS store URL config matches the provided App Store URL', () => {
+    expect(config.app.iosUrl).toBe(IOS_URL);
+  });
+
+  it('fallback store URL is deterministic', () => {
+    expect(config.app.fallbackUrl).toBe(ANDROID_URL);
+  });
+
+  it('detects iOS-like user agents', () => {
+    expect(detectStorePlatform('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)')).toBe('ios');
+  });
+
+  it('detects Android-like user agents', () => {
+    expect(detectStorePlatform('Mozilla/5.0 (Linux; Android 14; Pixel 8)')).toBe('android');
+  });
+
+  it('selects iOS URL for iOS-like user agents', () => {
+    expect(selectStoreUrl(storeConfig, 'iPad').url).toBe(IOS_URL);
+  });
+
+  it('selects Android URL for Android-like user agents', () => {
+    expect(selectStoreUrl(storeConfig, 'Android').url).toBe(ANDROID_URL);
   });
 });
 

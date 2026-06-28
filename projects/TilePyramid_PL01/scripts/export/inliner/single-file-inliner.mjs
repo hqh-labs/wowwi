@@ -39,6 +39,7 @@ export async function inlineSingleFileHtml(options) {
     html,
     inlinedAssets,
     sourceIndex: htmlPath,
+    exportConfig: config,
     generatedAt,
   };
 }
@@ -121,7 +122,7 @@ async function inlineStylesheetLinks(html, distDir) {
 function replaceInjectedConfig(html, config, manifest, profile, generatedAt) {
   const injected = `<script>window.__GAME_CONFIG__=${JSON.stringify(config)};window.__ASSET_MANIFEST__=${JSON.stringify(
     manifest
-  )};preparePlayableManifestBlobs();function preparePlayableManifestBlobs(){var manifest=window.__ASSET_MANIFEST__;if(!manifest||!Array.isArray(manifest.assets)||!window.URL||!window.Blob||!window.atob)return;for(var i=0;i<manifest.assets.length;i++){var asset=manifest.assets[i];if(!asset||typeof asset.path!=="string"||asset.path.indexOf("data:")!==0)continue;asset.path=dataUrlToBlobUrl(asset.path);}function dataUrlToBlobUrl(dataUrl){var comma=dataUrl.indexOf(",");var meta=dataUrl.slice(5,comma);var mime=meta.split(";")[0]||"application/octet-stream";var encoded=dataUrl.slice(comma+1);var binary=meta.indexOf(";base64")>=0?atob(encoded):decodeURIComponent(encoded);var length=binary.length;var bytes=new Uint8Array(length);for(var j=0;j<length;j++)bytes[j]=binary.charCodeAt(j);return URL.createObjectURL(new Blob([bytes],{type:mime}));}}</script>\n${createStoreOpenBridgeScript(profile, generatedAt)}`;
+  )};preparePlayableManifestBlobs();function preparePlayableManifestBlobs(){var manifest=window.__ASSET_MANIFEST__;if(!manifest||!Array.isArray(manifest.assets)||!window.URL||!window.Blob||!window.atob)return;for(var i=0;i<manifest.assets.length;i++){var asset=manifest.assets[i];if(!asset||typeof asset.path!=="string"||asset.path.indexOf("data:")!==0)continue;asset.path=dataUrlToBlobUrl(asset.path);}function dataUrlToBlobUrl(dataUrl){var comma=dataUrl.indexOf(",");var meta=dataUrl.slice(5,comma);var mime=meta.split(";")[0]||"application/octet-stream";var encoded=dataUrl.slice(comma+1);var binary=meta.indexOf(";base64")>=0?atob(encoded):decodeURIComponent(encoded);var length=binary.length;var bytes=new Uint8Array(length);for(var j=0;j<length;j++)bytes[j]=binary.charCodeAt(j);return URL.createObjectURL(new Blob([bytes],{type:mime}));}}</script>\n${createStoreOpenBridgeScript(profile, generatedAt, config.app)}`;
 
   const pattern = /<script>window\.__GAME_CONFIG__=[\s\S]*?window\.__ASSET_MANIFEST__=[\s\S]*?;<\/script>/;
   if (pattern.test(html)) {

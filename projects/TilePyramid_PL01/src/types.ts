@@ -205,6 +205,11 @@ export interface PlayableNetworkRuntime {
   safeAreaPolicy: string;
   domOverlayPolicy: string;
   finalApprovalDisclaimer: string;
+  storeUrls: {
+    androidUrl: string;
+    iosUrl: string;
+    fallbackUrl: string;
+  };
   formalSolvability: 'NOT YET PROVEN';
 }
 
@@ -229,6 +234,10 @@ export interface PlayableStoreOpenDiagnostics {
   methodUsed: PlayableStoreOpenResult['method'] | null;
   errorCount: number;
   lastErrorMessage: string | null;
+  androidUrl?: string;
+  iosUrl?: string;
+  fallbackUrl?: string;
+  selectedFallbackUrl?: string;
 }
 
 declare global {
@@ -326,6 +335,10 @@ export interface Build06Snapshot extends Build05Snapshot {
   lastStoreOpenSource: 'gameplay-cta' | 'end-card' | 'unknown' | null;
   lastStoreOpenUrl: string | null;
   storeOpenMode: 'record-only' | 'navigate';
+  storeOpenFallbackUrl: string;
+  storeOpenAndroidUrl: string | null;
+  storeOpenIosUrl: string | null;
+  lastStoreOpenPlatform: 'android' | 'ios' | 'fallback' | null;
 }
 
 export interface Build08Snapshot extends Build06Snapshot {

@@ -88,7 +88,7 @@ export async function exportOneProfile(profile, generatedAt, gitBranch = null) {
     warnings: [...validation.warnings, ...visualValidation.warnings],
     visual: visualValidation,
   };
-  const metadata = createNetworkExportMetadata(profile, combinedValidation, inlined.inlinedAssets);
+  const metadata = createNetworkExportMetadata(profile, combinedValidation, inlined.inlinedAssets, inlined.exportConfig.app);
   const report = {
     ...metadata,
     projectId: 'TilePyramid_PL01',
@@ -122,6 +122,7 @@ function createExportManifest(reports, generatedAt, gitBranch) {
       actualBytes: report.actualBytes,
       targetMaxBytes: report.targetMaxBytes,
       finalApprovalDisclaimer: report.finalApprovalDisclaimer,
+      storeUrls: report.storeUrls,
     })),
     formalSolvability: 'NOT YET PROVEN',
     finalApprovalGuaranteed: false,

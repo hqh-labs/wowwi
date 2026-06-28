@@ -1,4 +1,9 @@
-export function createStoreOpenBridgeScript(profile, generatedAt) {
+export function createStoreOpenBridgeScript(profile, generatedAt, appConfig = {}) {
+  const storeUrls = {
+    androidUrl: appConfig.androidUrl ?? '',
+    iosUrl: appConfig.iosUrl ?? '',
+    fallbackUrl: appConfig.fallbackUrl ?? '',
+  };
   const runtime = {
     profileId: profile.id,
     network: profile.network,
@@ -13,6 +18,7 @@ export function createStoreOpenBridgeScript(profile, generatedAt) {
     safeAreaPolicy: profile.safeAreaPolicy,
     domOverlayPolicy: profile.domOverlayPolicy,
     finalApprovalDisclaimer: profile.finalApprovalDisclaimer,
+    storeUrls,
     formalSolvability: 'NOT YET PROVEN',
   };
 
@@ -25,7 +31,11 @@ export function createStoreOpenBridgeScript(profile, generatedAt) {
     attemptedUrl:null,
     methodUsed:null,
     errorCount:0,
-    lastErrorMessage:null
+    lastErrorMessage:null,
+    androidUrl:${JSON.stringify(storeUrls.androidUrl)},
+    iosUrl:${JSON.stringify(storeUrls.iosUrl)},
+    fallbackUrl:${JSON.stringify(storeUrls.fallbackUrl)},
+    selectedFallbackUrl:${JSON.stringify(storeUrls.fallbackUrl)}
   };
   function diagnostics(){
     return window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__;

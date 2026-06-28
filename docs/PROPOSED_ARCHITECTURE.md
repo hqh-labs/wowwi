@@ -433,6 +433,15 @@ BUILD-10 implementation note:
 - Automated export QA sets `window.__PLAYABLE_QA_MODE__ = true` before page load
   so store-open clicks are recorded without navigating away.
 
+BUILD-11 implementation note:
+- Store URLs are configured in `public/config/game.config.json`; gameplay does
+  not hardcode them.
+- `StoreOpenService` now selects the iOS URL for iOS-like user agents, the
+  Android URL for Android-like user agents, and the deterministic fallback URL
+  for unknown environments.
+- Export metadata and store-open diagnostics include configured Android, iOS,
+  fallback, and attempted store URLs.
+
 ### Export profile system (`scripts/export/profiles`)
 
 BUILD-09 established interface:
@@ -533,6 +542,18 @@ A local export script group that:
 
 Usage: `npm run export` produces Unity and AppLovin single-file HTML outputs
 under `projects/TilePyramid_PL01/exports/latest/`.
+
+### Upload candidate package (`scripts/package`)
+
+BUILD-11 established interface:
+- `npm run package:candidate` runs exported HTML smoke, export validation, and a
+  production build, then creates `upload-candidates/latest/`.
+- The candidate folder contains only Unity/AppLovin HTML files, upload notes,
+  `QA_SUMMARY.md`, `package-manifest.json`, `checksums.sha256`, and validation
+  output.
+- `npm run validate:candidate` verifies required files, HTML sizes, SHA256
+  checksums, configured store URLs, final approval disclaimer, formal
+  solvability marker, and absence of forbidden raw/source folders.
 
 ---
 

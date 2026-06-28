@@ -11,6 +11,8 @@
     "export:applovin": "node scripts/export/export-applovin.mjs",
     "export:all": "node scripts/export/export-all.mjs",
     "validate:exports": "node scripts/export/validate-exports.mjs",
+    "package:candidate": "node scripts/package/package-candidate.mjs",
+    "validate:candidate": "node scripts/package/validate-candidate.mjs",
     "optimize:assets": "node scripts/optimize-assets.mjs",
     "measure:size": "node scripts/measure-size.mjs",
     "typecheck": "tsc --noEmit",

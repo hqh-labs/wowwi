@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 const DESIGN_ASPECT = 9 / 16;
 const PREVIEW_IDS = ['L2:-1.5:2.5', 'L2:-0.5:2.5', 'L2:0.5:2.5'];
+const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.skl.pyramid.quest.match3.tile.puzzle.games';
 
 const EXPORTS = [
   {
@@ -72,6 +73,7 @@ test.describe('Build-10 exported HTML compliance smoke tests', () => {
         storeOpenCallCount: window.__TILEPYRAMID_BUILD09__?.storeOpenCallCount,
         source: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.source,
         method: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.methodUsed,
+        attemptedUrl: window.__PLAYABLE_STORE_OPEN_DIAGNOSTICS__?.attemptedUrl,
         remainingBoardCount: window.__TILEPYRAMID_BUILD09__?.remainingBoardCount,
         trayCount: window.__TILEPYRAMID_BUILD09__?.trayCount,
         timerStarted: window.__TILEPYRAMID_BUILD09__?.timerStarted,
@@ -80,6 +82,7 @@ test.describe('Build-10 exported HTML compliance smoke tests', () => {
       expect(result.storeOpenCallCount).toBe(1);
       expect(result.source).toBe('gameplay-cta');
       expect(result.method).toBe('record-only');
+      expect(result.attemptedUrl).toBe(ANDROID_URL);
       expect(result.remainingBoardCount).toBe(before?.remainingBoardCount);
       expect(result.trayCount).toBe(before?.trayCount);
       expect(result.timerStarted).toBe(false);

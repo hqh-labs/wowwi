@@ -1,4 +1,4 @@
-export function createNetworkExportMetadata(profile, validation, inlinedAssets) {
+export function createNetworkExportMetadata(profile, validation, inlinedAssets, storeUrls = {}) {
   return {
     network: profile.network,
     profileId: profile.id,
@@ -28,6 +28,11 @@ export function createNetworkExportMetadata(profile, validation, inlinedAssets) 
     ],
     finalApprovalDisclaimer: profile.finalApprovalDisclaimer,
     finalApprovalGuaranteed: false,
+    storeUrls: {
+      androidUrl: storeUrls.androidUrl ?? '',
+      iosUrl: storeUrls.iosUrl ?? '',
+      fallbackUrl: storeUrls.fallbackUrl ?? '',
+    },
     inlinedAssetCount: inlinedAssets.length,
     inlinedAssetBytes: inlinedAssets.reduce((total, asset) => total + asset.bytes, 0),
   };
